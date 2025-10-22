@@ -1,0 +1,50 @@
+{
+  "resourceType": "MedicationRequest",
+  "id": "medReq-plan",
+  "status": "completed",
+  "intent": "plan",
+  "medicationCodeableConcept": {
+    "coding": [
+      {
+        "code": "KC00807219",
+        "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-medication"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/pat-min"
+  },
+  "dosageInstruction": [
+    {
+      "timing": {
+        "repeat": {
+          "boundsPeriod": {
+            "start": "2024-05-07",
+            "end": "2024-05-14"
+          }
+        },
+        "code": {
+          "text": "1W3D"
+        }
+      },
+      "route": {
+        "coding": [
+          {
+            "code": "26643006",
+            "system": "http://snomed.info/sct"
+          }
+        ]
+      },
+      "doseAndRate": [
+        {
+          "doseQuantity": {
+            "value": 4,
+            "code": "{tbl}",
+            "system": "http://unitsofmeasure.org",
+            "unit": "tablets"
+          }
+        }
+      ]
+    }
+  ]
+}

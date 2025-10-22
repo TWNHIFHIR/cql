@@ -1,0 +1,19 @@
+{
+  "resourceType": "DiagnosticReport",
+  "id": "diagnostic-report-ct",
+  "status": "final",
+  "code": {
+    "coding": [
+      {
+        "code": "BW21Y0Z",
+        "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/icd-10-pcs-2023-tw",
+        "display": "CT scan of abdomen and pelvis"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/pat-min"
+  },
+  "effectiveDateTime": "2024-07-15",
+  "conclusion": "顯示遠端轉移病灶"
+}

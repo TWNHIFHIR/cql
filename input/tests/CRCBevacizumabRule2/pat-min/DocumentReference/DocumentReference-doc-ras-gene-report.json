@@ -1,0 +1,31 @@
+{
+  "resourceType": "DocumentReference",
+  "id": "doc-ras-gene-report",
+  "status": "current",
+  "type": {
+    "coding": [
+      {
+        "code": "11529-5",
+        "system": "http://loinc.org",
+        "display": "Surgical pathology study"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/pat-min"
+  },
+  "author": [
+    {
+      "reference": "org-certified-lab"
+    }
+  ],
+  "content": [
+    {
+      "attachment": {
+        "url": "https://lab.example.com/reports/ras-gene-analysis-001.pdf",
+        "contentType": "application/pdf",
+        "title": "All-RAS基因突變分析檢測報告"
+      }
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "resourceType": "MedicationRequest",
+  "id": "medReq-treat",
+  "meta": {
+    "profile": [
+      "https://nhicore.nhi.gov.tw/pas/StructureDefinition/MedicationRequest-treat-twpas"
+    ]
+  },
+  "status": "completed",
+  "statusReason": {
+    "coding": [
+      {
+        "code": "altchoice",
+        "system": "http://hl7.org/fhir/CodeSystem/medicationrequest-status-reason"
+      }
+    ]
+  },
+  "intent": "order",
+  "category": [
+    {
+      "coding": [
+        {
+          "code": "nhi",
+          "system": "https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-drug-category"
+        }
+      ]
+    }
+  ],
+  "medicationCodeableConcept": {
+    "coding": [
+      {
+        "code": "AA47170212",
+        "system": "https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-medication"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/pat-min"
+  },
+  "dosageInstruction": [
+    {
+      "timing": {
+        "repeat": {
+          "boundsPeriod": {
+            "start": "2024-05-07",
+            "end": "2024-05-20"
+          }
+        },
+        "code": {
+          "text": "1W3D"
+        }
+      },
+      "route": {
+        "coding": [
+          {
+            "code": "26643006",
+            "system": "http://snomed.info/sct"
+          }
+        ]
+      },
+      "doseAndRate": [
+        {
+          "doseQuantity": {
+            "value": 4,
+            "code": "{tbl}",
+            "system": "http://unitsofmeasure.org",
+            "unit": "tablets"
+          }
+        }
+      ]
+    }
+  ]
+}

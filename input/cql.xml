@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationGuide xmlns="http://hl7.org/fhir">
+  <id value="tw.gov.mohw.nhi.cql"/>
+  <url value="https://nhicore.nhi.gov.tw/cql/ImplementationGuide/tw.gov.mohw.nhi.cql"/>
+  <version value="0.0.1"/>
+  <name value="CQL_IG"/>
+  <title value="CQL IG"/>
+  <status value="draft"/>
+  <experimental value="false"/>
+  <date value="2025-09-19"/>
+  <publisher value="Example Publisher"/>
+  <contact>
+    <telecom>
+      <system value="url"/>
+      <value value="http://example.org/example-publisher"/>
+    </telecom>
+  </contact>
+  <description value="CQL libraries and shared terminology for CRC rules."/>
+  <packageId value="tw.gov.mohw.nhi.cql"/>
+  <license value="CC0-1.0"/>
+  <fhirVersion value="4.0.1"/>
+
+  <!-- Dependencies -->
+
+  <dependsOn id="TWPAS">
+    <uri value="https://nhicore.nhi.gov.tw/pas/ImplementationGuide/tw.gov.mohw.nhi.pas"/>
+    <packageId value="tw.gov.mohw.nhi.pas"/>
+    <version value="1.0.8"/>
+  </dependsOn>
+  <dependsOn id="CQL">
+    <uri value="http://hl7.org/fhir/uv/cql/ImplementationGuide/hl7.fhir.uv.cql"/>
+    <packageId value="hl7.fhir.uv.cql"/>
+    <version value="2.0.0"/>
+  </dependsOn>
+
+  <definition>
+    <!-- Pages: 每一頁都給明確 title，避免空白 -->
+
+  <page>
+    <nameUrl value="toc.html"/>
+    <title value="目錄"/>
+    <generation value="html"/>
+
+
+  <page>
+    <nameUrl value="index.html"/>
+    <title value="應用說明"/>
+    <generation value="markdown"/>
+  </page>
+
+  <page>
+    <nameUrl value="libraries.html"/>
+    <title value="Libraries"/>
+    <generation value="markdown"/>
+  </page>
+  </page>
+
+
+    <!-- Resources: name/description 都填好，避免出現空白欄 -->
+    <resource>
+      <reference>
+        <reference value="Library/CRCBevacizumabRule1"/>
+      </reference>
+      <name value="CRCBevacizumabRule1"/>
+      <description value="CRCBevacizumabRule1"/>
+    </resource>
+
+    <resource>
+      <reference>
+        <reference value="Library/CRCBevacizumabRule2"/>
+      </reference>
+      <name value="CRCBevacizumabRule2"/>
+      <description value="CRCBevacizumabRule1"/>
+    </resource>
+
+      <resource>
+      <reference>
+        <reference value="Library/CRCLarotrectinibRule1"/>
+      </reference>
+      <name value="CRCLarotrectinibRule1 Library"/>
+      <description value="CRCLarotrectinibRule1"/>
+    </resource>
+
+    <resource>
+      <reference>
+        <reference value="Library/FHIRHelpers"/>
+      </reference>
+      <name value="FHIRHelpers Library"/>
+      <description value="FHIRHelpers"/>
+    </resource>
+
+    <resource>
+      <reference>
+        <reference value="Library/CRCCodeConcept"/>
+      </reference>
+      <name value="CRCCodeConcept Library"/>
+      <description value="Terminology：ICD-10、藥品代碼、SNOMED 值集定義"/>
+    </resource>
+
+    <resource>
+      <reference>
+        <reference value="Library/Reusable"/>
+      </reference>
+      <name value="Reusable Library"/>
+      <description value="Reusable"/>
+    </resource>
+
+
+    <!-- Publisher 參數：保留需要者；避免空白頁籤常見來源——空 title/空頁面 -->
+    <parameter>
+      <code value="copyrightyear"/>
+      <value value="2023+"/>
+    </parameter>
+
+    <parameter>
+      <code value="releaselabel"/>
+      <value value="CI Build"/>
+    </parameter>
+
+    <!-- 自動尋找其他資源可保留；與空白頁籤無直接關係 -->
+    <parameter>
+      <code value="find-other-resources"/>
+      <value value="true"/>
+    </parameter>
+
+    <parameter>
+      <code value="path-pages"/>
+      <value value="input/pagecontent"/>
+    </parameter>
+
+    <parameter>
+      <code value="path-resource"/>
+      <value value="input/resources/library"/>
+    </parameter>
+
+    <parameter>
+      <code value="path-binary"/>
+      <value value="input/cql"/>
+    </parameter>
+
+    <!-- 關閉一系列自動套用欄位，避免覆寫你的手動設定 -->
+    <parameter><code value="apply-contact"/><value value="false"/></parameter>
+    <parameter><code value="apply-context"/><value value="false"/></parameter>
+    <parameter><code value="apply-copyright"/><value value="false"/></parameter>
+    <parameter><code value="apply-jurisdiction"/><value value="false"/></parameter>
+    <parameter><code value="apply-license"/><value value="false"/></parameter>
+    <parameter><code value="apply-publisher"/><value value="false"/></parameter>
+    <parameter><code value="apply-version"/><value value="false"/></parameter>
+
+    <parameter><code value="default-version"/><value value="true"/></parameter>
+  </definition>
+</ImplementationGuide>
