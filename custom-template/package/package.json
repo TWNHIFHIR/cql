@@ -1,14 +1,11 @@
 {
-  "name" : "cqf.fhir.template",
-  "type" : "fhir.template",
-  "license" : "CC0-1.0",
-  "description" : "CQF FHIR Template",
-  "author" : "CQFramework",
-  "canonical" : "http://fhir.org/templates/cqf.fhir.template",
-  "base" : "fhir.base.template",
-  "dependencies" : {
-    "fhir.base.template" : "1.0.0"
-  },
-  "date" : "20251001140233",
-  "version" : "1.0.0"
+	"name": "cdc-template",
+	"version": "0.1",
+	"type": "fhir.template",
+	"license": "CC0-1.0",
+	"description": "gateKeeper FHIR Template",
+	"base": "fhir.base.template",
+	"dependencies": {
+		"fhir.base.template": "current"
+	}
 }
