@@ -3,16 +3,17 @@
   <id value="tw.gov.mohw.nhi.cql"/>
   <url value="https://nhicore.nhi.gov.tw/cql/ImplementationGuide/tw.gov.mohw.nhi.cql"/>
   <version value="0.0.1"/>
-  <name value="CQL_IG"/>
-  <title value="CQL IG"/>
+  <name value="TW NHIA CQL IG"/>
+  <title value="臺灣健保預檢規則實作指引"/>
   <status value="draft"/>
   <experimental value="false"/>
   <date value="2025-09-19"/>
   <publisher value="Example Publisher"/>
   <contact>
+  <name value="衛生福利部中央健康保險署"/>
     <telecom>
       <system value="url"/>
-      <value value="http://example.org/example-publisher"/>
+      <value value="https://www.nhi.gov.tw"/>
     </telecom>
   </contact>
   <description value="CQL libraries and shared terminology for CRC rules."/>
