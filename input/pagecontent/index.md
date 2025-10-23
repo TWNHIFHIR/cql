@@ -26,6 +26,26 @@
 </ul>
 </div>
 
+#### Cross Version Analysis
+
+{% capture cross-version-analysis %}{% include cross-version-analysis.xhtml %}{% endcapture %}{{ cross-version-analysis | remove: '<p>' | remove: '</p>'}}
+
+#### IG Dependencies
+
+This IG Contains the following dependencies on other IGs.
+
+{% include dependency-table.xhtml %}
+
+#### Global Profiles
+
+{% include globals-table.xhtml %}
+
+#### Copyrights
+
+{% capture ip-statement %}{% include ip-statements.xhtml %}{% endcapture %}
+
+{{ ip-statement | remove: '<p>' | remove: '</p>'}}
+
 
 ### 作者與貢獻者
 <table class="grid" style="width:100%">

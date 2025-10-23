@@ -3,7 +3,7 @@
   <id value="tw.gov.mohw.nhi.cql"/>
   <url value="https://nhicore.nhi.gov.tw/cql/ImplementationGuide/tw.gov.mohw.nhi.cql"/>
   <version value="0.0.1"/>
-  <name value="TW NHIA CQL IG"/>
+  <name value="TWNHIACQL"/>
   <title value="臺灣健保預檢規則實作指引"/>
   <status value="draft"/>
   <experimental value="false"/>
