@@ -2,11 +2,11 @@
 
 <div  style="padding-left: 10px;"> 
 
-<p>臺灣健保預檢規則實作指引（Taiwan NHI Clinical Quality Language Implementation Guide，TW NHIA CQL IG）係採用 HL7® FHIR® （Fast Healthcare Interoperability Resources）與 HL7® CQL （Clinical Quality Language）之標準建置方法，並以「臺灣健保癌症用藥事前審查實作指引」（Taiwan NHI Cancer Prior Authorization Support Implementation Guide，TWPAS IG）為基礎，進一步定義符合「癌藥預檢規則」邏輯需求之 CQL Library （邏輯模組）。
-<br/>
-其中，Library（邏輯模組） 為 CQL 中封裝並可重複使用之規則邏輯基本單位，可供其他規則、量測（Measure）或臨床決策支援模組（Clinical Decision Support, CDS）引用，以促進邏輯之模組化、標準化與重用性。
-<br/>
-本實作指引內容涵蓋預檢規則條件、資料檢核邏輯、共用函式及代碼定義等多個 Library （邏輯模組），以確保邏輯規則於不同應用情境中具備一致性與可維護性。</p>
+<p>臺灣健保預檢規則實作指引（Taiwan NHI Clinical Quality Language Implementation Guide，TW NHIA CQL IG）係採用 HL7® FHIR® （Fast Healthcare Interoperability Resources）與 HL7® CQL （Clinical Quality Language）之標準建置方法，並以「臺灣健保癌症用藥事前審查實作指引」（Taiwan NHI Cancer Prior Authorization Support Implementation Guide，TWPAS IG）為基礎，進一步定義符合「癌藥預檢規則」邏輯需求之 CQL Library （邏輯模組）。</p>
+
+<p>其中，Library（邏輯模組） 為 CQL 中封裝並可重複使用之規則邏輯基本單位，可供其他規則、量測（Measure）或臨床決策支援模組（Clinical Decision Support, CDS）引用，以促進邏輯之模組化、標準化與重用性。</p>
+
+<p>本實作指引內容涵蓋預檢規則條件、資料檢核邏輯、共用函式及代碼定義等多個 Library （邏輯模組），以確保邏輯規則於不同應用情境中具備一致性與可維護性。</p>
 
 </div>
 
