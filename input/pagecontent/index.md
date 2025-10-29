@@ -2,8 +2,9 @@
 
 <div  style="padding-left: 10px;"> 
 
-<p>臺灣健保預檢規則實作指引（Taiwan NHI Clinical Quality Language Implementation Guide，TW NHIA CQL IG）採用 HL7® FHIR®（Fast Healthcare Interoperability Resources）及 HL7® CQL (Clinical Quality Language) 標準建置方法，並以「臺灣健保癌症用藥事前審查實作指引」（Taiwan NHI Cancer Prior Authorization Support Implementation Guide，TWPAS IG）為基礎，進一步定義適用於「癌藥預檢規則」邏輯需求之 CQL Library（邏輯模組）。
-本實作指引內容涵蓋規則條件、資料檢核邏輯、共用函式與代碼定義等 Library（邏輯模組）。</p>
+<p>臺灣健保預檢規則實作指引（Taiwan NHI Clinical Quality Language Implementation Guide，TW NHIA CQL IG）係採用 HL7® FHIR® （Fast Healthcare Interoperability Resources）與 HL7® CQL （Clinical Quality Language）之標準建置方法，並以「臺灣健保癌症用藥事前審查實作指引」（Taiwan NHI Cancer Prior Authorization Support Implementation Guide，TWPAS IG）為基礎，進一步定義符合「癌藥預檢規則」邏輯需求之 CQL Library （邏輯模組）。</br></br>
+其中，Library（邏輯模組） 為 CQL 中封裝並可重複使用之規則邏輯基本單位，可供其他規則、量測（Measure）或臨床決策支援模組（Clinical Decision Support, CDS）引用，以促進邏輯之模組化、標準化與重用性。</br></br>
+本實作指引內容涵蓋預檢規則條件、資料檢核邏輯、共用函式及代碼定義等多個 Library （邏輯模組），以確保邏輯規則於不同應用情境中具備一致性與可維護性。</p>
 
 </div>
 
@@ -11,7 +12,7 @@
 
 <div  style="padding-left: 10px;"> 
 
-<p>衛生福利部中央健康保險署規劃建立癌症用藥預檢規則，推動癌症用藥事前審查之數位化與智慧化。為扣合賴總統於健康台灣之「國家癌症防治計畫」政策，本署刻正規劃以結構化、模組化及可重用的方式，建置健保用藥預檢規則邏輯，促進預檢規則於不同系統間的標準化與互通性，提升審查流程之效率與一致性，達成自動化審查與決策支援之目標。</p>
+<p>衛生福利部中央健康保險署規劃建立癌症用藥預檢規則，推動癌症用藥事前審查之數位化與智慧化。為扣合「國家癌症防治計畫」建立智慧醫療的基石政策，本署刻正規劃以結構化、模組化及可重用的方式，建置健保用藥預檢規則邏輯，促進預檢規則於不同系統間的標準化與互通性，提升審查流程之效率與一致性，達成自動化審查與決策支援之目標。</p>
 
 </div>
 
