@@ -50,26 +50,39 @@
     <td>作者-IG</td>
     <td>李奇安</td>
 </tr>
-<tr>
-    <td>貢獻者-IG</td>
-    <td>張如薰</td>
-    <td rowspan="3" style="vertical-align: middle;">衛生福利部中央健康保險署-醫審及藥材組</td>
-</tr>
-<tr>
-    <td>貢獻者-IG</td>
-    <td>張佐安</td>
-</tr>
-<tr>
-    <td>貢獻者-IG</td>
-    <td>鄧嘉欣</td>
-</tr>
-<tr>
-    <td>貢獻者-IG</td>
-    <td colspan="2">醫藥品查驗中心(CDE)</td>
-</tr>
+       <tr>
+            <td>貢獻者-IG</td>
+            <td>張如薰</td>
+            <td rowspan="4" style="vertical-align: middle;">衛生福利部中央健康保險署-醫審及藥材組</td>
+        </tr>
+        <tr>
+            <td>貢獻者-IG</td>
+            <td>涂奇君</td>
+        </tr>
+        <tr>
+            <td>貢獻者-IG</td>
+            <td>張佐安</td>
+        </tr>
+        <tr>
+            <td>貢獻者-IG</td>
+            <td>鄧嘉欣</td>
+        </tr>
+        <tr>
+            <td>貢獻者-IG</td>
+            <td colspan="2">醫藥品查驗中心(CDE)</td>
+        </tr>
+        <tr>
+            <td>貢獻者-IG</td>
+            <td colspan="2">衛生福利部中央健康保險署-資訊組</td>
+        </tr>
+        <tr>
+            <td>貢獻者-IG</td>
+            <td colspan="2">衛生福利部資訊處</td>
+        </tr>
 
 </tbody>
 </table>
+
 
 ### TWNHIA CQL ImplementationGuide Resource
 
