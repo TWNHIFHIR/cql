@@ -7,7 +7,7 @@
   <title value="臺灣健保預檢規則實作指引"/>
   <status value="draft"/>
   <experimental value="false"/>
-  <date value="2025-10-29"/>
+  <date value="2025-11-20"/>
   <publisher value="Example Publisher"/>
   <contact>
   <name value="衛生福利部中央健康保險署"/>
@@ -95,7 +95,7 @@
         <reference value="Library/CRCCodeConcept"/>
       </reference>
       <name value="CRCCodeConcept Library"/>
-      <description value="Terminology：ICD-10、藥品代碼、SNOMED 值集定義"/>
+      <description value="代碼清單"/>
     </resource>
 
     <resource>
