@@ -3,7 +3,7 @@
   "id": "imaStu-min",
   "meta": {
     "profile": [
-      "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/StructureDefinition/ImagingStudy-twpas"
+      "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/StructureDefinition/ImagingStudy-twpas"
     ]
   },
   "identifier": [

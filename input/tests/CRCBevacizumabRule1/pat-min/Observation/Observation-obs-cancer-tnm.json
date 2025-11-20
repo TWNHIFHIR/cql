@@ -3,7 +3,7 @@
   "id": "obs-cancer-tnm",
   "meta": {
     "profile": [
-      "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/StructureDefinition/Observation-cancer-stage-twpas"
+      "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/StructureDefinition/Observation-cancer-stage-twpas"
     ]
   },
   "status": "final",
@@ -12,7 +12,7 @@
       "coding": [
         {
           "code": "cancerStage",
-          "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-supporting-info-type"
+          "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-supporting-info-type"
         }
       ]
     }

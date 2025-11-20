@@ -3,11 +3,21 @@
   "id": "medReq-plan",
   "status": "completed",
   "intent": "plan",
+  "category": [
+    {
+      "coding": [
+        {
+          "code": "nhi",
+          "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-drug-category"
+        }
+      ]
+    }
+  ],
   "medicationCodeableConcept": {
     "coding": [
       {
-        "code": "KC00807219",
-        "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-medication"
+        "code": "K000807219",
+        "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-medication"
       }
     ]
   },

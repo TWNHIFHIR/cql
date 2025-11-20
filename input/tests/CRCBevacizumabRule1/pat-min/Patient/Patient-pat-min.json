@@ -2,7 +2,7 @@
   "resourceType" : "Patient",
   "id" : "pat-min",
   "meta" : {
-    "profile" : ["https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/StructureDefinition/Patient-twpas"]
+    "profile" : ["https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/StructureDefinition/Patient-twpas"]
   },
   "text" : {
     "status" : "generated",

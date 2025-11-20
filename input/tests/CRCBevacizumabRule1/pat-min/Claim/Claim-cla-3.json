@@ -19,7 +19,7 @@
     "coding": [
       {
         "code": "3",
-        "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-apply-type",
+        "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-apply-type",
         "display": "申復"
       }
     ]
@@ -39,11 +39,24 @@
     "coding": [
       {
         "code": "1",
-        "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-tmhb-type",
+        "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-tmhb-type",
         "display": "一般事前審查申請"
       }
     ]
   },
+  "diagnosis": [
+    {
+      "sequence": 1,
+      "diagnosisCodeableConcept": {
+        "coding": [
+          {
+            "code": "C18",
+            "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/icd-10-cm-2023-tw"
+          }
+        ]
+      }
+    }
+  ],
   "procedure": [
     {
       "sequence": 1,
@@ -51,7 +64,7 @@
         "coding": [
           {
             "code": "3E0Y704",
-            "system": "https://twcore.mohw.gov.tw/ig/twcore/CodeSystem/icd-10-pcs-2023-tw"
+            "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/icd-10-pcs-2023-tw"
           }
         ]
       },
@@ -65,7 +78,7 @@
         "coding": [
           {
             "code": "1",
-            "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-order-type",
+            "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-order-type",
             "display": "藥品"
           }
         ]
@@ -75,7 +88,7 @@
           "coding": [
             {
               "code": "1",
-              "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-continuation-status",
+              "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-continuation-status",
               "display": "初次使用"
             }
           ]
@@ -84,7 +97,7 @@
           "coding": [
             {
               "code": "1",
-              "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-line-of-therapy",
+              "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-line-of-therapy",
               "display": "第一線治療"
             }
           ]

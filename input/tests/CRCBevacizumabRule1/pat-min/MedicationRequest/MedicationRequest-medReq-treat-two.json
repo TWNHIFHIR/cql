@@ -1,9 +1,9 @@
 {
   "resourceType": "MedicationRequest",
-  "id": "medReq-treat",
+  "id": "medReq-treat-two",
   "meta": {
     "profile": [
-      "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/StructureDefinition/MedicationRequest-treat-twpas"
+      "hhttps://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/StructureDefinition/MedicationRequest-treat-twpas"
     ]
   },
   "status": "completed",
@@ -21,7 +21,7 @@
       "coding": [
         {
           "code": "nhi",
-          "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-drug-category"
+          "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-drug-category"
         }
       ]
     }
@@ -29,8 +29,8 @@
   "medicationCodeableConcept": {
     "coding": [
       {
-        "code": "AA47170212",
-        "system": "https://hitstdio.ntunhs.edu.tw/fhir_lab/fhir/CodeSystem/nhi-medication"
+        "code": "A009964221",
+        "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-medication"
       }
     ]
   },

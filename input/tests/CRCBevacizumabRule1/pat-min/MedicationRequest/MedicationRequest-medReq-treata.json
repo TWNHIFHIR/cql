@@ -1,13 +1,36 @@
 {
   "resourceType": "MedicationRequest",
-  "id": "medReq-plan",
+  "id": "medReq-treat",
+  "meta": {
+    "profile": [
+      "hhttps://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/StructureDefinition/MedicationRequest-treat-twpas"
+    ]
+  },
   "status": "completed",
-  "intent": "plan",
+  "statusReason": {
+    "coding": [
+      {
+        "code": "altchoice",
+        "system": "http://hl7.org/fhir/CodeSystem/medicationrequest-status-reason"
+      }
+    ]
+  },
+  "intent": "order",
+  "category": [
+    {
+      "coding": [
+        {
+          "code": "nhi",
+          "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-drug-category"
+        }
+      ]
+    }
+  ],
   "medicationCodeableConcept": {
     "coding": [
       {
-        "code": "KC00807219",
-        "system": "https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-medication"
+        "code": "A047170212",
+        "system": "https://hitstdio.ntunhs.edu.tw/AHui_badbed/fhir/CodeSystem/nhi-medication"
       }
     ]
   },
@@ -19,8 +42,8 @@
       "timing": {
         "repeat": {
           "boundsPeriod": {
-            "start": "2024-05-07",
-            "end": "2024-06-30"
+            "start": "2024-05-01",
+            "end": "2024-05-07"
           }
         },
         "code": {
