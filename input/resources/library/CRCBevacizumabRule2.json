@@ -7,7 +7,7 @@
   "title": "大腸直腸癌_Bevacizumab給付規定(轉移性大腸或直腸癌病人的第二線治療)",
   "name": "CRCBevacizumabRule2",
   "description": "此 Library 為轉移性大腸或直腸癌病人的第二線治療申請使用 Bevacizumab 之給付檢核條件。",
-  "status": "Draft",
+  "status": "draft",
   "type": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/library-type", "code": "logic-library" }] },
   "content": [ {
     "contentType": "text/cql",
