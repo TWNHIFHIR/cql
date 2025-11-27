@@ -1,13 +1,12 @@
 {
   "resourceType": "Library",
   "id": "CRCCodeConcept",
-  "url": "https://nhicore.nhi.gov.tw/cql/Library/CRCCodeConcept",
   "version": "1.0.0",
   "date": "2025-11-20",  
   "title": "大腸直腸癌代碼集-CRCCodeConcept",
   "name": "CRCCodeConcept",
   "description": "此 Library 為大腸直腸癌藥事前審查使用之代碼集。",
-  "status": "active",
+  "status": "Draft",
   "type": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/library-type", "code": "logic-library" }] },
   "content": [ {
     "contentType": "text/cql",
