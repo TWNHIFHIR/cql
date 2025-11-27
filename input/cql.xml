@@ -56,57 +56,6 @@
   </page>
   </page>
 
-
-    <!-- Resources: name/description 都填好，避免出現空白欄 -->
-    <resource>
-      <reference>
-        <reference value="Library/CRCBevacizumabRule1"/>
-      </reference>
-      <name value="CRCBevacizumabRule1"/>
-      <description value="CRCBevacizumabRule1"/>
-    </resource>
-
-    <resource>
-      <reference>
-        <reference value="Library/CRCBevacizumabRule2"/>
-      </reference>
-      <name value="CRCBevacizumabRule2"/>
-      <description value="CRCBevacizumabRule1"/>
-    </resource>
-
-      <resource>
-      <reference>
-        <reference value="Library/CRCLarotrectinibRule1"/>
-      </reference>
-      <name value="CRCLarotrectinibRule1 Library"/>
-      <description value="CRCLarotrectinibRule1"/>
-    </resource>
-
-    <resource>
-      <reference>
-        <reference value="Library/FHIRHelpers"/>
-      </reference>
-      <name value="FHIRHelpers Library"/>
-      <description value="FHIRHelpers"/>
-    </resource>
-
-    <resource>
-      <reference>
-        <reference value="Library/CRCCodeConcept"/>
-      </reference>
-      <name value="CRCCodeConcept Library"/>
-      <description value="代碼清單"/>
-    </resource>
-
-    <resource>
-      <reference>
-        <reference value="Library/Reusable"/>
-      </reference>
-      <name value="Reusable Library"/>
-      <description value="Reusable"/>
-    </resource>
-
-
     <!-- Publisher 參數：保留需要者；避免空白頁籤常見來源——空 title/空頁面 -->
     <parameter>
       <code value="copyrightyear"/>
