@@ -7,7 +7,7 @@
   "title": "規則共通模組-Reusable",
   "name": "Reusable",
   "description": "此 Library 為癌藥事前審查規則共通使用規則模組。",
-  "status": "Draft",
+  "status": "draft",
   "type": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/library-type", "code": "logic-library" }] },
   "content": [ {
     "contentType": "text/cql",
