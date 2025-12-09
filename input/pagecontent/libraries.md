@@ -14,6 +14,8 @@
 
 - [Panitumumab給付規定-Panitumumab Rule1](Library-CRCPanitumumabRule1.html)
 
+- [Pembrolizuma給付規定-Pembrolizuma Rule1](Library-CRCPembrolizumabRule1.html)
+
 - [Regorafenib給付規定-Regorafenib Rule1](Library-CRCRegorafenibRule1.html)
 
 - [Trifluridine/tipiracil給付規定-Trifluridine/Tipiracil Rule1](Library-CRCTrifluridineTipiracilRule1.html)
