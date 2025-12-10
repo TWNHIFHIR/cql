@@ -2,7 +2,7 @@
   "resourceType": "Library",
   "id": "CRCLarotrectinibRule1",
   "version": "1.0.0",
-  "date": "2025-11-20",
+  "date": "2025-12-09",  
   "title": "大腸直腸癌_Larotrectinib給付規定",
   "name": "CRCLarotrectinibRule1",
   "description": "此 Library 為轉移性大腸或直腸癌病人申請使用 Larotrectinib 之給付檢核條件。",

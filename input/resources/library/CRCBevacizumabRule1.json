@@ -2,7 +2,7 @@
   "resourceType": "Library",
   "id": "CRCBevacizumabRule1",
   "version": "1.0.0",
-  "date": "2025-11-20",
+  "date": "2025-12-09",  
   "title": "大腸直腸癌_Bevacizumab給付規定(轉移性大腸或直腸癌患者的第一線治療)",
   "name": "CRCBevacizumabRule1",
   "description": "此 Library 為轉移性大腸或直腸癌患者於第一線治療申請使用 Bevacizumab 之給付檢核條件。",

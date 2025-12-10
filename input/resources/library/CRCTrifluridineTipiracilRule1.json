@@ -1,8 +1,8 @@
 {
   "resourceType": "Library",
   "id": "CRCTrifluridineTipiracilRule1",
-    "version": "1.0.0",
-  "date": "2025-11-20",
+  "version": "1.0.0",
+  "date": "2025-12-09",  
   "title": "大腸直腸癌__Trifluridine/tipiracil給付規定",
   "name": "CRCTrifluridineTipiracilRule1",
   "description": "此 Library 為轉移性大腸或直腸癌病人申請使用 Trifluridine/tipiracil 之給付檢核條件。",
