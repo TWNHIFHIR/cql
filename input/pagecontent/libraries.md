@@ -8,7 +8,7 @@
 
 - [Cetuximab給付規定1-Cetuximab Rule1](Library-CRCCetuximabRule1.html)
 
-- [Cetuximab給付規定2-Cetuximab Rule2](Library-CRCCetuximabRule1.html)
+- [Cetuximab給付規定2-Cetuximab Rule2](Library-CRCCetuximabRule2.html)
 
 - [Larotrectinib給付規定-Larotrectinib Rule1](Library-CRCLarotrectinibRule1.html)
 
