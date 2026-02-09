@@ -20,12 +20,11 @@
 
 ### 如何閱讀這個實作指引(IG)
 <div  style="padding-left: 10px;"> 
-<p>本IG之網站架構圖如下圖所示。各功能說明如下：</p>
+<p>本IG之各功能說明如下：</p>
 
 <ul>
     <li><strong><a href="index.html">應用說明</a></strong>：本IG介紹及背景說明。</li>
     <li><strong><a href="libraries.html">預檢規則(CQL)</a></strong>：本IG所定義之預檢規則，即CQL規則。</li>
-    <li><strong><a href="https://nhicore.nhi.gov.tw/cql/history.html">版本異動</a></strong>：若本IG網站的版本有所異動。</li>
 </ul>
 </div>
 
