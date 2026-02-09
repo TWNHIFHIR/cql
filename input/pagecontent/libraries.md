@@ -24,4 +24,4 @@
 
 - [大腸直腸癌代碼集-CRCCodeConcept](Library-CRCCodeConcept.html)
 
-- [大腸直腸癌規則共通模組-Reusable](Library-CRCReusable.html)
+- [大腸直腸癌規則共通模組-CRCReusable](Library-CRCReusable.html)
