@@ -26,7 +26,7 @@
   <dependsOn id="TWPAS">
     <uri value="https://nhicore.nhi.gov.tw/pas/ImplementationGuide/tw.gov.mohw.nhi.pas"/>
     <packageId value="tw.gov.mohw.nhi.pas"/>
-    <version value="1.0.8"/>
+    <version value="1.1.1"/>
   </dependsOn>
   <dependsOn id="CQL">
     <uri value="http://hl7.org/fhir/uv/cql/ImplementationGuide/hl7.fhir.uv.cql"/>
