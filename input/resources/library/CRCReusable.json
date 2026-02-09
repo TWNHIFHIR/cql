@@ -1,6 +1,7 @@
   {
   "resourceType": "Library",
   "id": "CRCReusable",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/CRCReusable",
   "version": "1.0.0",
   "date": "2026-02-09",  
   "title": "規則共通模組-CRCReusable",
