@@ -21,7 +21,7 @@
   <license value="CC0-1.0"/>
   <fhirVersion value="4.0.1"/>
 
-  <!-- Dependencies -->
+
 
   <dependsOn id="TWPAS">
     <uri value="https://nhicore.nhi.gov.tw/pas/ImplementationGuide/tw.gov.mohw.nhi.pas"/>
@@ -35,7 +35,7 @@
   </dependsOn>
 
   <definition>
-    <!-- Pages: 每一頁都給明確 title，避免空白 -->
+
 
   <page>
     <nameUrl value="toc.html"/>
@@ -56,7 +56,7 @@
   </page>
   </page>
 
-    <!-- Publisher 參數：保留需要者；避免空白頁籤常見來源——空 title/空頁面 -->
+  
     <parameter>
       <code value="copyrightyear"/>
       <value value="2023+"/>
@@ -67,7 +67,7 @@
       <value value="CI Build"/>
     </parameter>
 
-    <!-- 自動尋找其他資源可保留；與空白頁籤無直接關係 -->
+
     <parameter>
       <code value="find-other-resources"/>
       <value value="true"/>
@@ -88,7 +88,7 @@
       <value value="input/cql"/>
     </parameter>
 
-    <!-- 關閉一系列自動套用欄位，避免覆寫你的手動設定 -->
+ 
     <parameter><code value="apply-contact"/><value value="false"/></parameter>
     <parameter><code value="apply-context"/><value value="false"/></parameter>
     <parameter><code value="apply-copyright"/><value value="false"/></parameter>
