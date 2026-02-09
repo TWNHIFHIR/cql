@@ -96,7 +96,6 @@
     <parameter><code value="apply-license"/><value value="false"/></parameter>
     <parameter><code value="apply-publisher"/><value value="false"/></parameter>
     <parameter><code value="apply-version"/><value value="false"/></parameter>
-
     <parameter><code value="default-version"/><value value="true"/></parameter>
   </definition>
 </ImplementationGuide>

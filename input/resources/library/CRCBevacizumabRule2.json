@@ -1,9 +1,8 @@
 {
   "resourceType": "Library",
   "id": "CRCBevacizumabRule2",
-  "url": "https://nhicore.nhi.gov.tw/cql/Library/CRCBevacizumabRule2",
   "version": "1.0.0",
-  "date": "2026-02-09",  
+  "date": "2026-02-09", 
   "title": "大腸直腸癌_Bevacizumab給付規定(轉移性大腸或直腸癌病人的第二線治療)",
   "name": "CRCBevacizumabRule2",
   "description": "此 Library 為轉移性大腸或直腸癌病人的第二線治療申請使用 Bevacizumab 之給付檢核條件。",
