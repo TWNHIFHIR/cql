@@ -1,9 +1,9 @@
-  {
+{
   "resourceType": "Library",
   "id": "CRCReusable",
   "url": "https://nhicore.nhi.gov.tw/cql/Library/CRCReusable",
   "version": "1.0.0",
-  "date": "2026-02-09",  
+  "date": "2026-03-11",  
   "title": "規則共通模組-CRCReusable",
   "name": "CRCReusable",
   "description": "此 Library 為大腸直腸癌藥事前審查共通使用規則模組。",
