@@ -5,9 +5,9 @@
 
 - [Bevacizumab給付規定(RAS基因沒有突變的轉移性大腸或直腸癌病人的第二線治療)-Bevacizumab Rule2](Library-CRCBevacizumabRule2.html)
 
-- [Cetuximab給付規定1-Cetuximab Rule1](Library-CRCCetuximabRule1.html)
+- [Cetuximab給付規定(第一線治療)-Cetuximab Rule1](Library-CRCCetuximabRule1.html)
 
-- [Cetuximab給付規定2-Cetuximab Rule2](Library-CRCCetuximabRule2.html)
+- [Cetuximab給付規定(第二線(含)以上治療)-Cetuximab Rule2](Library-CRCCetuximabRule2.html)
 
 - [Larotrectinib給付規定-Larotrectinib Rule1](Library-CRCLarotrectinibRule1.html)
 
