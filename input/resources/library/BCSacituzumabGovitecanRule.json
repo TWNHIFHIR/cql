@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "date": "2026-03-11",  
   "title": "Sacituzumab govitecan給付規定-Sacituzumab Govitecan Rule",
-  "name": "SacituzumabGovitecanRule",
+  "name": "BCSacituzumabGovitecanRule",
   "description": "此 Library 為乳癌患者於申請使用 Sacituzumab Govitecan 之給付檢核條件。",
   "status": "draft",
   "type": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/library-type", "code": "logic-library" }] },
