@@ -38,7 +38,6 @@ define "申請類型":
 
 /*規則1*/
 //條件1-1
-//Reusable."ICD-10使用C18、C19、C20、C21"
 define "ICD代碼檢核_布林值": Reusable."主要疾病之ICD-10使用C18、C19、C20、C21"
 
 //條件1-2
@@ -239,8 +238,10 @@ define "規則2-3-1=GOT<60U/L及GPT<60U/L":
     and exists (
       OBs.code.coding Cdg
       where Cdg in CodeConcept.LOINC
-        and Cdg.code in CodeConcept.GOT
+        and (
+        Cdg.code in CodeConcept.GOT
         or Cdg.code in CodeConcept.GPT
+        )
     )
      and OBs.value is Quantity
     and OBs.value < 60

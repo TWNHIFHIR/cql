@@ -77,7 +77,6 @@ and "規則1-1B=NTRK用藥申請"
 
 
 //條件2-1-1
-//Reusable."ICD-10使用C18、C19、C20、C21"
 define "ICD代碼檢核_布林值": Reusable."主要疾病之ICD-10使用C18、C19、C20、C21"
 
 //條件2-1-2
@@ -178,16 +177,28 @@ define "規則3-1=檢核未滿18歲與定(符合採條件2不符合採條件3)":
   )
 
 //條件3-2
+//條件3-2
 define "規則3-2=曾接受一線治療後無效或復發":
   exists (
-    [MedicationRequest] FOLMR
-    where FOLMR.intent = 'order'
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
+    and exists (
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01EX12
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] FOLMR
+      where FOLMR.intent = 'order'
       and exists (
         FOLMR.medication.coding UTCapCetBevaFOL
         where UTCapCetBevaFOL in CodeConcept.NHIMedication
-          and UTCapCetBevaFOL.code in CodeConcept.L01EX12
+        and UTCapCetBevaFOL.code in CodeConcept.L01EX12
       )
       and Reusable."HasValidTiming"(FOLMR)
+      and Reusable."GetEndTime"(FOLMR) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
   and Reusable."醫令類別為1"
   and exists (
@@ -199,7 +210,7 @@ define "規則3-2=曾接受一線治療後無效或復發":
         where exists (
           M.coding Cdg
           where Cdg in CodeConcept.NHILOT
-            and Cdg.code in { '2', '3', '4', '5' }
+          and Cdg.code in { '2', '3', '4', '5' }
         )
       )
     )
@@ -207,8 +218,18 @@ define "規則3-2=曾接受一線治療後無效或復發":
 
 //條件3-3-2-1
 define "規則3-3-3-2-1=先前已使用過FOLFIRI（folinic acid/5-fluorouracil/irinotecan）":
-  (
-    exists (
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
+    and exists (
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01EX12
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+
+    // 存在 Irinotecan 處方且結束時間早於本次申請
+    and exists (
       [MedicationRequest] MROrder1
       where MROrder1.intent = 'order'
       and exists (
@@ -217,10 +238,11 @@ define "規則3-3-3-2-1=先前已使用過FOLFIRI（folinic acid/5-fluorouracil/
         and Cdg.code in CodeConcept.L01CE02
       )
       and Reusable."HasValidTiming"(MROrder1)
-      and Reusable."GetEndTime"(MROrder1) < Today()
+      and Reusable."GetEndTime"(MROrder1) <= Reusable."GetStartTime"(CurrentMR)
     )
-    and
-    exists (
+
+    // 存在 Fluorouracil 處方且結束時間早於本次申請
+    and exists (
       [MedicationRequest] MROrder2
       where MROrder2.intent = 'order'
       and exists (
@@ -229,27 +251,38 @@ define "規則3-3-3-2-1=先前已使用過FOLFIRI（folinic acid/5-fluorouracil/
         and Cdg.code in CodeConcept.L01BC02
       )
       and Reusable."HasValidTiming"(MROrder2)
-      and Reusable."GetEndTime"(MROrder2) < Today()
+      and Reusable."GetEndTime"(MROrder2) <= Reusable."GetStartTime"(CurrentMR)
     )
   )
   and Reusable."醫令類別為1"
 
 //條件3-3-2-2
 define "規則3-3-3-2-2=先前已使用過FOLFOX（folinic acid/5-fluorouracil/oxaliplatin）":
-  (
-    exists (
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
+    and exists (
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01EX12
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+
+    // 存在 Fluorouracil 處方且結束時間早於本次申請
+    and exists (
       [MedicationRequest] MROrder1
       where MROrder1.intent = 'order'
       and exists (
         MROrder1.medication.coding Cdg
         where Cdg in CodeConcept.NHIMedication
-        and Cdg.code in CodeConcept.L01CE02
+        and Cdg.code in CodeConcept.L01BC02
       )
       and Reusable."HasValidTiming"(MROrder1)
-      and Reusable."GetEndTime"(MROrder1) < Today()
+      and Reusable."GetEndTime"(MROrder1) <= Reusable."GetStartTime"(CurrentMR)
     )
-    and
-    exists (
+
+    // 存在 Oxaliplatin 處方且結束時間早於本次申請
+    and exists (
       [MedicationRequest] MROrder2
       where MROrder2.intent = 'order'
       and exists (
@@ -258,7 +291,7 @@ define "規則3-3-3-2-2=先前已使用過FOLFOX（folinic acid/5-fluorouracil/o
         and Cdg.code in CodeConcept.L01XA03
       )
       and Reusable."HasValidTiming"(MROrder2)
-      and Reusable."GetEndTime"(MROrder2) < Today()
+      and Reusable."GetEndTime"(MROrder2) <= Reusable."GetStartTime"(CurrentMR)
     )
   )
   and Reusable."醫令類別為1"

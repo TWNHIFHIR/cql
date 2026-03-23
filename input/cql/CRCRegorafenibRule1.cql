@@ -78,69 +78,114 @@ define "規則1=轉移性大腸直腸癌（mCRC）":
   and "規則1-3=三個月內有影像檢查報告"
 
 /*規則2*/
-//條件1
-define "規則2-1=曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療":
-  (
-    // 存在 Fluoropyrimidine 處方且治療期間已結束
-    exists (
-     [MedicationRequest] MROrder1
-        where MROrder1.intent = 'order'
-        and exists (
+//條件1-1
+define "規則2-1-1=曾接受fluoropyrimidine為基礎的化療":
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
+    and exists (
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01EX05
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder1
+      where MROrder1.intent = 'order'
+      and exists (
         MROrder1.medication.coding Cdg
         where Cdg in CodeConcept.NHIMedication
-        and Cdg.code in CodeConcept.L01BC02
-        or Cdg.code in CodeConcept.L01BC03
-        or Cdg.code in CodeConcept.L01BC53
-        or Cdg.code in CodeConcept.L01BC06
-        or Cdg.code in CodeConcept.L01CE02
-        or Cdg.code in CodeConcept.L01XA03
-     )
-    and Reusable."HasValidTiming"(MROrder1)
-    and Reusable."GetEndTime"(MROrder1) < Today()
-     )
-    and
-    // 存在 Oxaliplatin 處方且治療期間已結束
-    exists (
-     [MedicationRequest] MROrder2
-    where MROrder2.intent = 'order'
-    and exists (
-    MROrder2.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and Cdg.code in CodeConcept.L01XA03
-     )
-    and Reusable."HasValidTiming"(MROrder2)
-    and Reusable."GetEndTime"(MROrder2) < Today()
-     )
-    and
-    // 存在 Irinotecan 處方且治療期間已結束
-    exists (
-     [MedicationRequest] MROrder3
-    where MROrder3.intent = 'order'
-    and exists (
-    MROrder3.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and Cdg.code in CodeConcept.L01CE02
-     )
-    and Reusable."HasValidTiming"(MROrder3)
-    and Reusable."GetEndTime"(MROrder3) < Today()
-     )
+        and (
+          Cdg.code in CodeConcept.L01BC02
+          or Cdg.code in CodeConcept.L01BC03
+          or Cdg.code in CodeConcept.L01BC53
+          or Cdg.code in CodeConcept.L01BC06
+        )
+      )
+      and Reusable."HasValidTiming"(MROrder1)
+      and Reusable."GetEndTime"(MROrder1) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
+
+//條件1-2
+define "規則2-1-2=曾接受oxaliplatin為基礎的化療":
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
+    and exists (
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01EX05
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder2
+      where MROrder2.intent = 'order'
+      and exists (
+        MROrder2.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and Cdg.code in CodeConcept.L01XA03
+      )
+      and Reusable."HasValidTiming"(MROrder2)
+      and Reusable."GetEndTime"(MROrder2) <= Reusable."GetStartTime"(CurrentMR)
+    )
+  )
+
+//條件1-3
+define "規則2-1-3=曾接受irinotecan為基礎的化療":
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
+    and exists (
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01EX05
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder3
+      where MROrder3.intent = 'order'
+      and exists (
+        MROrder3.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and Cdg.code in CodeConcept.L01CE02
+      )
+      and Reusable."HasValidTiming"(MROrder3)
+      and Reusable."GetEndTime"(MROrder3) <= Reusable."GetStartTime"(CurrentMR)
+    )
+  )
+
+//條件1
+define "規則2-1=曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療":
+  "規則2-1-1=曾接受fluoropyrimidine為基礎的化療"
+  and "規則2-1-2=曾接受oxaliplatin為基礎的化療"
+  and "規則2-1-3=曾接受irinotecan為基礎的化療"
 
 //條件2
 define "規則2-2=曾接受抗血管內皮生長因子(anti-VEGF)等療法":
-  (
-    // 存在 antiVEGF 處方且治療期間已結束
-    exists (
-     [MedicationRequest] MROrder1
-    where MROrder1.intent = 'order'
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
     and exists (
-    MROrder1.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and Cdg.code in CodeConcept.L01FG
-     )
-    and Reusable."HasValidTiming"(MROrder1)
-    and Reusable."GetEndTime"(MROrder1) < Today()
-     )
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01EX05
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder1
+      where MROrder1.intent = 'order'
+      and exists (
+        MROrder1.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and (
+          Cdg.code in CodeConcept.L01EK
+          or Cdg.code in CodeConcept.L01FG
+        )
+      )
+      and Reusable."HasValidTiming"(MROrder1)
+      and Reusable."GetEndTime"(MROrder1) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
 
 define "規則2=用於治療先前曾接受下列療法的轉移性大腸直腸癌（mCRC）患者，療法包括fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療，和抗血管內皮生長因子(anti-VEGF)等療法；":
@@ -173,18 +218,26 @@ define "規則3-1=K-ras為原生型(wild type)":
 
 //條件2
 define "規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法":
-  (
-    exists (
-     [MedicationRequest] MROrder1
-    where MROrder1.intent = 'order'
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
     and exists (
-    MROrder1.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and Cdg.code in CodeConcept.L01FG
-     )
-    and Reusable."HasValidTiming"(MROrder1)
-    and Reusable."GetEndTime"(MROrder1) < Today()
-     )
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01EX05
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder1
+      where MROrder1.intent = 'order'
+      and exists (
+        MROrder1.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and Cdg.code in CodeConcept.L01FE
+      )
+      and Reusable."HasValidTiming"(MROrder1)
+      and Reusable."GetEndTime"(MROrder1) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
 
 define "規則3=若K-ras為原生型(wild type)，需再加上接受過抗表皮生長因子受體（anti-EGFR）療法。":
@@ -193,8 +246,9 @@ define "規則3=若K-ras為原生型(wild type)，需再加上接受過抗表皮
 
 
 define "主要規定一":
-  "初次申請" and
-  "規則1=轉移性大腸直腸癌（mCRC）"
+  "初次申請"
+  and Reusable."醫令類別為1"
+  and "規則1=轉移性大腸直腸癌（mCRC）"
   and "規則2=用於治療先前曾接受下列療法的轉移性大腸直腸癌（mCRC）患者，療法包括fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療，和抗血管內皮生長因子(anti-VEGF)等療法；"
   and "規則3=若K-ras為原生型(wild type)，需再加上接受過抗表皮生長因子受體（anti-EGFR）療法。"
 
@@ -266,7 +320,7 @@ define "主要規定三":
 
 define function "符合項目"():
   // 主要規定一：初次使用條件
-  (if "初次申請" and (Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" or "規則1-2=癌症分期分數或結果為M≠1" or "規則1-3=三個月內有影像檢查報告" or "規則2-1=曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療" or "規則2-2=曾接受抗血管內皮生長因子(anti-VEGF)等療法" or "規則3-1=K-ras為原生型(wild type)" or "規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法")
+  (if "初次申請" and (Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" or "規則1-2=癌症分期分數或結果為M≠1" or "規則1-3=三個月內有影像檢查報告" or "規則2-1-1=曾接受fluoropyrimidine為基礎的化療" or "規則2-1-2=曾接受oxaliplatin為基礎的化療" or "規則2-1-3=曾接受irinotecan為基礎的化療" or "規則2-2=曾接受抗血管內皮生長因子(anti-VEGF)等療法" or "規則3-1=K-ras為原生型(wild type)" or "規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法")
     then '<主要規定一：初次使用條件>\n' +
          (if Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '● 規則1-1：主要疾病之ICD代碼為C18、C19、C20、C21\n' else '') +
@@ -274,8 +328,12 @@ define function "符合項目"():
            then '● 規則1-2：癌症分期為轉移性（M≠0）\n' else '') +
          (if "規則1-3=三個月內有影像檢查報告"
            then '● 規則1-3：三個月內有影像檢查報告\n' else '') +
-         (if "規則2-1=曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療" 
-           then '● 規則2-1：曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療\n' else '') +
+         (if "規則2-1-1=曾接受fluoropyrimidine為基礎的化療"
+           then '● 規則2-1-1：曾接受fluoropyrimidine為基礎的化療\n' else '') +
+         (if "規則2-1-2=曾接受oxaliplatin為基礎的化療"
+           then '● 規則2-1-2：曾接受oxaliplatin為基礎的化療\n' else '') +
+         (if "規則2-1-3=曾接受irinotecan為基礎的化療"
+           then '● 規則2-1-3：曾接受irinotecan為基礎的化療\n' else '') +
          (if "規則2-2=曾接受抗血管內皮生長因子(anti-VEGF)等療法" 
            then '● 規則2-2：曾接受抗血管內皮生長因子（anti-VEGF）等療法\n' else '') +
          (if "規則3-1=K-ras為原生型(wild type)" and "規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法"
@@ -302,10 +360,6 @@ define function "符合項目"():
          '● 規則3-1：每次申請事前審查之療程以8週為限\n'
     else '')
 
-//============================================
-// 列出「不符合」項目判斷式 - 代碼或條件不符
-//============================================
-
 define function "不符合項目_代碼或條件不符"():
   // 主要規定一：初次使用條件 - 代碼條件不符
   (if "初次申請" and (
@@ -324,18 +378,13 @@ define function "不符合項目_代碼或條件不符"():
          (if not "規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法"
           then '▲ 規則3-2：未接受抗表皮生長因子受體（anti-EGFR）療法\n' else '') +
          '\n'  
-    else ''
-  ) +
+    else '') +
   
   // 主要規定三：藥品使用規則 - 代碼條件不符
   (if not "規則1-1=每次申請事前審查之療程以8週為限"
     then '<主要規定三：藥品使用規則>\n' +
          '▲ 規則3-1：每次申請事前審查之療程超過8週上限\n'
     else '')
-
-//============================================
-// 列出「不符合」項目判斷式 - 必要資料未填寫
-//============================================
 
 define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
@@ -344,7 +393,14 @@ define function "不符合項目_必要資料未填寫"():
          (if not "規則1-3=三個月內有影像檢查報告"
            then '▲ 規則1-3：未提供三個月內影像檢查報告\n' else '') +
          (if not "規則2-1=曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療"
-           then '▲ 規則2-1：未提供fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療用藥資料\n' else '') +
+           then '▲ 規則2-1：未提供完整的化療用藥資料\n' +
+                (if not "規則2-1-1=曾接受fluoropyrimidine為基礎的化療"
+                  then '  - 未提供fluoropyrimidine為基礎的化療用藥資料\n' else '') +
+                (if not "規則2-1-2=曾接受oxaliplatin為基礎的化療"
+                  then '  - 未提供oxaliplatin為基礎的化療用藥資料\n' else '') +
+                (if not "規則2-1-3=曾接受irinotecan為基礎的化療"
+                  then '  - 未提供irinotecan為基礎的化療用藥資料\n' else '')
+           else '') +
          (if not "規則2-2=曾接受抗血管內皮生長因子(anti-VEGF)等療法"
            then '▲ 規則2-2：未提供抗血管內皮生長因子（anti-VEGF）等療法用藥資料\n' else '') +
          '\n'  
@@ -355,7 +411,8 @@ define function "不符合項目_必要資料未填寫"():
     then '<主要規定二：續用條件－治療持續給付>\n' +
          '▲ 續用規則1-2：未提供客觀證據（如：影像學）\n' +
          '\n'  
-    else '')
+    else '') 
+
 
 //============================================
 // 審核結果

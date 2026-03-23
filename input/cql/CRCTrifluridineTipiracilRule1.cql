@@ -103,71 +103,108 @@ define "規則1-2=成人":
 
 //條件3-1
 define "規則1-3-1=曾接受fluoropyrimidine為基礎的化療":
-  (
-    exists (
-     [MedicationRequest] MROrder2
-    where MROrder2.intent = 'order'
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
     and exists (
-    MROrder2.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and (Cdg.code in CodeConcept.L01BC02
-    or Cdg.code in CodeConcept.L01BC03
-    or Cdg.code in CodeConcept.L01BC06
-    or Cdg.code in CodeConcept.L01BC53
-    or Cdg.code in CodeConcept.L01BC59)
-     )
-    and Reusable."HasValidTiming"(MROrder2)
-    and Reusable."GetEndTime"(MROrder2) < Today()
-     )
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01BC59
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder2
+      where MROrder2.intent = 'order'
+      and exists (
+        MROrder2.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and (
+          Cdg.code in CodeConcept.L01BC02
+          or Cdg.code in CodeConcept.L01BC03
+          or Cdg.code in CodeConcept.L01BC06
+          or Cdg.code in CodeConcept.L01BC53
+          or Cdg.code in CodeConcept.L01BC59
+        )
+      )
+      and Reusable."HasValidTiming"(MROrder2)
+      and Reusable."GetEndTime"(MROrder2) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
 
 //條件3-2
 define "規則1-3-2=曾接受oxaliplatin為基礎的化療":
-  (
-    exists (
-     [MedicationRequest] MROrder3
-    where MROrder3.intent = 'order'
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
     and exists (
-    MROrder3.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and Cdg.code in CodeConcept.L01XA03
-     )
-    and Reusable."HasValidTiming"(MROrder3)
-    and Reusable."GetEndTime"(MROrder3) < Today()
-     )
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01BC59
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder3
+      where MROrder3.intent = 'order'
+      and exists (
+        MROrder3.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and Cdg.code in CodeConcept.L01XA03
+      )
+      and Reusable."HasValidTiming"(MROrder3)
+      and Reusable."GetEndTime"(MROrder3) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
+
 
 //條件3-3
 define "規則1-3-3=曾接受irinotecan為基礎的化療":
-  (
-    exists (
-     [MedicationRequest] MROrder4
-    where MROrder4.intent = 'order'
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
     and exists (
-    MROrder4.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and Cdg.code in CodeConcept.L01CE02
-     )
-    and Reusable."HasValidTiming"(MROrder4)
-    and Reusable."GetEndTime"(MROrder4) < Today()
-     )
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01BC59
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder4
+      where MROrder4.intent = 'order'
+      and exists (
+        MROrder4.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and Cdg.code in CodeConcept.L01CE02
+      )
+      and Reusable."HasValidTiming"(MROrder4)
+      and Reusable."GetEndTime"(MROrder4) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
 
 //條件3-4
 define "規則1-3-4=曾接受抗血管內皮生長因子(anti-VEGF)":
-  (
-    exists (
-     [MedicationRequest] MROrder1
-    where MROrder1.intent = 'order'
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
     and exists (
-    MROrder1.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and (Cdg.code in CodeConcept.L01EK
-    or Cdg.code in CodeConcept.L01FG)
-     )
-    and Reusable."HasValidTiming"(MROrder1)
-    and Reusable."GetEndTime"(MROrder1) < Today()
-     )
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01BC59
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder1
+      where MROrder1.intent = 'order'
+      and exists (
+        MROrder1.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and (
+          Cdg.code in CodeConcept.L01EK
+          or Cdg.code in CodeConcept.L01FG
+        )
+      )
+      and Reusable."HasValidTiming"(MROrder1)
+      and Reusable."GetEndTime"(MROrder1) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
 
 //條件3
@@ -201,20 +238,31 @@ define "規則1-4-1=檢核是否為RAS 原生型(wild type)(符合者需有條�
   )
 
 //條件4-2
+//條件4-2
 define "規則1-4-2=接受過抗表皮生長因子受體（anti-EGFR）療法":
-  (
-    exists (
-     [MedicationRequest] MROrder1
-    where MROrder1.intent = 'order'
+  exists (
+    [MedicationRequest] CurrentMR
+    where CurrentMR.intent = 'plan'
     and exists (
-    MROrder1.medication.coding Cdg
-    where Cdg in CodeConcept.NHIMedication
-    and Cdg.code in CodeConcept.L01EB
-    or Cdg.code in CodeConcept.L01FE
-     )
-    and Reusable."HasValidTiming"(MROrder1)
-    and Reusable."GetEndTime"(MROrder1) < Today()
-     )
+      CurrentMR.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01BC59
+    )
+    and Reusable."HasValidTiming"(CurrentMR)
+    and exists (
+      [MedicationRequest] MROrder1
+      where MROrder1.intent = 'order'
+      and exists (
+        MROrder1.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and (
+          Cdg.code in CodeConcept.L01EB
+          or Cdg.code in CodeConcept.L01FE
+        )
+      )
+      and Reusable."HasValidTiming"(MROrder1)
+      and Reusable."GetEndTime"(MROrder1) <= Reusable."GetStartTime"(CurrentMR)
+    )
   )
 
 //條件4
@@ -243,8 +291,9 @@ define "規則3=申請項目":
   )
 
 define "主要規定一":
-  "初次申請" and
-  "規則1" 
+  "初次申請"
+  and Reusable."醫令類別為1"
+  and "規則1" 
   and "規則3=申請項目"
 
 

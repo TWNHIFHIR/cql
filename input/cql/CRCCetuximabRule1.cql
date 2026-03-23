@@ -38,10 +38,24 @@ define "申請類型":
 
 /*規則1*/
 //條件1
+//條件1
 define "規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用":
-  (
-    // 存在 Fluorouracil 處方
-    exists (
+(
+  // Cetuximab 申請
+  exists (
+    [MedicationRequest] MRPlan
+    where MRPlan.intent = 'plan'
+    and exists (
+      MRPlan.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01FE01
+    )
+    and MRPlan.dosageInstruction[0].timing.repeat.bounds is Period
+    and (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+    and (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+
+    // 存在 Fluorouracil 處方且藥物處方的起始及終止日期涵蓋在事前審查藥品申請日期使用的區間內
+    and exists (
       [MedicationRequest] MROrder1
       where MROrder1.intent = 'order'
       and exists (
@@ -50,10 +64,17 @@ define "規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil
         and Cdg.code in CodeConcept.L01BC02
       )
       and Reusable."HasValidTiming"(MROrder1)
+      and MROrder1.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (start of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period))
+          <= (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
+      and (end of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period))
+          >= (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
     )
-    and      
-    // 存在 Irinotecan 處方  
-    exists (
+
+    // 存在 Irinotecan 處方且藥物處方的起始及終止日期涵蓋在事前審查藥品申請日期使用的區間內
+    and exists (
       [MedicationRequest] MROrder2
       where MROrder2.intent = 'order'
       and exists (
@@ -62,26 +83,37 @@ define "規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil
         and Cdg.code in CodeConcept.L01CE02
       )
       and Reusable."HasValidTiming"(MROrder2)
-    )
-    and
-    // Cetuximab 申請
-    exists (
-      [MedicationRequest] MRPlan
-      where MRPlan.intent = 'plan'
-      and exists (
-        MRPlan.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-        and Cdg.code in CodeConcept.L01FE01
-      )
+      and MROrder2.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (start of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period))
+          <= (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
+      and (end of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period))
+          >= (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
     )
   )
-  and Reusable."醫令類別為1"
+)
+and Reusable."醫令類別為1"
+
 
 //條件2
 define "規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用":
-  (
-    // 存在 Fluorouracil 處方
-    exists (
+(
+  // Cetuximab 申請
+  exists (
+    [MedicationRequest] MRPlan
+    where MRPlan.intent = 'plan'
+    and exists (
+      MRPlan.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01FE01
+    )
+    and MRPlan.dosageInstruction[0].timing.repeat.bounds is Period
+    and (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+    and (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+
+    // 存在 Fluorouracil 處方且藥物處方的起始及終止日期涵蓋在事前審查藥品申請日期使用的區間內
+    and exists (
       [MedicationRequest] MROrder1
       where MROrder1.intent = 'order'
       and exists (
@@ -90,10 +122,17 @@ define "規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/ox
         and Cdg.code in CodeConcept.L01BC02
       )
       and Reusable."HasValidTiming"(MROrder1)
+      and MROrder1.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (start of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period))
+          <= (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
+      and (end of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period))
+          >= (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
     )
-    and
-    // 存在 Oxaliplatin 處方  
-    exists (
+
+    // 存在 Oxaliplatin 處方且藥物處方的起始及終止日期涵蓋在事前審查藥品申請日期使用的區間內
+    and exists (
       [MedicationRequest] MROrder2
       where MROrder2.intent = 'order'
       and exists (
@@ -102,20 +141,19 @@ define "規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/ox
         and Cdg.code in CodeConcept.L01XA03
       )
       and Reusable."HasValidTiming"(MROrder2)
-    )
-    and
-    // Cetuximab 申請
-    exists (
-      [MedicationRequest] MRPlan
-      where MRPlan.intent = 'plan'
-      and exists (
-        MRPlan.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-        and Cdg.code in CodeConcept.L01FE01
-      )
+      and MROrder2.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (start of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period))
+          <= (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
+      and (end of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period))
+          >= (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
     )
   )
-  and Reusable."醫令類別為1"
+)
+and Reusable."醫令類別為1"
+
+
 
 //條件3
 define "規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)":
@@ -313,21 +351,19 @@ define "規則1-3=Panitumumab與Cetuximab使用時間不重疊":
   not (
     exists (
       [MedicationRequest] M1
-      where 
-        exists (
-          M1.medication.coding Cdg1
-          where Cdg1 in CodeConcept.NHIMedication
-          and Cdg1.code in CodeConcept.L01FE02
-        )
-        and Reusable."HasValidTiming"(M1)
-        and M1.dosageInstruction[0].timing.repeat.bounds is Period
-        and (start of (M1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
-        and (end of (M1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
-    )
-    and exists (
-      [MedicationRequest] M2
-      where 
-        exists (
+      where exists (
+        M1.medication.coding Cdg1
+        where Cdg1 in CodeConcept.NHIMedication
+        and Cdg1.code in CodeConcept.L01FE02
+      )
+      and Reusable."HasValidTiming"(M1)
+      and M1.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (M1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (M1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+
+      and exists (
+        [MedicationRequest] M2
+        where exists (
           M2.medication.coding Cdg2
           where Cdg2 in CodeConcept.NHIMedication
           and Cdg2.code in CodeConcept.L01FE01
@@ -336,44 +372,28 @@ define "規則1-3=Panitumumab與Cetuximab使用時間不重疊":
         and M2.dosageInstruction[0].timing.repeat.bounds is Period
         and (start of (M2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
         and (end of (M2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
-        
-        and exists (
-          [MedicationRequest] M1_inner
-          where 
-            exists (
-              M1_inner.medication.coding Cdg1_inner
-              where Cdg1_inner in CodeConcept.NHIMedication
-              and Cdg1_inner.code in CodeConcept.L01FE02
-            )
-            and Reusable."HasValidTiming"(M1_inner)
-            and M1_inner.dosageInstruction[0].timing.repeat.bounds is Period
-            and (start of (M1_inner.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
-            and (end of (M1_inner.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
-            
-            and (
-              (end of (M1_inner.dosageInstruction[0].timing.repeat.bounds as Period)) >= 
-              (start of (M2.dosageInstruction[0].timing.repeat.bounds as Period))
-              and
-              (end of (M2.dosageInstruction[0].timing.repeat.bounds as Period)) >= 
-              (start of (M1_inner.dosageInstruction[0].timing.repeat.bounds as Period))
-            )
-        )
+        and (start of (M1.dosageInstruction[0].timing.repeat.bounds as Period))
+            <= (end of (M2.dosageInstruction[0].timing.repeat.bounds as Period))
+        and (end of (M1.dosageInstruction[0].timing.repeat.bounds as Period))
+            >= (start of (M2.dosageInstruction[0].timing.repeat.bounds as Period))
+      )
     )
   )
-
+  
 //條件4
 define "規則1-4=每次申請事前審查之療程以18週為限":
   exists [MedicationRequest] MRPlan
   where MRPlan.intent = 'plan'
   and exists (
-      MRPlan.medication.coding Cdg
-      where Cdg in CodeConcept.NHIMedication
+    MRPlan.medication.coding Cdg
+    where Cdg in CodeConcept.NHIMedication
+    and Cdg.code in CodeConcept.L01FE01
   )
   and days between
-      start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)
-      and
-      end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)
-        <= 126
+    start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)
+    and
+    end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)
+    <= 126
 
 //條件5
 define "規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)":

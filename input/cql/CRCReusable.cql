@@ -91,18 +91,3 @@ define function "GetStartTime"(MR MedicationRequest):
 // 取得 MedicationRequest 的結束時間  
 define function "GetEndTime"(MR MedicationRequest):
   end of (MR.dosageInstruction[0].timing.repeat.bounds as Period)
-
-// 檢查 Plan 的時間範圍是否在 Order 的時間範圍內
-define function "PlanTimeWithinOrderTime"(MRPlan MedicationRequest, MROrder MedicationRequest):
-  "HasValidTiming"(MRPlan) 
-  and "HasValidTiming"(MROrder)
-  and "GetStartTime"(MRPlan) >= "GetStartTime"(MROrder)
-  and "GetStartTime"(MRPlan) <= "GetEndTime"(MROrder)
-  and "GetEndTime"(MRPlan) >= "GetStartTime"(MROrder)
-  and "GetEndTime"(MRPlan) <= "GetEndTime"(MROrder)
-
-// 檢查兩個藥物的時間範圍是否重疊
-define function "MedicationTimesOverlap"(MR1 MedicationRequest, MR2 MedicationRequest):
-  "HasValidTiming"(MR1) and "HasValidTiming"(MR2)
-  and "GetStartTime"(MR1) <= "GetEndTime"(MR2)
-  and "GetEndTime"(MR1) >= "GetStartTime"(MR2)

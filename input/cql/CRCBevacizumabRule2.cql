@@ -39,9 +39,22 @@ define "申請類型":
 /*規則1*/
 //條件1
 define "規則1-1=Bevacizumab(除Zirabev以外)與含有5-fluorouracil/leucovorin/oxaliplatin的化學療法合併使用":
-  (
-    // 存在 Fluorouracil 處方
-    exists (
+(
+  // Bevacizumab（不包含Zirabev）申請（作為基準時間）
+  exists (
+    [MedicationRequest] MRPlan
+    where MRPlan.intent = 'plan'
+    and exists (
+      MRPlan.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01FG01exceptKC01146219
+    )
+    and MRPlan.dosageInstruction[0].timing.repeat.bounds is Period
+    and (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+    and (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+
+    // 存在 Fluorouracil 處方且與 Bevacizumab 時間重疊
+    and exists (
       [MedicationRequest] MROrder1
       where MROrder1.intent = 'order'
       and exists (
@@ -50,10 +63,17 @@ define "規則1-1=Bevacizumab(除Zirabev以外)與含有5-fluorouracil/leucovori
         and Cdg.code in CodeConcept.L01BC02
       )
       and Reusable."HasValidTiming"(MROrder1)
+      and MROrder1.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (start of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period))
+          <= (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
+      and (end of (MROrder1.dosageInstruction[0].timing.repeat.bounds as Period))
+          >= (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
     )
-    and
-    // 存在 Oxaliplatin 處方  
-    exists (
+
+    // 存在 Oxaliplatin 處方且藥物處方的起始及終止日期涵蓋在事前審查藥品申請日期使用的區間內
+    and exists (
       [MedicationRequest] MROrder2
       where MROrder2.intent = 'order'
       and exists (
@@ -62,10 +82,17 @@ define "規則1-1=Bevacizumab(除Zirabev以外)與含有5-fluorouracil/leucovori
         and Cdg.code in CodeConcept.L01XA03
       )
       and Reusable."HasValidTiming"(MROrder2)
+      and MROrder2.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (start of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period))
+          <= (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
+      and (end of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period))
+          >= (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
     )
-    and
-    // 存在 leucovorin 處方  
-    exists (
+
+    // 存在 Leucovorin 處方且藥物處方的起始及終止日期涵蓋在事前審查藥品申請日期使用的區間內
+    and exists (
       [MedicationRequest] MROrder3
       where MROrder3.intent = 'order'
       and exists (
@@ -74,20 +101,17 @@ define "規則1-1=Bevacizumab(除Zirabev以外)與含有5-fluorouracil/leucovori
         and Cdg.code in CodeConcept.V03AF03
       )
       and Reusable."HasValidTiming"(MROrder3)
-    )
-    and
-    // Bevacizumab（不包含Zirabev）申請
-    exists (
-      [MedicationRequest] MRPlan
-      where MRPlan.intent = 'plan'
-      and exists (
-        MRPlan.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-        and Cdg.code in CodeConcept.L01FG01exceptKC01146219
-      )
+      and MROrder3.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (MROrder3.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (MROrder3.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (start of (MROrder3.dosageInstruction[0].timing.repeat.bounds as Period))
+          <= (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
+      and (end of (MROrder3.dosageInstruction[0].timing.repeat.bounds as Period))
+          >= (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
     )
   )
-  and Reusable."醫令類別為1"
+)
+and Reusable."醫令類別為1"
 
 //條件2
 define "規則1-2=先前接受過以fluoropyrimidine為基礎的化學療法併用cetuximab無效":
@@ -106,11 +130,13 @@ define "規則1-2=先前接受過以fluoropyrimidine為基礎的化學療法併�
       and exists (
         FluoropyrimidineMR.medication.coding FluoroCoding
         where FluoroCoding in CodeConcept.NHIMedication
-        and FluoroCoding.code in CodeConcept.L01BC59 
+        and (
+        FluoroCoding.code in CodeConcept.L01BC59 
         or FluoroCoding.code in CodeConcept.L01BC02 
         or FluoroCoding.code in CodeConcept.L01BC03 
         or FluoroCoding.code in CodeConcept.L01BC06 
         or FluoroCoding.code in CodeConcept.L01BC53
+        )
       )
       and Reusable."HasValidTiming"(FluoropyrimidineMR)
       and Reusable."GetEndTime"(FluoropyrimidineMR) <= Reusable."GetStartTime"(CurrentBevacizumab)
@@ -149,11 +175,13 @@ define "規則1-3=先前接受過以fluoropyrimidine為基礎的化學療法併�
       and exists (
         FluoropyrimidineMR.medication.coding FluoroCoding
         where FluoroCoding in CodeConcept.NHIMedication
-        and FluoroCoding.code in CodeConcept.L01BC59 
+        and (
+        FluoroCoding.code in CodeConcept.L01BC59 
         or FluoroCoding.code in CodeConcept.L01BC02 
         or FluoroCoding.code in CodeConcept.L01BC03 
         or FluoroCoding.code in CodeConcept.L01BC06 
         or FluoroCoding.code in CodeConcept.L01BC53
+        )
       )
       and Reusable."HasValidTiming"(FluoropyrimidineMR)
       and Reusable."GetEndTime"(FluoropyrimidineMR) <= Reusable."GetStartTime"(CurrentBevacizumab)

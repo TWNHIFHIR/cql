@@ -39,9 +39,22 @@ define "申請類型":
 /*規則1*/
 //條件1
 define "規則1-1=初次使用Cetuximab與Irinotecan合併使用":
-  (
-    // 存在 Irinotecan 處方  
-    exists (
+(
+  // Cetuximab 申請（作為基準時間）
+  exists (
+    [MedicationRequest] MRPlan
+    where MRPlan.intent = 'plan'
+    and exists (
+      MRPlan.medication.coding Cdg
+      where Cdg in CodeConcept.NHIMedication
+      and Cdg.code in CodeConcept.L01FE01
+    )
+    and MRPlan.dosageInstruction[0].timing.repeat.bounds is Period
+    and (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+    and (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+
+    // 存在 Irinotecan 處方且藥物處方的起始及終止日期涵蓋在事前審查藥品申請日期使用的區間內
+    and exists (
       [MedicationRequest] MROrder2
       where MROrder2.intent = 'order'
       and exists (
@@ -50,20 +63,18 @@ define "規則1-1=初次使用Cetuximab與Irinotecan合併使用":
         and Cdg.code in CodeConcept.L01CE02
       )
       and Reusable."HasValidTiming"(MROrder2)
-    )
-    and
-    // Cetuximab 申請
-    exists (
-      [MedicationRequest] MRPlan
-      where MRPlan.intent = 'plan'
-      and exists (
-        MRPlan.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-        and Cdg.code in CodeConcept.L01FE01
-      )
+      and MROrder2.dosageInstruction[0].timing.repeat.bounds is Period
+      and (start of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (end of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
+      and (start of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period))
+          <= (end of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
+      and (end of (MROrder2.dosageInstruction[0].timing.repeat.bounds as Period))
+          >= (start of (MRPlan.dosageInstruction[0].timing.repeat.bounds as Period))
     )
   )
-  and Reusable."醫令類別為1"
+)
+and Reusable."醫令類別為1"
+
 
 //條件2
 define "規則1-2=用藥線別>1":
@@ -89,46 +100,57 @@ define "規則1":
 /*規則2*/
 //條件1
 define "規則2-1=治療已接受過含5-fluorouracil、irinotecan及oxaliplatin二線以上之細胞毒性治療失敗":
-  (
-  // 存在 Fluorouracil 處方
   exists (
-   [MedicationRequest] MROrder1
-  where MROrder1.intent = 'order'
-  and exists (
-  MROrder1.medication.coding Cdg
-  where Cdg in CodeConcept.NHIMedication
-      and Cdg.code in CodeConcept.L01BC02
-      or Cdg.code in CodeConcept.L01CE02
-   )
-  and Reusable."HasValidTiming"(MROrder1)
-  and MROrder1.authoredOn before Today()
-   )
-  and
-  // 存在 Oxaliplatin 處方
-  exists (
-   [MedicationRequest] MROrder2
-  where MROrder2.intent = 'order'
-  and exists (
-  MROrder2.medication.coding Cdg
-  where Cdg in CodeConcept.NHIMedication
-  and Cdg.code in CodeConcept.L01XA03
-   )
-  and Reusable."HasValidTiming"(MROrder2)
-  and MROrder2.authoredOn before Today()
-   )
-  and
-  // 存在 Irinotecan 處方
-  exists (
-   [MedicationRequest] MROrder3
-  where MROrder3.intent = 'order'
-  and exists (
-  MROrder3.medication.coding Cdg
-  where Cdg in CodeConcept.NHIMedication
-  and Cdg.code in CodeConcept.L01CE02
-   )
-  and Reusable."HasValidTiming"(MROrder3)
-  and MROrder3.authoredOn before Today()
-   )
+    [MedicationRequest] CurrentCetuximab
+    where CurrentCetuximab.intent = 'plan'
+    and exists (
+      CurrentCetuximab.medication.coding CetuximabCoding
+      where CetuximabCoding in CodeConcept.NHIMedication
+      and CetuximabCoding.code in CodeConcept.L01FE01
+    )
+    and Reusable."HasValidTiming"(CurrentCetuximab)
+
+    // 存在 Fluorouracil 處方，且結束時間早於本次申請
+    and exists (
+      [MedicationRequest] MROrder1
+      where MROrder1.intent = 'order'
+      and exists (
+        MROrder1.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and (
+          Cdg.code in CodeConcept.L01BC02
+          or Cdg.code in CodeConcept.L01CE02
+        )
+      )
+      and Reusable."HasValidTiming"(MROrder1)
+      and Reusable."GetEndTime"(MROrder1) <= Reusable."GetStartTime"(CurrentCetuximab)
+    )
+
+    // 存在 Oxaliplatin 處方，且結束時間早於本次申請
+    and exists (
+      [MedicationRequest] MROrder2
+      where MROrder2.intent = 'order'
+      and exists (
+        MROrder2.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and Cdg.code in CodeConcept.L01XA03
+      )
+      and Reusable."HasValidTiming"(MROrder2)
+      and Reusable."GetEndTime"(MROrder2) <= Reusable."GetStartTime"(CurrentCetuximab)
+    )
+
+    // 存在 Irinotecan 處方，且結束時間早於本次申請
+    and exists (
+      [MedicationRequest] MROrder3
+      where MROrder3.intent = 'order'
+      and exists (
+        MROrder3.medication.coding Cdg
+        where Cdg in CodeConcept.NHIMedication
+        and Cdg.code in CodeConcept.L01CE02
+      )
+      and Reusable."HasValidTiming"(MROrder3)
+      and Reusable."GetEndTime"(MROrder3) <= Reusable."GetStartTime"(CurrentCetuximab)
+    )
   )
 
 //條件2
@@ -177,7 +199,6 @@ define "規則2-3=K-ras為原生型(wild type)":
   )
 
 //條件4-1    
-//Reusable."ICD-10使用C18、C19、C20、C21"
 define "ICD代碼檢核_布林值": Reusable."主要疾病之ICD-10使用C18、C19、C20、C21"
 
 //條件4-2
