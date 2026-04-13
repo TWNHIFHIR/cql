@@ -1,8 +1,14 @@
 {
   "resourceType": "Library",
   "id": "FHIRHelpers",
+  "extension": [ {
+    "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-wg",
+    "valueCode": "fhir"
+  }],
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/FHIRHelpers",
+  "version": "4.0.1",
+  "name": "FHIRHelpers",
   "status": "active",
-  "date": "2025-11-20",
   "experimental": false,
   "type": {
     "coding": [ {
@@ -10,15 +16,7 @@
       "code": "logic-library"
     } ]
   },
-  "extension": [
-    {
-      "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-wg",
-      "valueCode": "fhir"
-      }
-  ],
-  "url": "https://nhicore.nhi.gov.tw/cql/Library/FHIRHelpers",
-  "version": "4.0.1",
-  "name": "FHIRHelpers",
+  "date": "2025-11-20",
   "description": "FHIRHelpers",
   "content": [ {
     "contentType": "text/cql",
