@@ -84,6 +84,11 @@
     </parameter>
 
     <parameter>
+      <code value="path-resource"/>
+      <value value="input/resource/library"/>
+    </parameter>
+
+    <parameter>
       <code value="path-binary"/>
       <value value="input/cql"/>
     </parameter>

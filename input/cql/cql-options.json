@@ -2,8 +2,8 @@
    "options":[
       "EnableLocators",
       "DisableListDemotion",
-      "DisableListPromotion"
-
+      "DisableListPromotion",
+      "EnableAnnotations"
 ],
    "formats":[
      "XML",
@@ -12,5 +12,5 @@
    "validateUnits":true,
    "verifyOnly":false,
    "errorLevel":"Info",
-   "signatureLevel":"None"
+   "signatureLevel":"All"
 }
