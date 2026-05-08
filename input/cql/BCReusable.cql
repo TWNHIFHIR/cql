@@ -252,7 +252,13 @@ define function "IsGenePanelObservation"(OBs Observation):
         and Cdg.code = '69548-6'
   )
 
-define function "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes List<String>, InterpretationCodes List<String>, ValuePattern String):
+define function "IsObservationDateTimeWithinDaysBefore"(OBs Observation, ReferenceDate DateTime, LookbackDays Integer):
+  OBs.effective is FHIR.dateTime
+  and ReferenceDate is not null
+  and FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime) <= ReferenceDate
+  and (duration in days between FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime) and ReferenceDate) <= LookbackDays
+
+define function "HasTestObservationResult"(MarkerCodes List<String>, ResultCodes List<String>, ValuePattern String):
   exists (
     [Observation] OBs
       where "IsTestObservation"(OBs)
@@ -261,16 +267,55 @@ define function "HasTestObservationWithInterpretationAndValuePattern"(MarkerCode
             where Cdg in CodeConcept.LOINC
               and Cdg.code in MarkerCodes
         )
-        and exists (
-          OBs.interpretation.coding INT
-            where INT in CodeConcept.InterpretationCodes
-              and INT.code in InterpretationCodes
+        and (
+          (OBs.value is FHIR.CodeableConcept
+            and exists (
+              ((OBs.value as FHIR.CodeableConcept).coding) ValueCoding
+                where ValueCoding in CodeConcept.InterpretationCodes
+                  and ValueCoding.code in ResultCodes
+            )
+          )
+          or (OBs.value is FHIR.string
+            and Matches((OBs.value as FHIR.string).value, ValuePattern)
+          )
+          or exists (
+            OBs.interpretation.coding INT
+              where INT in CodeConcept.InterpretationCodes
+                and INT.code in ResultCodes
+          )
         )
-        and OBs.value is string
-        and Matches(OBs.value as string, ValuePattern)
   )
 
-define function "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes List<String>, InterpretationCodes List<String>, TextPattern String):
+define function "HasRecentTestObservationResult"(MarkerCodes List<String>, ResultCodes List<String>, ValuePattern String, ReferenceDate DateTime, LookbackDays Integer):
+  exists (
+    [Observation] OBs
+      where "IsTestObservation"(OBs)
+        and "IsObservationDateTimeWithinDaysBefore"(OBs, ReferenceDate, LookbackDays)
+        and exists (
+          OBs.code.coding Cdg
+            where Cdg in CodeConcept.LOINC
+              and Cdg.code in MarkerCodes
+        )
+        and (
+          (OBs.value is FHIR.CodeableConcept
+            and exists (
+              ((OBs.value as FHIR.CodeableConcept).coding) ValueCoding
+                where ValueCoding in CodeConcept.InterpretationCodes
+                  and ValueCoding.code in ResultCodes
+            )
+          )
+          or (OBs.value is FHIR.string
+            and Matches((OBs.value as FHIR.string).value, ValuePattern)
+          )
+          or exists (
+            OBs.interpretation.coding INT
+              where INT in CodeConcept.InterpretationCodes
+                and INT.code in ResultCodes
+          )
+        )
+  )
+
+define function "HasGeneInfoComponentResult"(MarkerCodes List<String>, ResultCodes List<String>, ValuePattern String):
   exists (
     [Observation] OBs
       where "IsGeneInfoObservation"(OBs)
@@ -282,17 +327,54 @@ define function "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerC
                 where Cdg in CodeConcept.LOINC
                   and Cdg.code in MarkerCodes
             )
-              and exists (
-                Comp.interpretation.coding INT
-                  where INT in CodeConcept.InterpretationCodes
-                    and INT.code in InterpretationCodes
-              )
-              and exists (
-                Comp.interpretation I
-                  where Matches(I.text, TextPattern)
+              and (
+                (Comp.value is FHIR.CodeableConcept
+                  and exists (
+                    ((Comp.value as FHIR.CodeableConcept).coding) ValueCoding
+                      where ValueCoding in CodeConcept.InterpretationCodes
+                        and ValueCoding.code in ResultCodes
+                  )
+                )
+                or (Comp.value is FHIR.string
+                  and Matches((Comp.value as FHIR.string).value, ValuePattern)
+                )
               )
         )
   )
+
+define function "HasRecentGeneInfoComponentResult"(MarkerCodes List<String>, ResultCodes List<String>, ValuePattern String, ReferenceDate DateTime, LookbackDays Integer):
+  exists (
+    [Observation] OBs
+      where "IsGeneInfoObservation"(OBs)
+        and "IsGenePanelObservation"(OBs)
+        and "IsObservationDateTimeWithinDaysBefore"(OBs, ReferenceDate, LookbackDays)
+        and exists (
+          OBs.component Comp
+            where exists (
+              Comp.code.coding Cdg
+                where Cdg in CodeConcept.LOINC
+                  and Cdg.code in MarkerCodes
+            )
+              and (
+                (Comp.value is FHIR.CodeableConcept
+                  and exists (
+                    ((Comp.value as FHIR.CodeableConcept).coding) ValueCoding
+                      where ValueCoding in CodeConcept.InterpretationCodes
+                        and ValueCoding.code in ResultCodes
+                  )
+                )
+                or (Comp.value is FHIR.string
+                  and Matches((Comp.value as FHIR.string).value, ValuePattern)
+                )
+              )
+        )
+  )
+
+define function "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes List<String>, InterpretationCodes List<String>, ValuePattern String):
+  "HasTestObservationResult"(MarkerCodes, InterpretationCodes, ValuePattern)
+
+define function "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes List<String>, InterpretationCodes List<String>, TextPattern String):
+  "HasGeneInfoComponentResult"(MarkerCodes, InterpretationCodes, TextPattern)
 
 define function "HasTestObservationWithInterpretationCodes"(MarkerCodes List<String>, InterpretationCodes List<String>):
   exists (
@@ -303,10 +385,19 @@ define function "HasTestObservationWithInterpretationCodes"(MarkerCodes List<Str
             where Cdg in CodeConcept.LOINC
               and Cdg.code in MarkerCodes
         )
-        and exists (
-          OBs.interpretation.coding INT
-            where INT in CodeConcept.InterpretationCodes
-              and INT.code in InterpretationCodes
+        and (
+          (OBs.value is FHIR.CodeableConcept
+            and exists (
+              ((OBs.value as FHIR.CodeableConcept).coding) ValueCoding
+                where ValueCoding in CodeConcept.InterpretationCodes
+                  and ValueCoding.code in InterpretationCodes
+            )
+          )
+          or exists (
+            OBs.interpretation.coding INT
+              where INT in CodeConcept.InterpretationCodes
+                and INT.code in InterpretationCodes
+          )
         )
   )
 
@@ -322,8 +413,9 @@ define function "HasGeneInfoObservationWithInterpretationCodes"(MarkerCodes List
                 where Cdg in CodeConcept.LOINC
                   and Cdg.code in MarkerCodes
             )
+              and Comp.value is FHIR.CodeableConcept
               and exists (
-                Comp.interpretation.coding INT
+                ((Comp.value as FHIR.CodeableConcept).coding) INT
                   where INT in CodeConcept.InterpretationCodes
                     and INT.code in InterpretationCodes
               )
@@ -355,10 +447,8 @@ define function "HasGeneInfoObservationWithTextPattern"(MarkerCodes List<String>
                 where Cdg in CodeConcept.LOINC
                   and Cdg.code in MarkerCodes
             )
-              and exists (
-                Comp.interpretation I
-                  where Matches(I.text, TextPattern)
-              )
+              and Comp.value is FHIR.string
+              and Matches((Comp.value as FHIR.string).value, TextPattern)
         )
   )
 

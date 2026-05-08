@@ -47,11 +47,7 @@ define "條件1-3=CDK46抑制劑申請":
   exists (        
     [MedicationRequest] MRPlan
     where MRPlan.intent = 'plan'
-      and exists (
-        MRPlan.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-          and Cdg.code in CodeConcept."CDK46抑制劑"
-      )
+      and Reusable."HasMedicationCode"(MRPlan, CodeConcept."CDK46抑制劑")
   )
 
 
@@ -86,14 +82,7 @@ and "條件2-3=癌症分期分數或結果為M≠0")
 define "條件3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)":
   exists (
     [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'tests'
-          )
-      )
+      where Reusable."IsTestObservation"(OBs)
     and exists (
       OBs.code.coding Cdg
       where Cdg in CodeConcept.LOINC
@@ -102,8 +91,7 @@ define "條件3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)":
     and (
       (OBs.value is Quantity
         and (OBs.value as Quantity).value > 30
-        and (OBs.value as Quantity).comparator = '>'
-        and (OBs.value as Quantity).unit = '%')
+        and (OBs.value as Quantity).comparator = '>')
       or (OBs.value is FHIR.string
         and Matches((OBs.value as FHIR.string).value, '.*ER>30%.*'))
     )
@@ -112,19 +100,8 @@ define "條件3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)":
 define "條件3-1=基因檢測-荷爾蒙受體陽性(ER>30%)":
   exists (
     [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'geneInfo'
-          )
-      )
-    and exists (
-      OBs.code.coding Cdg
-      where Cdg in CodeConcept.LOINC
-      and Cdg.code = '69548-6'
-    )
+      where Reusable."IsGeneInfoObservation"(OBs)
+    and Reusable."IsGenePanelObservation"(OBs)
     and exists (
       OBs.component Comp
         where exists (
@@ -151,14 +128,7 @@ define "條件3-1=荷爾蒙受體陽性(ER>30%)":
 define "條件3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)":
   exists (
     [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'tests'
-          )
-      )
+      where Reusable."IsTestObservation"(OBs)
     and exists (
       OBs.code.coding Cdg
       where Cdg in CodeConcept.LOINC
@@ -167,8 +137,7 @@ define "條件3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)":
     and (
       (OBs.value is Quantity
         and (OBs.value as Quantity).value > 30
-        and (OBs.value as Quantity).comparator = '>'
-        and (OBs.value as Quantity).unit = '%')
+        and (OBs.value as Quantity).comparator = '>')
       or (OBs.value is FHIR.string
         and Matches((OBs.value as FHIR.string).value, '.*PR>30%.*'))
     )
@@ -177,19 +146,8 @@ define "條件3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)":
 define "條件3-2=基因檢測-荷爾蒙受體陽性(PR>30%)":
   exists (
     [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'geneInfo'
-          )
-      )
-    and exists (
-      OBs.code.coding Cdg
-      where Cdg in CodeConcept.LOINC
-      and Cdg.code = '69548-6'
-    )
+      where Reusable."IsGeneInfoObservation"(OBs)
+    and Reusable."IsGenePanelObservation"(OBs)
     and exists (
       OBs.component Comp
         where exists (
@@ -219,69 +177,14 @@ define "條件3=荷爾蒙接受體為：ER或PR >30%":
 
 //條件4:(2)HER-2 檢測為陰性
 define "條件4=HER-2 檢測為陰性":
-  exists (
-    [Observation] OBs
-    where exists (
-      OBs.category C
-      where exists (
-        C.coding Cdg
-        where Cdg in CodeConcept.NHIPASSupportingInfoType
-        and Cdg.code = 'tests'
-      )
-    )
-    and exists (
-      OBs.code.coding Cdg
-      where Cdg in CodeConcept.LOINC
-      and Cdg.code in CodeConcept.HER2
-    )
-    and exists (
-      OBs.interpretation.coding INT
-      where INT in CodeConcept.InterpretationCodes
-        and INT.code in {'NEG', 'ND'}
-    )
-  )
-  or exists (
-    [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'geneInfo'
-          )
-      )
-    and exists (
-      OBs.code.coding Cdg
-      where Cdg in CodeConcept.LOINC
-      and Cdg.code = '69548-6'
-    )
-    and exists (
-      OBs.component Comp
-        where exists (
-          Comp.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.HER2
-        )
-        and exists (
-          Comp.interpretation.coding INT
-            where INT in CodeConcept.InterpretationCodes
-              and INT.code in {'NEG'}
-        )
-    )
-  )
+  Reusable."HasTestObservationWithInterpretationCodes"(CodeConcept.HER2, { 'NEG', 'ND' })
+  or Reusable."HasGeneInfoComponentResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
 //條件5:經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移
 //條件5-1
 define "條件5-1=未出現器官轉移危急症狀 (visceral crisis)":
   exists (
     [DiagnosticReport] O
-    where exists (
-      O.code.coding Cdg
-      where (
-        Cdg in CodeConcept.ICD10PCS2023Image
-        or Cdg in CodeConcept.ICD10PCS2014Image
-      )
-      and Cdg.code in CodeConcept.ImageCodes
-    )
+    where Reusable."IsImageReport"(O)
     and O.effective is not null
     and FHIRHelpers.ToDateTime(O.effective) >= "本次申請起始日期" - 180 days
     and FHIRHelpers.ToDateTime(O.effective) <= "本次申請起始日期"
@@ -293,14 +196,7 @@ define "條件5-1=未出現器官轉移危急症狀 (visceral crisis)":
 define "條件5-2=無中樞神經系統(CNS)轉移":
   exists (
     [DiagnosticReport] O
-    where exists (
-      O.code.coding Cdg
-      where (
-        Cdg in CodeConcept.ICD10PCS2023Image
-        or Cdg in CodeConcept.ICD10PCS2014Image
-      )
-      and Cdg.code in CodeConcept.ImageCodes
-    )
+    where Reusable."IsImageReport"(O)
     and O.effective is not null
     and FHIRHelpers.ToDateTime(O.effective) >= "本次申請起始日期" - 180 days
     and FHIRHelpers.ToDateTime(O.effective) <= "本次申請起始日期"
@@ -315,14 +211,7 @@ and "條件5-2=無中樞神經系統(CNS)轉移"
 define "條件6=骨轉移不可為唯一轉移部位":
   exists (
     [DiagnosticReport] O
-    where exists (
-      O.code.coding Cdg
-      where (
-        Cdg in CodeConcept.ICD10PCS2023Image
-        or Cdg in CodeConcept.ICD10PCS2014Image
-      )
-      and Cdg.code in CodeConcept.ImageCodes
-    )
+    where Reusable."IsImageReport"(O)
     and O.effective is not null
     and FHIRHelpers.ToDateTime(O.effective) >= "本次申請起始日期" - 180 days
     and FHIRHelpers.ToDateTime(O.effective) <= "本次申請起始日期"
@@ -340,11 +229,7 @@ define "病患目前未接受卵巢功能抑制治療 (包含GnRH analogue等)":
     [MedicationRequest] MROrder1
     where (MROrder1.intent = 'plan' or MROrder1.intent = 'order')
       and (MROrder1.status is null or MROrder1.status in { 'active', 'completed' })
-      and exists (
-        MROrder1.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-          and Cdg.code in CodeConcept."卵巢功能抑制治療"
-      )
+      and Reusable."HasMedicationCode"(MROrder1, CodeConcept."卵巢功能抑制治療")
       and exists MROrder1.dosageInstruction
       and MROrder1.dosageInstruction[0].timing.repeat.bounds is Period
       // 用藥期間與過去180天有重疊
@@ -397,14 +282,7 @@ define "條件7-3=曾接受雙側卵巢切除術":
 define "條件7-4-1=FSH血液檢測值在停經後數值範圍內":
   exists (
     [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'tests'
-          )
-      )
+      where Reusable."IsTestObservation"(OBs)
     and exists (
       OBs.code.coding Cdg
       where Cdg in CodeConcept.LOINC
@@ -413,21 +291,13 @@ define "條件7-4-1=FSH血液檢測值在停經後數值範圍內":
       and OBs.value is Quantity
       and (OBs.value as Quantity).value > 30
       and (OBs.value as Quantity).comparator = '>'
-      and (OBs.value as Quantity).unit = 'IU/L'
   )
 
 //條件7-4-2
 define "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內":
   exists (
     [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'tests'
-          )
-      )
+      where Reusable."IsTestObservation"(OBs)
     and exists (
       OBs.code.coding Cdg
       where Cdg in CodeConcept.LOINC
@@ -436,7 +306,6 @@ define "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內":
       and OBs.value is Quantity
       and (OBs.value as Quantity).value < 35
       and (OBs.value as Quantity).comparator = '<'
-      and (OBs.value as Quantity).unit = 'pg/ml'
   )
 
 define "條件7-4=FSH及estradiol血液檢測值在停經後數值範圍內":
@@ -544,14 +413,7 @@ define "前次用藥開始日期":
 define "條件2=疾病有惡化情形須停止使用":
   exists (
     [DiagnosticReport] O
-    where exists (
-      O.code.coding Cdg
-      where (
-        Cdg in CodeConcept.ICD10PCS2023Image
-        or Cdg in CodeConcept.ICD10PCS2014Image
-      )
-      and Cdg.code in CodeConcept.ImageCodes
-    )
+    where Reusable."IsImageReport"(O)
     and O.effective is not null
     and FHIRHelpers.ToDateTime(O.effective) >= "前次用藥開始日期"
     and FHIRHelpers.ToDateTime(O.effective) < "本次申請起始日期"
@@ -577,11 +439,7 @@ define "條件1=ribociclib每日最多處方3粒":
   exists (
     [MedicationRequest] MR
     where MR.intent = 'plan'
-    and exists (
-      MR.medication.coding Cdg
-      where Cdg in CodeConcept.NHIMedication
-      and Cdg.code in CodeConcept.L01EF02
-        )
+    and Reusable."HasMedicationCode"(MR, CodeConcept.L01EF02)
     and exists (
       MR.dosageInstruction DI
       where exists (
@@ -602,11 +460,7 @@ define "條件2=palbociclib每日最多處方1粒":
   exists (
     [MedicationRequest] MR
     where MR.intent = 'plan'
-    and exists (
-      MR.medication.coding Cdg
-      where Cdg in CodeConcept.NHIMedication
-      and Cdg.code in CodeConcept.L01EF01
-        )
+    and Reusable."HasMedicationCode"(MR, CodeConcept.L01EF01)
     and exists (
       MR.dosageInstruction DI
       where exists (
@@ -713,39 +567,39 @@ define function "符合項目"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "條件1-1=簡要病摘含有停經字樣" 
-           then '● 條件1-1：簡要病摘含有停經字樣\n' else '') +
+           then '● 1條件1-1：簡要病摘含有停經字樣\n' else '') +
          (if "條件1-2=女性" 
-           then '● 條件1-2：女性\n' else '') +
+           then '● 1條件1-2：女性\n' else '') +
          (if "條件1-3=CDK46抑制劑申請" 
-           then '● 條件1-3：CDK46抑制劑申請\n' else '') +
+           then '● 1條件1-3：CDK46抑制劑申請\n' else '') +
          (if "ICD腫瘤代碼檢核_布林值" 
            then '● ICD腫瘤代碼檢核：ICD-10使用C77、C78、C79\n' else '') +
          (if "條件2-2=6個月內影像報告" 
-           then '● 條件2-2：6個月內影像報告\n' else '') +
+           then '● 1條件2-2：6個月內影像報告\n' else '') +
          (if "條件2-3=癌症分期分數或結果為M≠0" 
-           then '● 條件2-3：癌症分期分數或結果為M≠0\n' else '') +
+           then '● 1條件2-3：癌症分期分數或結果為M≠0\n' else '') +
          (if "條件3-1=荷爾蒙受體陽性(ER>30%)" 
-           then '● 條件3-1：荷爾蒙受體陽性(ER>30%)\n' else '') +
+           then '● 1條件3-1：荷爾蒙受體陽性(ER>30%)\n' else '') +
          (if "條件3-2=荷爾蒙受體陽性(PR>30%)" 
-           then '● 條件3-2：荷爾蒙受體陽性(PR>30%)\n' else '') +
+           then '● 1條件3-2：荷爾蒙受體陽性(PR>30%)\n' else '') +
          (if "條件4=HER-2 檢測為陰性" 
-           then '● 條件4：HER-2檢測為陰性\n' else '') +
+           then '● 1條件4：HER-2檢測為陰性\n' else '') +
          (if "條件5-1=未出現器官轉移危急症狀 (visceral crisis)" 
-           then '● 條件5-1：未出現器官轉移危急症狀(visceral crisis)\n' else '') +
+           then '● 1條件5-1：未出現器官轉移危急症狀(visceral crisis)\n' else '') +
          (if "條件5-2=無中樞神經系統(CNS)轉移" 
-           then '● 條件5-2：無中樞神經系統(CNS)轉移\n' else '') +
+           then '● 1條件5-2：無中樞神經系統(CNS)轉移\n' else '') +
          (if "條件6=骨轉移不可為唯一轉移部位" 
-           then '● 條件6：骨轉移不為唯一轉移部位(已檢附影像報告)\n' else '') +
+           then '● 1條件6：骨轉移不為唯一轉移部位(已檢附影像報告)\n' else '') +
          (if "條件7-2=年齡滿55歲" 
-           then '● 條件7-2：年齡滿55歲\n' else '') +
+           then '● 1條件7-2：年齡滿55歲\n' else '') +
          (if "條件7-3=曾接受雙側卵巢切除術" 
-           then '● 條件7-3：曾接受雙側卵巢切除術\n' else '') +
+           then '● 1條件7-3：曾接受雙側卵巢切除術\n' else '') +
          (if "條件7-4-1=FSH血液檢測值在停經後數值範圍內"
-           then '● 條件7-4-1：FSH檢測值符合停經後標準\n' else '') +
+           then '● 1條件7-4-1：FSH檢測值符合停經後標準\n' else '') +
          (if "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內"
-           then '● 條件7-4-2：Estradiol檢測值符合停經後標準\n' else '') +
+           then '● 1條件7-4-2：Estradiol檢測值符合停經後標準\n' else '') +
          (if "條件3=與芳香環轉化酶抑制劑及GnRH analogue併用" 
-           then '● 條件3：與芳香環轉化酶抑制劑及GnRH analogue併用\n' else '') +
+           then '● 1條件3：與芳香環轉化酶抑制劑及GnRH analogue併用\n' else '') +
          '\n'
     else '') +
   
@@ -756,9 +610,9 @@ define function "符合項目"():
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
          (if "條件1=每24週須再次申請並檢附療效評估資料" 
-           then '● 續用條件1：於24週內再次申請並檢附療效評估資料\n' else '') +
+           then '● 2條件1：於24週內再次申請並檢附療效評估資料\n' else '') +
          (if "條件2=疾病有惡化情形須停止使用" 
-           then '● 續用條件2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
+           then '● 2條件2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '') +
   
@@ -772,39 +626,39 @@ define function "符合項目"():
     then '<主要規定三：藥品使用規則>\n' +
          // 只顯示實際申請的藥品劑量規定
          (if "條件1=ribociclib每日最多處方3粒" 
-           then '● 條件1：ribociclib每日劑量≤3粒\n' 
+           then '● 3條件1：ribociclib每日劑量≤3粒\n' 
            else if "條件2=palbociclib每日最多處方1粒" 
-           then '● 條件2：palbociclib每日劑量≤1粒\n' 
+           then '● 3條件2：palbociclib每日劑量≤1粒\n' 
            else '') +
          (if "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" 
-           then '● 條件3：藥品擇一使用或符合轉換條件\n' else '') +
+           then '● 3條件3：藥品擇一使用或符合轉換條件\n' else '') +
          (if "條件4=使用總療程合併計算，以每人終生給付24個月為上限" 
-           then '● 條件4：使用總療程≤24個月(720天)\n' else '') +
+           then '● 3條件4：使用總療程≤24個月(720天)\n' else '') +
          (if "條件5=未註記everolimus無效" 
-           then '● 條件5：未註記everolimus無效\n' else '') +
+           then '● 3條件5：未註記everolimus無效\n' else '') +
          (if "條件6=未註記abemaciclib無效" 
-           then '● 條件6：未註記abemaciclib無效\n' else '')
+           then '● 3條件6：未註記abemaciclib無效\n' else '')
     else '')
 
 //============================================
-// 列出「不符合」項目判斷式 - 代碼或條件不符
+// 列出「不符合」項目判斷式 - 條件或代碼不符合
 //============================================
 
-define function "不符合項目_代碼或條件不符"():
-  // 主要規定一：初次使用條件 - 代碼條件不符
+define function "不符合項目_條件或代碼不符合"():
+  // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
     not Reusable."ICD-10使用C50" or 
     not "條件1-2=女性"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not Reusable."ICD-10使用C50" 
-           then '▲ ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
+           then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
          (if not "條件1-2=女性" 
-           then '▲ 條件1-2：非女性\n' else '') +
+           then '▲ 1條件1-2：非女性\n' else '') +
          '\n'
     else '') +
   
-  // 主要規定三：藥品使用規則 - 代碼條件不符
+  // 主要規定三：藥品使用規則 - 條件或代碼不符合
   (if (not "條件1=ribociclib每日最多處方3粒" and not "條件2=palbociclib每日最多處方1粒") or
       not "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" or
       not "條件4=使用總療程合併計算，以每人終生給付24個月為上限" or
@@ -813,15 +667,15 @@ define function "不符合項目_代碼或條件不符"():
     then '<主要規定三：藥品使用規則>\n' +
          // 只有當兩個劑量規定都不符合時才顯示錯誤（表示沒有申請或劑量都超標）
          (if not "條件1=ribociclib每日最多處方3粒" and not "條件2=palbociclib每日最多處方1粒"
-           then '▲ 條件1/2：未申請CDK46抑制劑或劑量超標\n' else '') +
+           then '▲ 3條件1/2：未申請CDK46抑制劑或劑量超標\n' else '') +
          (if not "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" 
            then '▲ 條件：藥品使用不符規定(本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用)\n' else '') +
          (if not "條件4=使用總療程合併計算，以每人終生給付24個月為上限" 
-           then '▲ 條件4：使用總療程超過24個月(720天)\n' else '') +
+           then '▲ 3條件4：使用總療程超過24個月(720天)\n' else '') +
          (if not "條件5=未註記everolimus無效" 
-           then '▲ 條件5：病歷註記everolimus無效\n' else '') +
+           then '▲ 3條件5：病歷註記everolimus無效\n' else '') +
          (if not "條件6=未註記abemaciclib無效" 
-           then '▲ 條件6：病歷註記abemaciclib無效\n' else '')
+           then '▲ 3條件6：病歷註記abemaciclib無效\n' else '')
     else '')
 
 //============================================
@@ -842,26 +696,26 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "條件1-1=簡要病摘含有停經字樣" 
-           then '▲ 條件1-1：簡要病摘未含有停經字樣\n' else '') +
+           then '▲ 1條件1-1：簡要病摘未含有停經字樣\n' else '') +
          (if not "條件1-3=CDK46抑制劑申請" 
-           then '▲ 條件1-3：未提供CDK46抑制劑申請資料\n' else '') +
+           then '▲ 1條件1-3：未提供CDK46抑制劑申請資料\n' else '') +
          (if not "條件1-2=遠端轉移" 
-           then '▲ 條件1-2：未提供遠端轉移證據(缺少ICD腫瘤代碼或影像報告、分期資料)\n' else '') +
+           then '▲ 1條件1-2：未提供遠端轉移證據資料\n' else '') +
          (if not "條件3=荷爾蒙接受體為：ER或PR >30%" 
-           then '▲ 條件3：未提供荷爾蒙受體檢測資料或未達陽性標準(ER或PR>30%)\n' else '') +
+           then '▲ 1條件3：未提供荷爾蒙受體檢測資料\n' else '') +
          (if not "條件4=HER-2 檢測為陰性" 
-           then '▲ 條件4：未提供HER-2檢測資料或HER-2非陰性\n' else '') +
+           then '▲ 1條件4：未提供HER-2檢測資料\n' else '') +
          (if not "條件5-1=未出現器官轉移危急症狀 (visceral crisis)"
-           then '▲ 條件5-1：有visceral crisis或未提供評估資料\n' else '') +
+           then '▲ 1條件5-1：有visceral crisis或未提供評估資料\n' else '') +
          (if not "條件5-2=無中樞神經系統(CNS)轉移"
-           then '▲ 條件5-2：有CNS轉移或未提供評估資料\n' else '') +
+           then '▲ 1條件5-2：有CNS轉移或未提供評估資料\n' else '') +
          (if not "條件6=骨轉移不可為唯一轉移部位" 
-           then '▲ 條件6：未提供影像報告證明骨轉移非唯一轉移部位\n' else '') +
+           then '▲ 1條件6：未提供影像報告資料\n' else '') +
          (if not "條件7"
-           then (if not "條件7-2=年齡滿55歲" then '▲ 條件7-2：年齡未滿55歲\n' else '') +
-                (if not "條件7-3=曾接受雙側卵巢切除術" then '▲ 條件7-3：未提供雙側卵巢切除術紀錄\n' else '') +
-                (if not "條件7-4-1=FSH血液檢測值在停經後數值範圍內" then '▲ 條件7-4-1：FSH檢測值未達停經後標準\n' else '') +
-                (if not "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內" then '▲ 條件7-4-2：Estradiol檢測值未達停經後標準\n' else '')
+           then (if not "條件7-2=年齡滿55歲" then '▲ 1條件7-2：年齡未滿55歲\n' else '') +
+                (if not "條件7-3=曾接受雙側卵巢切除術" then '▲ 1條件7-3：未提供雙側卵巢切除術紀錄\n' else '') +
+                (if not "條件7-4-1=FSH血液檢測值在停經後數值範圍內" then '▲ 1條件7-4-1：FSH檢測值未達停經後標準\n' else '') +
+                (if not "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內" then '▲ 1條件7-4-2：Estradiol檢測值未達停經後標準\n' else '')
            else '') +
          '\n'
     else '') +
@@ -873,9 +727,9 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
          (if not "條件1=每24週須再次申請並檢附療效評估資料" 
-           then '▲ 續用條件1：未於24週內再次申請或未檢附療效評估資料\n' else '') +
+           then '▲ 2條件1：未於24週內再次申請或未檢附療效評估資料\n' else '') +
          (if not "條件2=疾病有惡化情形須停止使用" 
-           then '▲ 續用條件2：未提供前次治療後影像學報告或顯示疾病惡化\n' else '') +
+           then '▲ 2條件2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '')
 
@@ -925,10 +779,10 @@ define "報告總結":
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +
-  '\n【▲不符合項目 - 代碼或條件不符】\n' +
-  (if "不符合項目_代碼或條件不符"() = '' then '無\n' else "不符合項目_代碼或條件不符"()) +
   '\n【▲不符合項目 - 必要資料未填寫】\n' +
   (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
+  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
+  (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"()) +
   '\n【申請結果】\n' +
   "乳癌CDK46抑制劑申請之CQL檢核結果" +
   '\n===============================================\n'

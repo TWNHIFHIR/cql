@@ -77,7 +77,7 @@ define "BRCA1or2": {
 }
 
 //檢查報告
-define "DiagnosticReport": { '66112-4' }
+define "DiagnosticReportCode": { '66112-4' }
 
 define "pALNReport": { '66110-8', '66121-5', '47530-1', '47521-0' }
 

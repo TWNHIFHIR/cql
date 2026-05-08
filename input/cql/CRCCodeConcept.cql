@@ -40,7 +40,7 @@ define "ImageReportTumorCode": { 'BD14ZZZ', 'BD19ZZZ', 'BD24ZZZ', 'BD49ZZZ', 'BD
 define "PembrolizumabImage": { 'B00BZZZ', 'B01BZZZ', 'B020ZZZ', 'B02BZZZ', 'B030ZZZ', 'B03BZZZ', 'BD13ZZZ', 'BD14ZZZ', 'BD16ZZZ', 'BD19ZZZ', 'BD24ZZZ', 'BD47ZZZ', 'BD49ZZZ', 'BD4CZZZ', 'BW00ZZZ', 'BW01ZZZ', 'BW03ZZZ', 'BW20ZZZ', 'BW21ZZZ', 'BW24ZZZ', 'BW25ZZZ', 'BW28ZZZ', 'BW29ZZZ', 'BW2FZZZ', 'BW2GZZZ', 'BW30ZZZ', 'BW38ZZZ', 'BW3FZZZ', 'BW3GZZZ', 'BW3HZZZ', 'BW3PZZZ', 'BW40ZZZ', 'CD171ZZ', 'CD17DZZ', 'CD17YZZ', 'CD271ZZ', 'CD27DZZ', 'CD27YZZ', 'BW2010Z' }
 
 //檢查報告
-define "DiagnosticReport": { '65755-1' }
+define "DiagnosticReportCode": { '65755-1' }
 
 //GeneTest
 define "GeneTest": { '21702-6', '21703-4', '21719-0', '21720-8', '53620-1', '53621-9', '75974-6', '81420-2', '82535-6', '83059-6', '83060-4', '85509-8', '85510-6' }

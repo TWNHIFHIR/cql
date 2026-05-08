@@ -30,7 +30,6 @@
 
 - [CDK46給付規定-CDK46 Rule1](Library-BCCDK46Rule1.html)
 
-- [Eribulin給付規定-Eribulin Rule1](Library-BCEribulinRule1.html)
 
 - [Everolimus給付規定-Everolimus Rule1](Library-BCEverolimusRule1.html)
 

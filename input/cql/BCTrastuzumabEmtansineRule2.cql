@@ -84,11 +84,7 @@ define "歷史trastuzumab":
         and MR.dosageInstruction[0].timing.repeat.bounds is Period
         and start of (MR.dosageInstruction[0].timing.repeat.bounds as Period) is not null
         and start of (MR.dosageInstruction[0].timing.repeat.bounds as Period) < "本次申請起始日期"
-        and exists (
-          MR.medication.coding Cdg
-            where Cdg in CodeConcept.NHIMedication
-              and Cdg.code in CodeConcept.L01FD01
-        )
+        and Reusable."HasMedicationCode"(MR, CodeConcept.L01FD01)
   )
 
 define "歷史taxane":
@@ -100,14 +96,8 @@ define "歷史taxane":
         and MR.dosageInstruction[0].timing.repeat.bounds is Period
         and start of (MR.dosageInstruction[0].timing.repeat.bounds as Period) is not null
         and start of (MR.dosageInstruction[0].timing.repeat.bounds as Period) < "本次申請起始日期"
-        and exists (
-          MR.medication.coding Cdg
-            where Cdg in CodeConcept.NHIMedication
-              and (
-                Cdg.code in CodeConcept.L01CD02
-                or Cdg.code in CodeConcept.L01CD01
-              )
-        )
+        and (Reusable."HasMedicationCode"(MR, CodeConcept.L01CD02)
+          or Reusable."HasMedicationCode"(MR, CodeConcept.L01CD01))
   )
 
 define "1條件3-1-1=之前分別接受過trastuzumab與一種taxane藥物治療":
@@ -133,19 +123,9 @@ define "1條件3-1-2=trastuzumab與taxane合併療法":
       and start of (TX.dosageInstruction[0].timing.repeat.bounds as Period) is not null
       and start of (HT.dosageInstruction[0].timing.repeat.bounds as Period) < "本次申請起始日期"
       and start of (TX.dosageInstruction[0].timing.repeat.bounds as Period) < "本次申請起始日期"
-      and exists (
-        HT.medication.coding C1
-          where C1 in CodeConcept.NHIMedication
-            and C1.code in CodeConcept.L01FD01
-      )
-      and exists (
-        TX.medication.coding C2
-          where C2 in CodeConcept.NHIMedication
-            and (
-              C2.code in CodeConcept.L01CD02
-              or C2.code in CodeConcept.L01CD01
-            )
-      )
+      and Reusable."HasMedicationCode"(HT, CodeConcept.L01FD01)
+      and (Reusable."HasMedicationCode"(TX, CodeConcept.L01CD02)
+          or Reusable."HasMedicationCode"(TX, CodeConcept.L01CD01))
   )
 
 
@@ -174,27 +154,11 @@ define "1條件3-1-3=pertuzumab與trastuzumab與一種taxane藥物治療":
       and start of (P.dosageInstruction[0].timing.repeat.bounds as Period) < "本次申請起始日期"
       and start of (HT.dosageInstruction[0].timing.repeat.bounds as Period) < "本次申請起始日期"
       and start of (TX.dosageInstruction[0].timing.repeat.bounds as Period) < "本次申請起始日期"
-      and exists (
-        P.medication.coding C1
-          where C1 in CodeConcept.NHIMedication
-            and C1.code in CodeConcept.L01FD02
-      )
-      and exists (
-        HT.medication.coding C2
-          where C2 in CodeConcept.NHIMedication
-            and (
-              C2.code in CodeConcept.L01FD01
-              or C2.code in CodeConcept.L01FY01
-            )
-      )
-      and exists (
-        TX.medication.coding C3
-          where C3 in CodeConcept.NHIMedication
-            and (
-              C3.code in CodeConcept.L01CD02
-              or C3.code in CodeConcept.L01CD01
-            )
-      )
+      and Reusable."HasMedicationCode"(P, CodeConcept.L01FD02)
+      and (Reusable."HasMedicationCode"(HT, CodeConcept.L01FD01)
+          or Reusable."HasMedicationCode"(HT, CodeConcept.L01FY01))
+      and (Reusable."HasMedicationCode"(TX, CodeConcept.L01CD02)
+          or Reusable."HasMedicationCode"(TX, CodeConcept.L01CD01))
   )
 
 
@@ -345,11 +309,7 @@ define "符合條件之本藥品處方":
       and MRTotal.dosageInstruction[0].timing.repeat.bounds is Period
       and start of (MRTotal.dosageInstruction[0].timing.repeat.bounds as Period) is not null
       and end of (MRTotal.dosageInstruction[0].timing.repeat.bounds as Period) is not null
-      and exists (
-        MRTotal.medication.coding Cdg
-          where Cdg in CodeConcept.NHIMedication
-            and Cdg.code in CodeConcept.L01FD03
-      )
+      and Reusable."HasMedicationCode"(MRTotal, CodeConcept.L01FD03)
 
 define "規則1=每位病人至多給付10個月(13個療程為上限)":
   Sum(
@@ -399,21 +359,21 @@ define function "符合項目"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "1條件1=限單獨使用於先前未使用過本藥品"
-           then '● 條件1：確認先前未使用過本藥品，限單獨使用\n' else '') +
+           then '● 1條件1：確認先前未使用過本藥品，限單獨使用\n' else '') +
          (if Reusable."ICD-10使用C50"
-           then '● 條件2(ICD)：主要疾病ICD代碼使用C50\n' else '') +
+           then '● 1條件2(ICD)：主要疾病ICD代碼使用C50\n' else '') +
          (if Reusable."用藥線別=2"
-           then '● 條件2(線別)：用藥線別為第二線\n' else '') +
+           then '● 1條件2(線別)：用藥線別為第二線\n' else '') +
          (if "HER2過度表現(IHC3+或FISH+)"
-           then '● 條件2(HER2)：HER2過度表現(IHC3+或FISH+)\n' else '') +
+           then '● 1條件2(HER2)：HER2過度表現(IHC3+或FISH+)\n' else '') +
          (if "癌症分期分數或結果為M>=1"
-           then '● 條件2(分期)：癌症分期M≥1，確認為轉移性乳癌\n' else '') +
+           then '● 1條件2(分期)：癌症分期M≥1，確認為轉移性乳癌\n' else '') +
          (if "1條件3-1=之前分別接受過trastuzumab與一種taxane藥物治療，或其合併療法，或pertuzumab與trastuzumab與一種taxane藥物治療"
-           then '● 條件3-1：曾接受trastuzumab+taxane治療，或其合併療法，或pertuzumab+trastuzumab+taxane\n' else '') +
+           then '● 1條件3-1：曾接受trastuzumab+taxane治療，或其合併療法，或pertuzumab+trastuzumab+taxane\n' else '') +
          (if "1條件3-2=之前已經接受過轉移性癌症治療，或在輔助療法治療期間或完成治療後6個月內癌症復發"
-           then '● 條件3-2：曾接受轉移性癌症治療，或輔助療法中/完成後6個月內癌症復發\n' else '') +
+           then '● 1條件3-2：曾接受轉移性癌症治療，或輔助療法中/完成後6個月內癌症復發\n' else '') +
          (if "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移"
-           then '● 條件3-3：合併有主要臟器(不含骨及軟組織)轉移\n' else '') +
+           then '● 1條件3-3：合併有主要臟器(不含骨及軟組織)轉移\n' else '') +
          '\n'
     else '') +
 
@@ -424,9 +384,9 @@ define function "符合項目"():
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
          (if "規則1-1=每12週須再次申請並檢附療效評估資料"
-           then '● 續用條件1：於12週內再次申請並檢附療效評估資料\n' else '') +
+           then '● 2條件1：於12週內再次申請並檢附療效評估資料\n' else '') +
          (if "規則1-2=疾病有惡化情形須停止使用"
-           then '● 續用條件2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
+           then '● 2條件2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '') +
 
@@ -434,18 +394,18 @@ define function "符合項目"():
   (if "規則1=每位病人至多給付10個月(13個療程為上限)" or "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
     then '<主要規定三：藥品使用規則>\n' +
          (if "規則1=每位病人至多給付10個月(13個療程為上限)"
-           then '● 規則1：本藥品使用療程符合10個月/13個療程上限(≤280天)\n' else '') +
+           then '● 3規則1：本藥品使用療程符合10個月/13個療程上限(≤280天)\n' else '') +
          (if "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
-           then '● 規則2：未與lapatinib或trastuzumab deruxtecan交替或混用，符合擇一給付規定\n' else '')
+           then '● 3規則2：未與lapatinib或trastuzumab deruxtecan交替或混用，符合擇一給付規定\n' else '')
     else '')
 
 
 //============================================
-// 列出「不符合」項目判斷式 - 代碼或條件不符
+// 列出「不符合」項目判斷式 - 條件或代碼不符合
 //============================================
 
-define function "不符合項目_代碼或條件不符"():
-  // 主要規定一：初次使用條件 - 代碼條件不符
+define function "不符合項目_條件或代碼不符合"():
+  // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
     not Reusable."ICD-10使用C50" or
     not Reusable."用藥線別=2" or
@@ -458,33 +418,33 @@ define function "不符合項目_代碼或條件不符"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not Reusable."ICD-10使用C50"
-           then '▲ ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
+           then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
          (if not Reusable."用藥線別=2"
-           then '▲ 條件2(線別)：用藥線別非第二線\n' else '') +
+           then '▲ 1條件2(線別)：用藥線別非第二線\n' else '') +
          (if not "1條件1=限單獨使用於先前未使用過本藥品"
-           then '▲ 條件1：先前已使用過本藥品，不符合初次申請條件\n' else '') +
+           then '▲ 1條件1：先前已使用過本藥品，不符合初次申請條件\n' else '') +
          (if not "HER2過度表現(IHC3+或FISH+)"
-           then '▲ 條件2(HER2)：HER2非過度表現(非IHC3+或FISH+)\n' else '') +
+           then '▲ 1條件2(HER2)：HER2非過度表現(非IHC3+或FISH+)\n' else '') +
          (if not "癌症分期分數或結果為M>=1"
-           then '▲ 條件2(分期)：癌症分期M<1，未確認為轉移性乳癌\n' else '') +
+           then '▲ 1條件2(分期)：癌症分期M<1，未確認為轉移性乳癌\n' else '') +
          (if not "1條件3-1=之前分別接受過trastuzumab與一種taxane藥物治療，或其合併療法，或pertuzumab與trastuzumab與一種taxane藥物治療"
-           then '▲ 條件3-1：無trastuzumab與taxane之治療紀錄(含合併療法及pertuzumab三藥合療)\n' else '') +
+           then '▲ 1條件3-1：無trastuzumab與taxane之治療紀錄(含合併療法及pertuzumab三藥合療)\n' else '') +
          (if not "1條件3-2=之前已經接受過轉移性癌症治療，或在輔助療法治療期間或完成治療後6個月內癌症復發"
-           then '▲ 條件3-2：不符合轉移性癌症治療史或復發時程條件\n' else '') +
+           then '▲ 1條件3-2：不符合轉移性癌症治療史或復發時程條件\n' else '') +
          (if not "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移"
-           then '▲ 條件3-3：未確認合併有主要臟器(不含骨及軟組織)轉移，或癌症分期M<1\n' else '') +
+           then '▲ 1條件3-3：未確認合併有主要臟器(不含骨及軟組織)轉移，或癌症分期M<1\n' else '') +
          '\n'
     else '') +
 
   // 主要規定三：藥品使用規則 - 療程超標或條件不符
   (if not "規則1=每位病人至多給付10個月(13個療程為上限)"
     then '<主要規定三：藥品使用規則>\n' +
-         '▲ 規則1：本藥品使用療程超過10個月/13個療程上限(280天)\n' + '\n'
+         '▲ 3規則1：本藥品使用療程超過10個月/13個療程上限(280天)\n' + '\n'
     else '') +
 
   (if not "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
     then '<主要規定三：藥品使用規則>\n' +
-         '▲ 規則2：曾與lapatinib或trastuzumab deruxtecan交替或混用，違反擇一給付規定\n' + '\n'
+         '▲ 3規則2：曾與lapatinib或trastuzumab deruxtecan交替或混用，違反擇一給付規定\n' + '\n'
     else '')
 
 
@@ -504,17 +464,17 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "HER2過度表現(IHC3+或FISH+)"
-           then '▲ 條件2(HER2)：未提供HER2檢測報告(IHC或FISH)\n' else '') +
+           then '▲ 1條件2(HER2)：未提供HER2檢測報告(IHC或FISH)\n' else '') +
          (if not "癌症分期分數或結果為M>=1"
-           then '▲ 條件2(分期)：未提供癌症分期資料(M分期)\n' else '') +
+           then '▲ 1條件2(分期)：未提供癌症分期分數或結果資料\n' else '') +
          (if "3個月內有檢查報告" and not "3個月內影像報告"
-           then '▲ 條件2(報告)：已提供分子檢查報告但缺少3個月內影像報告，兩者須同時提供\n' else '') +
+           then '▲ 1條件2(報告)：已提供分子檢查報告但缺少3個月內影像報告，兩者須同時提供\n' else '') +
          (if not "3個月內有檢查報告" and "3個月內影像報告"
-           then '▲ 條件2(報告)：已提供影像報告但缺少3個月內分子檢查報告，兩者須同時提供\n' else '') +
+           then '▲ 1條件2(報告)：已提供影像報告但缺少3個月內分子檢查報告，兩者須同時提供\n' else '') +
          (if not "1條件3-2=之前已經接受過轉移性癌症治療，或在輔助療法治療期間或完成治療後6個月內癌症復發"
-           then '▲ 條件3-2：未於病摘中敘明轉移性癌症治療史或癌症復發狀況\n' else '') +
+           then '▲ 1條件3-2：未於病摘中敘明轉移性癌症治療史或癌症復發狀況\n' else '') +
          (if not "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移"
-           then '▲ 條件3-3：未於病摘中敘明主要臟器轉移情形，或癌症分期未達M≥1\n' else '') +
+           then '▲ 1條件3-3：未於病摘中敘明主要臟器轉移情形，或癌症分期未達M≥1\n' else '') +
          '\n'
     else '') +
 
@@ -525,9 +485,9 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
          (if not "規則1-1=每12週須再次申請並檢附療效評估資料"
-           then '▲ 續用條件1：未於12週內再次申請，或未檢附療效評估資料，或申請療程超過12週(84天)\n' else '') +
+           then '▲ 2條件1：未於12週內再次申請，或未檢附療效評估資料，或申請療程超過12週(84天)\n' else '') +
          (if not "規則1-2=疾病有惡化情形須停止使用"
-           then '▲ 續用條件2：未提供前次治療後之影像學報告\n' else '') +
+           then '▲ 2條件2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '')
 
@@ -579,10 +539,10 @@ define "報告總結":
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +
-  '\n【▲不符合項目 - 代碼或條件不符】\n' +
-  (if "不符合項目_代碼或條件不符"() = '' then '無\n' else "不符合項目_代碼或條件不符"()) +
   '\n【▲不符合項目 - 必要資料未填寫】\n' +
   (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
+  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
+  (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"()) +
   '\n【申請結果】\n' +
   "乳癌TrastuzumabEmtansine晚期申請之CQL檢核結果" +
   '\n===============================================\n'

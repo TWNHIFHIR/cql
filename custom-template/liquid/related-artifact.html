@@ -44,9 +44,20 @@
     {% endif %}
     {% endif %}
     {% if relatedArtifact.resource.exists() %}
-    <em>Resource</em>: {{relatedArtifact.resource}}
+    {% assign resourceUrl = relatedArtifact.resource.toString() %}
+    {% if relatedArtifact.resource.lower().contains('bccodeconcept') %}
+    <em>Resource</em>: <a href="Library-BCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('bcreusable') %}
+    <em>Resource</em>: <a href="Library-BCReusable.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('crccodeconcept') %}
+    <em>Resource</em>: <a href="Library-CRCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('crcreusable') %}
+    <em>Resource</em>: <a href="Library-CRCReusable.html">{{resourceUrl}}</a>
+    {% else %}
+    <em>Resource</em>: <a href="{{resourceUrl}}">{{resourceUrl}}</a>
+    {% endif %}
     <br />
-    <em>Canonical URL</em>: <tt>{{relatedArtifact.resource.toString()}}</tt>
+    <em>Canonical URL</em>: <tt>{{resourceUrl}}</tt>
     {% endif %}
     {% for group in extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-groupId' or url = 'http://hl7.org/fhir/uv/cqm/StructureDefinition/cqm-groupId') %}
     <em>Group Id</em>: {{group.value}}

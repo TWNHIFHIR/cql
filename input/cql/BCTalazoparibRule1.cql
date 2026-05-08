@@ -41,11 +41,7 @@ define "條件1-4=Talazoparib申請":
   exists (        
     [MedicationRequest] MRPlan
     where MRPlan.intent = 'plan'
-      and exists (
-        MRPlan.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-          and Cdg.code in CodeConcept.L01XK04
-      )
+      and Reusable."HasMedicationCode"(MRPlan, CodeConcept.L01XK04)
   )
 
 define "規則1-1=局部晚期或轉移性三陰性乳癌":
@@ -99,24 +95,7 @@ define "規則1-3":
 
 //條件4:具germline BRCA 1/2突變
 define "規則1-4/規則2-2=具germline BRCA 1/2突變":
-  exists (
-    [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'tests'
-          )
-      )
-      and exists (
-        OBs.code.coding Cdg
-          where Cdg in CodeConcept.LOINC
-            and Cdg.code in CodeConcept.BRCA1or2
-      )
-      and OBs.value is string
-      and Matches(OBs.value as string, '(?i).*(Positive|Pathogenic|Likely Pathogenic).*')
-  )
+  Reusable."HasTestObservationResult"(CodeConcept.BRCA1or2, { 'POS' }, '(?i).*(Positive|Pathogenic|Likely Pathogenic).*')
 
 //條件5
 //條件5-1:ER陰性
@@ -264,38 +243,38 @@ define function "符合項目"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "ICD代碼檢核_布林值" 
-           then '● 規則1-1-0：ICD代碼為C50\n' else '') +
+           then '● 1規則1-1-0：ICD代碼為C50\n' else '') +
          (if "條件1-1=3個月內影像報告" 
-           then '● 規則1-1-1：3個月內影像報告\n' else '') +
+           then '● 1規則1-1-1：3個月內影像報告\n' else '') +
          (if "條件1-2=癌症分期分數或結果為M≠0" 
-           then '● 規則1-1-2：癌症分期分數或結果為M≠0（轉移性）\n' else '') +
+           then '● 1規則1-1-2：癌症分期分數或結果為M≠0（轉移性）\n' else '') +
          (if "條件1-3=3個月內有檢查報告" 
-           then '● 規則1-1-3：3個月內有檢查報告\n' else '') +
+           then '● 1規則1-1-3：3個月內有檢查報告\n' else '') +
          (if "條件1-4=Talazoparib申請" 
-           then '● 規則1-1-4：Talazoparib申請\n' else '') +
+           then '● 1規則1-1-4：Talazoparib申請\n' else '') +
          (if "規則1-2=18歲以上" 
-           then '● 規則1-2：18歲以上\n' else '') +
+           then '● 1規則1-2：18歲以上\n' else '') +
          (if "條件3-1=曾接受前導性化療" 
-           then '● 規則1-3-1：曾接受前導性化療\n' else '') +
+           then '● 1規則1-3-1：曾接受前導性化療\n' else '') +
          (if "條件3-2=曾接受術後輔助性化療" 
-           then '● 規則1-3-2：曾接受術後輔助性化療\n' else '') +
+           then '● 1規則1-3-2：曾接受術後輔助性化療\n' else '') +
          (if "條件3-3=曾接受轉移性化療" 
-           then '● 規則1-3-3：曾接受轉移性化療\n' else '') +
+           then '● 1規則1-3-3：曾接受轉移性化療\n' else '') +
          (if "規則1-4/規則2-2=具germline BRCA 1/2突變" 
-           then '● 規則1-4：具germline BRCA 1/2突變\n' else '') +
+           then '● 1規則1-4：具germline BRCA 1/2突變\n' else '') +
          (if "條件5-1=ER陰性" 
-           then '● 規則1-5-1：ER陰性\n' else '') +
+           then '● 1規則1-5-1：ER陰性\n' else '') +
          (if "條件5-2=PR陰性" 
-           then '● 規則1-5-2：PR陰性\n' else '') +
+           then '● 1規則1-5-2：PR陰性\n' else '') +
          (if "條件5-3=HER2陰性" 
-           then '● 規則1-5-3：HER2陰性\n' else '') +
+           then '● 1規則1-5-3：HER2陰性\n' else '') +
          '\n'
     else '') +
   
   // 主要規定二：續用條件
   (if Reusable."續用申請" and "規則1=影像證據顯示病情有無惡化"
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '● 續用規則1：已檢附前次治療後影像學報告，確認無惡化\n' +
+         '● 2規則1：已檢附前次治療後影像學報告，確認無惡化\n' +
          '\n'
     else '') +
   
@@ -303,20 +282,20 @@ define function "符合項目"():
   (if "規則1=每次申請之療程以3個月為限" or "規則2=Talazoparib與Olaparib僅得擇一使用"
     then '<主要規定三：藥品使用規則>\n' +
          (if "規則1=每次申請之療程以3個月為限" 
-           then '● 規則3-1：每次申請之療程≤3個月（84天）\n' else '') +
+           then '● 3規則1：每次申請之療程≤3個月（84天）\n' else '') +
          (if "條件2-1=無法忍受化療(其副作用)時(有註記)" and "條件2-2=Talazoparib、Olaparib二者可轉換"
-           then '● 規則3-2：無法忍受Olaparib副作用，Talazoparib與Olaparib二者可轉換\n' 
+           then '● 3規則2：無法忍受Olaparib副作用，Talazoparib與Olaparib二者可轉換\n' 
            else if "條件2-3=Talazoparib、Olaparib僅得擇一使用"
-           then '● 規則3-2：Talazoparib與Olaparib僅得擇一使用\n' 
+           then '● 3規則2：Talazoparib與Olaparib僅得擇一使用\n' 
            else '')
     else '')
 
 //============================================
-// 列出「不符合」項目判斷式 - 代碼或條件不符
+// 列出「不符合」項目判斷式 - 條件或代碼不符合
 //============================================
 
-define function "不符合項目_代碼或條件不符"():
-  // 主要規定一：初次使用條件 - 代碼條件不符
+define function "不符合項目_條件或代碼不符合"():
+  // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
     not "ICD代碼檢核_布林值" or 
     not "條件1-2=癌症分期分數或結果為M≠0" or 
@@ -324,23 +303,23 @@ define function "不符合項目_代碼或條件不符"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "ICD代碼檢核_布林值" 
-           then '▲ 規則1-1-0：主要疾病之ICD代碼未使用C50\n' else '') +
+           then '▲ 1規則1-1-0：主要疾病之ICD代碼未使用C50\n' else '') +
          (if not "條件1-2=癌症分期分數或結果為M≠0" 
-           then '▲ 規則1-1-2：癌症分期分數或結果不為M≠0（非轉移性）\n' else '') +
+           then '▲ 1規則1-1-2：癌症分期分數或結果不為M≠0（非轉移性）\n' else '') +
          (if not "規則1-2=18歲以上" 
-           then '▲ 規則1-2：非18歲以上患者\n' else '') +
+           then '▲ 1規則1-2：非18歲以上患者\n' else '') +
          '\n'
     else '') +
   
-  // 主要規定三：藥品使用規則 - 代碼條件不符
+  // 主要規定三：藥品使用規則 - 條件或代碼不符合
   (if not "規則1=每次申請之療程以3個月為限" or not "規則2=Talazoparib與Olaparib僅得擇一使用"
     then '<主要規定三：藥品使用規則>\n' +
          (if not "規則1=每次申請之療程以3個月為限" 
-           then '▲ 規則3-1：每次申請之療程超過3個月（84天）\n' else '') +
+           then '▲ 3規則1：每次申請之療程超過3個月（84天）\n' else '') +
          (if "條件2-1=無法忍受化療(其副作用)時(有註記)" and not "條件2-2=Talazoparib、Olaparib二者可轉換"
-           then '▲ 規則3-2：標註無法忍受Olaparib副作用但未正確使用Talazoparib或Olaparib\n' 
+           then '▲ 3規則2：標註無法忍受Olaparib副作用但未正確使用Talazoparib或Olaparib\n' 
            else if not "條件2-1=無法忍受化療(其副作用)時(有註記)" and not "條件2-3=Talazoparib、Olaparib僅得擇一使用"
-           then '▲ 規則3-2：同時使用Talazoparib與Olaparib\n' 
+           then '▲ 3規則2：同時使用Talazoparib與Olaparib\n' 
            else '')
     else '')
 
@@ -359,18 +338,18 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "條件1-4=Talazoparib申請" 
-           then '▲ 規則1-1-4：未申請Talazoparib\n' else '') +
+           then '▲ 1規則1-1-4：未申請Talazoparib\n' else '') +
          (if not ("條件1-1=3個月內影像報告" or "條件1-3=3個月內有檢查報告") 
-           then '▲ 規則1-1-1/1-1-3：未提供3個月內影像報告或檢查報告\n' else '') +
+           then '▲ 1規則1-1-1/1-1-3：未提供影像或檢查報告資料\n' else '') +
          (if not "規則1-3" 
-           then '▲ 規則1-3：未提供前導性化療、術後輔助性化療或轉移性化療紀錄\n' +
+           then '▲ 1規則1-3：未提供前導性化療、術後輔助性化療或轉移性化療紀錄\n' +
                 (if not "條件3-1=曾接受前導性化療" and not "條件3-2=曾接受術後輔助性化療" and not "條件3-3=曾接受轉移性化療"
                   then '  - 未提供任何化療紀錄\n' else '')
            else '') +
          (if not "規則1-4/規則2-2=具germline BRCA 1/2突變" 
-           then '▲ 規則1-4：未提供germline BRCA 1/2突變檢測資料\n' else '') +
+           then '▲ 1規則1-4：未提供germline BRCA 1/2突變檢測資料\n' else '') +
          (if not "規則1-5/規則2-1=ER陰性&PR陰性&HER2陰性" 
-           then '▲ 規則1-5：未符合三陰性乳癌條件（需ER陰性、PR陰性、HER2陰性）\n' +
+           then '▲ 1規則1-5：未符合三陰性乳癌條件（需ER陰性、PR陰性、HER2陰性）\n' +
                 (if not "條件5-1=ER陰性"
                   then '  - ER非陰性或未提供ER檢測資料\n' else '') +
                 (if not "條件5-2=PR陰性"
@@ -384,7 +363,7 @@ define function "不符合項目_必要資料未填寫"():
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and not "規則1=影像證據顯示病情有無惡化"
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '▲ 續用規則1：未提供前次治療後影像學報告或顯示疾病惡化\n' +
+         '▲ 2規則1：未提供前次治療後影像學報告資料\n' +
          '\n'
     else '')
 
@@ -452,10 +431,10 @@ define "報告總結":
   Coalesce(ToString("申請日時病人年齡歲數"), '無法計算') + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +
-  '\n【▲不符合項目 - 代碼或條件不符】\n' +
-  (if "不符合項目_代碼或條件不符"() = '' then '無\n' else "不符合項目_代碼或條件不符"()) +
   '\n【▲不符合項目 - 必要資料未填寫】\n' +
   (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
+  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
+  (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"()) +
   '\n【申請結果】\n' +
   "乳癌Talazoparib申請之CQL檢核結果" +
   '\n===============================================\n'

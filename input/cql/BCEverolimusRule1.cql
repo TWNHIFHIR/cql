@@ -43,11 +43,7 @@ define "規則1-1-5=Everolimus申請":
   exists (        
     [MedicationRequest] MRPlan
     where MRPlan.intent = 'plan'
-      and exists (
-        MRPlan.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-          and Cdg.code in CodeConcept.Everolimus
-      )
+      and Reusable."HasMedicationCode"(MRPlan, CodeConcept.Everolimus)
   )
 
 define "規則1-1=轉移性乳癌":
@@ -117,14 +113,7 @@ and "規則1-4-3=HER2受體陰性"
 define "規則1-5=尚未出現器官轉移危急症狀 (visceral crisis)":
   exists (
     [DiagnosticReport] O
-    where exists (
-      O.code.coding Cdg
-      where (
-        Cdg in CodeConcept.ICD10PCS2023Image
-        or Cdg in CodeConcept.ICD10PCS2014Image
-      )
-      and Cdg.code in CodeConcept.ImageCodes
-    )
+    where Reusable."IsImageReport"(O)
     and O.effective is not null
     and FHIRHelpers.ToDateTime(O.effective) >= "本次申請起始日期" - 180 days
     and FHIRHelpers.ToDateTime(O.effective) <= "本次申請起始日期"
@@ -214,36 +203,36 @@ define function "符合項目"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "ICD代碼檢核_布林值" 
-           then '● ICD代碼檢核：主要疾病之ICD代碼使用C50\n' else '') +
+           then '● 1條件ICD代碼檢核：主要疾病之ICD代碼使用C50\n' else '') +
          (if "醫令類別為1_布林值" 
-           then '● 醫令類別檢核：醫令類別為1(癌症治療)\n' else '') +
+           then '● 1條件醫令類別檢核：醫令類別為1(癌症治療)\n' else '') +
          (if "規則1-1-1=3個月內影像報告" 
-           then '● 規則1-1-1：3個月內影像報告\n' else '') +
+           then '● 1規則1-1-1：3個月內影像報告\n' else '') +
          (if "規則1-1-3=癌症分期分數或結果為M≠0" 
-           then '● 規則1-1-3：癌症分期分數或結果為M≠0(轉移性)\n' else '') +
+           then '● 1規則1-1-3：癌症分期分數或結果為M≠0(轉移性)\n' else '') +
          (if "規則1-1-4=3個月內有檢查報告" 
-           then '● 規則1-1-4：3個月內有檢查報告\n' else '') +
+           then '● 1規則1-1-4：3個月內有檢查報告\n' else '') +
          (if "規則1-1-5=Everolimus申請" 
-           then '● 規則1-1-5：Everolimus申請\n' else '') +
+           then '● 1規則1-1-5：Everolimus申請\n' else '') +
          (if "規則1-2=先前已使用過非類固醇類之芳香環酶抑制劑治療無效" 
-           then '● 規則1-2：先前已使用過非類固醇類之芳香環酶抑制劑治療\n' else '') +
+           then '● 1規則1-2：先前已使用過非類固醇類之芳香環酶抑制劑治療\n' else '') +
          (if "規則1-3=沒有使用exemestane" 
-           then '● 規則1-3：申請期間未併用exemestane\n' else '') +
+           then '● 1規則1-3：申請期間未併用exemestane\n' else '') +
          (if "規則1-4-1=荷爾蒙接受體陽性(ER)" 
-           then '● 規則1-4-1：荷爾蒙接受體陽性(ER)\n' else '') +
+           then '● 1規則1-4-1：荷爾蒙接受體陽性(ER)\n' else '') +
          (if "規則1-4-2=荷爾蒙接受體陽性(PR)" 
-           then '● 規則1-4-2：荷爾蒙接受體陽性(PR)\n' else '') +
+           then '● 1規則1-4-2：荷爾蒙接受體陽性(PR)\n' else '') +
          (if "規則1-4-3=HER2受體陰性" 
-           then '● 規則1-4-3：HER2受體陰性\n' else '') +
+           then '● 1規則1-4-3：HER2受體陰性\n' else '') +
          (if "規則1-5=尚未出現器官轉移危急症狀 (visceral crisis)" 
-           then '● 規則1-5：尚未出現器官轉移危急症狀(visceral crisis)\n' else '') +
+           then '● 1規則1-5：尚未出現器官轉移危急症狀(visceral crisis)\n' else '') +
          '\n'
     else '') +
   
   // 主要規定二：續用條件
   (if Reusable."續用申請" and "規則1=影像證據顯示病情有無惡化"
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '● 續用規則1：已檢附影像證據顯示病情狀態，確認無惡化\n' +
+         '● 2規則1：已檢附影像證據顯示病情狀態，確認無惡化\n' +
          '\n'
     else '') +
   
@@ -252,37 +241,37 @@ define function "符合項目"():
       "規則2=每日最大劑量為10mg"
     then '<主要規定三：藥品使用規則>\n' +
          (if "規則1=每次申請之療程以3個月為限" 
-           then '● 規則3-1：申請療程≤3個月(84天)\n' else '') +
+           then '● 3規則1：申請療程≤3個月(84天)\n' else '') +
          (if "規則2=每日最大劑量為10mg" 
-           then '● 規則3-2：每日劑量≤10mg\n' else '')
+           then '● 3規則2：每日劑量≤10mg\n' else '')
     else '')
 
 //============================================
-// 列出「不符合」項目判斷式 - 代碼或條件不符
+// 列出「不符合」項目判斷式 - 條件或代碼不符合
 //============================================
 
-define function "不符合項目_代碼或條件不符"():
-  // 主要規定一：初次使用條件 - 代碼條件不符
+define function "不符合項目_條件或代碼不符合"():
+  // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
     not "ICD代碼檢核_布林值" or 
     not "醫令類別為1_布林值"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "ICD代碼檢核_布林值" 
-           then '▲ ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
+           then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
          (if not "醫令類別為1_布林值" 
-           then '▲ 醫令類別檢核：醫令類別非1\n' else '') +
+           then '▲ 1條件醫令類別檢核：醫令類別非1\n' else '') +
          '\n'
     else '') +
   
-  // 主要規定三：藥品使用規則 - 代碼條件不符
+  // 主要規定三：藥品使用規則 - 條件或代碼不符合
   (if not "規則1=每次申請之療程以3個月為限" or 
       not "規則2=每日最大劑量為10mg"
     then '<主要規定三：藥品使用規則>\n' +
          (if not "規則1=每次申請之療程以3個月為限" 
-           then '▲ 規則3-1：申請療程超過3個月(84天)\n' else '') +
+           then '▲ 3規則1：申請療程超過3個月(84天)\n' else '') +
          (if not "規則2=每日最大劑量為10mg" 
-           then '▲ 規則3-2：每日劑量超過10mg\n' else '')
+           then '▲ 3規則2：每日劑量超過10mg\n' else '')
     else '')
 
 //============================================
@@ -303,32 +292,32 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "規則1-1-1=3個月內影像報告" 
-           then '▲ 規則1-1-1：未提供3個月內影像報告\n' else '') +
+           then '▲ 1規則1-1-1：未提供影像報告資料\n' else '') +
          (if not "規則1-1-3=癌症分期分數或結果為M≠0" 
-           then '▲ 規則1-1-3：未提供癌症分期資料或非轉移性(M=0)\n' else '') +
+           then '▲ 1規則1-1-3：未提供癌症分期分數或結果資料\n' else '') +
          (if not "規則1-1-4=3個月內有檢查報告" 
-           then '▲ 規則1-1-4：未提供3個月內檢查報告\n' else '') +
+           then '▲ 1規則1-1-4：未提供檢查報告資料\n' else '') +
          (if not "規則1-1-5=Everolimus申請" 
-           then '▲ 規則1-1-5：未提供Everolimus申請資料\n' else '') +
+           then '▲ 1規則1-1-5：未提供Everolimus申請資料\n' else '') +
          (if not "規則1-2=先前已使用過非類固醇類之芳香環酶抑制劑治療無效" 
-           then '▲ 規則1-2：未提供非類固醇類之芳香環酶抑制劑治療紀錄\n' else '') +
+           then '▲ 1規則1-2：未提供非類固醇類之芳香環酶抑制劑治療紀錄\n' else '') +
          (if not "規則1-3=沒有使用exemestane" 
-           then '▲ 規則1-3：申請期間併用exemestane(禁止併用)\n' else '') +
+           then '▲ 1規則1-3：申請期間併用exemestane(禁止併用)\n' else '') +
          (if not "規則1-4-1=荷爾蒙接受體陽性(ER)" 
-           then '▲ 規則1-4-1：未提供ER檢測資料或ER非陽性\n' else '') +
+           then '▲ 1規則1-4-1：未提供ER檢測資料\n' else '') +
          (if not "規則1-4-2=荷爾蒙接受體陽性(PR)" 
-           then '▲ 規則1-4-2：未提供PR檢測資料或PR非陽性\n' else '') +
+           then '▲ 1規則1-4-2：未提供PR檢測資料\n' else '') +
          (if not "規則1-4-3=HER2受體陰性" 
-           then '▲ 規則1-4-3：未提供HER2檢測資料或HER2非陰性\n' else '') +
+           then '▲ 1規則1-4-3：未提供HER2檢測資料\n' else '') +
          (if not "規則1-5=尚未出現器官轉移危急症狀 (visceral crisis)" 
-           then '▲ 規則1-5：未提供影像資料或已出現器官轉移危急症狀(visceral crisis)\n' else '') +
+           then '▲ 1規則1-5：未提供影像資料\n' else '') +
          '\n'
     else '') +
   
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and not "規則1=影像證據顯示病情有無惡化"
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '▲ 續用規則1：未提供影像證據或顯示疾病惡化\n' +
+         '▲ 2規則1：未提供影像證據資料\n' +
          '\n'
     else '')
 
@@ -378,10 +367,10 @@ define "報告總結":
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +
-  '\n【▲不符合項目 - 代碼或條件不符】\n' +
-  (if "不符合項目_代碼或條件不符"() = '' then '無\n' else "不符合項目_代碼或條件不符"()) +
   '\n【▲不符合項目 - 必要資料未填寫】\n' +
   (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
+  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
+  (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"()) +
   '\n【申請結果】\n' +
   "乳癌Everolimus申請之CQL檢核結果" +
   '\n===============================================\n'

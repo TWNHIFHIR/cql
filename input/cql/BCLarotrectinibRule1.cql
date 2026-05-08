@@ -63,7 +63,7 @@ define "三個月內有檢查報告":
     where exists (
       O2.code.coding Cdg
       where Cdg in CodeConcept.LOINC
-      and Cdg.code in CodeConcept.DiagnosticReport
+      and Cdg.code in CodeConcept.DiagnosticReportCode
     )
     and O2.effective is not null
     and FHIRHelpers.ToDateTime(O2.effective) >= "本次申請起始日期" - 90 days
@@ -143,11 +143,7 @@ define "3條件2=曾接受一線治療後無效或復發":
   and exists (
     [MedicationRequest] MRChemo
     where MRChemo.intent = 'order'
-    and exists (
-      MRChemo.medication.coding Cdg
-      where Cdg in CodeConcept.NHIMedication
-      and Cdg.code in CodeConcept."Larotrectinib一線治療"
-    )
+    and Reusable."HasMedicationCode"(MRChemo, CodeConcept."Larotrectinib一線治療")
     and Reusable."HasValidTiming"(MRChemo)
     and (end of (MRChemo.dosageInstruction[0].timing.repeat.bounds as Period)) < "本次申請起始日期"
   )
@@ -250,67 +246,67 @@ define function "符合項目"():
   (if Reusable."初次申請" and "主要規定一"
     then '<主要規定一：初次使用條件>\n' +
          (if "1條件1=NTRK基因融合且無已知的後天阻抗性突變"
-           then '● 條件1：NTRK基因融合且無已知的後天阻抗性突變\n' else '') +
+           then '● 1條件1：NTRK基因融合且無已知的後天阻抗性突變\n' else '') +
          (if "ICD代碼檢核_布林值"
-           then '● 條件2-0：ICD代碼為C50\n' else '') +
+           then '● 1條件2-0：ICD代碼為C50\n' else '') +
          (if "癌症分期分數或結果為M≠0"
-           then '● 條件2-1：癌症分期結果為M≠0（轉移性）\n' else '') +
+           then '● 1條件2-1：癌症分期結果為M≠0（轉移性）\n' else '') +
          (if "1條件3=病摘說明手術切除會造成嚴重病症"
-           then '● 條件3：病摘說明手術切除會造成嚴重病症\n' else '') +
+           then '● 1條件3：病摘說明手術切除會造成嚴重病症\n' else '') +
          (if "1條件4=病摘說明沒有合適的替代治療選項"
-           then '● 條件4：病摘說明沒有合適的替代治療選項\n' else '') +
+           then '● 1條件4：病摘說明沒有合適的替代治療選項\n' else '') +
          (if "3條件1=滿18歲"
            then '● 年齡條件：滿18歲\n' +
                 (if "3條件2=曾接受一線治療後無效或復發"
-                  then '● 規則3（成人）：曾接受一線治療後無效或復發\n' else '')
+                  then '● 1規則3（成人）：曾接受一線治療後無效或復發\n' else '')
            else '● 年齡條件：未滿18歲\n' +
                 (if "3條件3=分泌型乳腺癌"
-                  then '● 規則3-3：分泌型乳腺癌\n' else '') +
+                  then '● 1規則3-3：分泌型乳腺癌\n' else '') +
                 (if "3條件4-1=先前曾接受過前導性化學治療"
-                  then '● 規則3-4-1：曾接受前導性化學治療\n' else '') +
+                  then '● 1規則3-4-1：曾接受前導性化學治療\n' else '') +
                 (if "3條件4-2=術後輔助性化學治療"
-                  then '● 規則3-4-2：曾接受術後輔助性化學治療\n' else '') +
+                  then '● 1規則3-4-2：曾接受術後輔助性化學治療\n' else '') +
                 (if "3條件4-3=轉移性化學治療"
-                  then '● 規則3-4-3：曾接受轉移性化學治療\n' else '')) +
+                  then '● 1規則3-4-3：曾接受轉移性化學治療\n' else '')) +
          '\n'
     else '') +
 
   // 主要規定二：續用條件
   (if Reusable."續用申請" and "主要規定二"
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '● 續用規則1：已檢附前次治療後影像學報告，確認無惡化\n' +
+         '● 2規則1：已檢附前次治療後影像學報告，確認無惡化\n' +
          '\n'
     else '') +
 
   // 主要規定三：藥品使用規則
   (if "主要規定三=每次申請之療程以12週為限"
     then '<主要規定三：藥品使用規則>\n' +
-         '● 規則3：每次申請之療程≤12週（84天）\n' +
+         '● 3規則3：每次申請之療程≤12週（84天）\n' +
          '\n'
     else '')
 
 //============================================
-// 列出「不符合」項目判斷式 - 代碼或條件不符
+// 列出「不符合」項目判斷式 - 不符
 //============================================
 
-define function "不符合項目_代碼或條件不符"():
-  // 主要規定一：初次使用條件 - 代碼條件不符
+define function "不符合項目_條件或代碼不符合"():
+  // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
     not "ICD代碼檢核_布林值" or
     not "癌症分期分數或結果為M≠0"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "ICD代碼檢核_布林值"
-           then '▲ 條件2-0：主要疾病之ICD代碼未使用C50\n' else '') +
+           then '▲ 1條件2-0：主要疾病之ICD代碼未使用C50\n' else '') +
          (if not "癌症分期分數或結果為M≠0"
-           then '▲ 條件2-1：癌症分期結果非M≠0（非轉移性）\n' else '') +
+           then '▲ 1條件2-1：癌症分期結果非M≠0（非轉移性）\n' else '') +
          '\n'
     else '') +
 
-  // 主要規定三：藥品使用規則 - 代碼條件不符
+  // 主要規定三：藥品使用規則 - 條件或代碼不符合
   (if not "主要規定三=每次申請之療程以12週為限"
     then '<主要規定三：藥品使用規則>\n' +
-         '▲ 規則3：每次申請之療程超過12週（84天）\n' +
+         '▲ 3規則3：每次申請之療程超過12週（84天）\n' +
          '\n'
     else '')
 
@@ -328,15 +324,15 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "1條件1=NTRK基因融合且無已知的後天阻抗性突變"
-           then '▲ 條件1：未提供NTRK基因融合且無後天阻抗性突變之檢測結果\n' else '') +
+           then '▲ 1條件1：未提供NTRK基因融合且無後天阻抗性突變之檢測結果\n' else '') +
          (if not "1條件3=病摘說明手術切除會造成嚴重病症"
-           then '▲ 條件3：病摘未說明手術切除會造成嚴重病症\n' else '') +
+           then '▲ 1條件3：病摘未說明手術切除會造成嚴重病症\n' else '') +
          (if not "1條件4=病摘說明沒有合適的替代治療選項"
-           then '▲ 條件4：病摘未說明沒有合適的替代治療選項\n' else '') +
+           then '▲ 1條件4：病摘未說明沒有合適的替代治療選項\n' else '') +
          (if not "規則3"
            then if "3條件1=滿18歲"
-                then '▲ 規則3（成人）：未提供曾接受一線治療後無效或復發之紀錄\n'
-                else '▲ 規則3（兒童）：' +
+                then '▲ 1規則3（成人）：未提供曾接受一線治療後無效或復發之紀錄\n'
+                else '▲ 1規則3（兒童）：' +
                      (if not "3條件3=分泌型乳腺癌"
                        then '未符合分泌型乳腺癌條件；' else '') +
                      (if not "3條件4=三項擇一"
@@ -348,7 +344,7 @@ define function "不符合項目_必要資料未填寫"():
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and not "主要規定二"
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '▲ 續用規則1：未提供前次治療後影像學報告或顯示疾病惡化\n' +
+         '▲ 2規則1：未提供前次治療後影像學報告資料\n' +
          '\n'
     else '')
 
@@ -404,10 +400,10 @@ define "報告總結":
   Coalesce(ToString("申請日時病人年齡歲數"), '無法計算') + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +
-  '\n【▲不符合項目 - 代碼或條件不符】\n' +
-  (if "不符合項目_代碼或條件不符"() = '' then '無\n' else "不符合項目_代碼或條件不符"()) +
   '\n【▲不符合項目 - 必要資料未填寫】\n' +
   (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
+  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
+  (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"()) +
   '\n【申請結果】\n' +
   "乳癌Larotrectinib申請之CQL檢核結果" +
   '\n===============================================\n'

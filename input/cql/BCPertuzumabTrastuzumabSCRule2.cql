@@ -39,11 +39,7 @@ define "1條件2-1=未曾以抗HER2療法治療":
   not exists (
     [MedicationRequest] MR
     where (MR.intent = 'plan' or MR.intent = 'order')
-    and exists (
-      MR.medication.coding Cdg
-      where Cdg in CodeConcept.NHIMedication
-      and Cdg.code in CodeConcept."PertuzumabTrastuzumabSC之抗HER2治療"
-    )
+    and Reusable."HasMedicationCode"(MR, CodeConcept."PertuzumabTrastuzumabSC之抗HER2治療")
   )
 
 
@@ -52,11 +48,7 @@ define "1條件2-2=未曾以化學療法治療":
   not exists (
     [MedicationRequest] MR
     where (MR.intent = 'plan' or MR.intent = 'order')
-    and exists (
-      MR.medication.coding Cdg
-      where Cdg in CodeConcept.NHIMedication
-      and Cdg.code in CodeConcept."併用化學治療法"
-    )
+    and Reusable."HasMedicationCode"(MR, CodeConcept."併用化學治療法")
   )
 
 define "1條件2=未曾以抗HER2或化學療法治療":
@@ -121,19 +113,11 @@ define "2條件1=於早期乳癌已使用過本藥品或pertuzumab與trastuzumab
   not exists (
     [MedicationRequest] MR1
     where MR1.intent = 'order'
-    and exists (
-      MR1.medication.coding Cdg
-      where Cdg in CodeConcept.NHIMedication
-      and Cdg.code in CodeConcept.L01FD02
-    )
+    and Reusable."HasMedicationCode"(MR1, CodeConcept.L01FD02)
     and exists (
       [MedicationRequest] MR2
       where MR2.intent = 'order'
-      and exists (
-        MR2.medication.coding Cdg
-        where Cdg in CodeConcept.NHIMedication
-        and Cdg.code in CodeConcept.L01FD01
-      )
+      and Reusable."HasMedicationCode"(MR2, CodeConcept.L01FD01)
       and Reusable."HasValidTiming"(MR1)
       and MR1.dosageInstruction[0].timing.repeat.bounds is Period
       and (start of (MR1.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
@@ -236,24 +220,16 @@ define "三種用藥合併每周療程上限18個療程":
   Count(
     [MedicationRequest] MR
       where MR.intent = 'plan'
-        and exists (
-          MR.medication.coding Cdg
-            where Cdg in CodeConcept.NHIMedication
-              and (Cdg.code in CodeConcept.L01FY01
-                or Cdg.code in CodeConcept.L01FD01andL01FD02exceptKC011362B5)
-        )
+        and (Reusable."HasMedicationCode"(MR, CodeConcept.L01FY01)
+          or Reusable."HasMedicationCode"(MR, CodeConcept.L01FD01andL01FD02exceptKC011362B5))
         and MR.dosageInstruction[0].timing.repeat.count = 1
         and Reusable."醫令類別為1"
   ) <= 18
   and Sum(
     [MedicationRequest] MR
       where MR.intent = 'plan'
-        and exists (
-          MR.medication.coding Cdg
-            where Cdg in CodeConcept.NHIMedication
-              and (Cdg.code in CodeConcept.L01FY01
-                or Cdg.code in CodeConcept.L01FD01andL01FD02exceptKC011362B5)
-        )
+        and (Reusable."HasMedicationCode"(MR, CodeConcept.L01FY01)
+          or Reusable."HasMedicationCode"(MR, CodeConcept.L01FD01andL01FD02exceptKC011362B5))
         and MR.dosageInstruction[0].timing.repeat.count = 1
         and MR.dosageInstruction[0].timing.repeat.bounds is Period
         and (start of (MR.dosageInstruction[0].timing.repeat.bounds as Period)) is not null
@@ -274,12 +250,8 @@ define "三種用藥合併每三周療程上限18個療程":
   Count(
     [MedicationRequest] MR
       where MR.intent = 'plan'
-        and exists (
-          MR.medication.coding Cdg
-            where Cdg in CodeConcept.NHIMedication
-              and (Cdg.code in CodeConcept.L01FY01
-                or Cdg.code in CodeConcept.L01FD01andL01FD02exceptKC011362B5)
-        )
+        and (Reusable."HasMedicationCode"(MR, CodeConcept.L01FY01)
+          or Reusable."HasMedicationCode"(MR, CodeConcept.L01FD01andL01FD02exceptKC011362B5))
         and MR.dosageInstruction[0].timing.repeat.period = 3
         and MR.dosageInstruction[0].timing.repeat.periodUnit.value = 'wk'
         and Reusable."醫令類別為1"
@@ -291,12 +263,8 @@ define "三種用藥合併每三周療程上限18個療程":
           Max(
             [MedicationRequest] MRSameCourse
               where MRSameCourse.intent = 'plan'
-                and exists (
-                  MRSameCourse.medication.coding SameCdg
-                    where SameCdg in CodeConcept.NHIMedication
-                      and (SameCdg.code in CodeConcept.L01FY01
-                        or SameCdg.code in CodeConcept.L01FD01andL01FD02exceptKC011362B5)
-                )
+                and (Reusable."HasMedicationCode"(MRSameCourse, CodeConcept.L01FY01)
+          or Reusable."HasMedicationCode"(MRSameCourse, CodeConcept.L01FD01andL01FD02exceptKC011362B5))
                 and MRSameCourse.dosageInstruction[0].timing.repeat.period = 3
                 and MRSameCourse.dosageInstruction[0].timing.repeat.periodUnit.value = 'wk'
                 and Reusable."醫令類別為1"
@@ -315,12 +283,8 @@ define "三種用藥合併每三周療程上限18個療程":
   and Sum(
     [MedicationRequest] MR
       where MR.intent = 'plan'
-        and exists (
-          MR.medication.coding Cdg
-            where Cdg in CodeConcept.NHIMedication
-              and (Cdg.code in CodeConcept.L01FY01
-                or Cdg.code in CodeConcept.L01FD01andL01FD02exceptKC011362B5)
-        )
+        and (Reusable."HasMedicationCode"(MR, CodeConcept.L01FY01)
+          or Reusable."HasMedicationCode"(MR, CodeConcept.L01FD01andL01FD02exceptKC011362B5))
         and MR.dosageInstruction[0].timing.repeat.period = 3
         and MR.dosageInstruction[0].timing.repeat.periodUnit.value = 'wk'
         and MR.dosageInstruction[0].timing.repeat.bounds is Period
@@ -333,12 +297,8 @@ define "三種用藥合併每三周療程上限18個療程":
           Max(
             [MedicationRequest] MRSameCourse
               where MRSameCourse.intent = 'plan'
-                and exists (
-                  MRSameCourse.medication.coding SameCdg
-                    where SameCdg in CodeConcept.NHIMedication
-                      and (SameCdg.code in CodeConcept.L01FY01
-                        or SameCdg.code in CodeConcept.L01FD01andL01FD02exceptKC011362B5)
-                )
+                and (Reusable."HasMedicationCode"(MRSameCourse, CodeConcept.L01FY01)
+          or Reusable."HasMedicationCode"(MRSameCourse, CodeConcept.L01FD01andL01FD02exceptKC011362B5))
                 and MRSameCourse.dosageInstruction[0].timing.repeat.period = 3
                 and MRSameCourse.dosageInstruction[0].timing.repeat.periodUnit.value = 'wk'
                 and Reusable."醫令類別為1"
@@ -376,25 +336,25 @@ define function "符合項目"():
   (if Reusable."初次申請" and "主要規定一"
     then '<主要規定一：初次使用條件>\n' +
          (if "ICD代碼檢核_布林值"
-           then '● ICD代碼為C50\n' else '') +
+           then '● 1條件ICD代碼為C50\n' else '') +
          (if "1條件1=與docetaxel併用"
-           then '● 規則1-條件1：本藥品與docetaxel併用\n' else '') +
+           then '● 1規則1-條件1：本藥品與docetaxel併用\n' else '') +
          (if "1條件2-1=未曾以抗HER2療法治療"
-           then '● 規則1-條件2-1：未曾以抗HER2療法治療\n' else '') +
+           then '● 1規則1-條件2-1：未曾以抗HER2療法治療\n' else '') +
          (if "1條件2-2=未曾以化學療法治療"
-           then '● 規則1-條件2-2：未曾以化學療法治療\n' else '') +
+           then '● 1規則1-條件2-2：未曾以化學療法治療\n' else '') +
          (if "1條件3-1=3個月內影像報告"
-           then '● 規則1-條件3-1：3個月內影像報告\n' else '') +
+           then '● 1規則1-條件3-1：3個月內影像報告\n' else '') +
          (if "1條件3-2=癌症分期分數或結果為M>=1"
-           then '● 規則1-條件3-2：癌症分期M≥1（轉移性）\n' else '') +
+           then '● 1規則1-條件3-2：癌症分期M≥1（轉移性）\n' else '') +
          (if "1條件3-3=3個月內有檢查報告"
-           then '● 規則1-條件3-3：3個月內有檢查報告\n' else '') +
+           then '● 1規則1-條件3-3：3個月內有檢查報告\n' else '') +
          (if "1條件3-4=具HER2過度表現"
-           then '● 規則1-條件3-4：具HER2過度表現（IHC3+或FISH+）\n' else '') +
+           then '● 1規則1-條件3-4：具HER2過度表現（IHC3+或FISH+）\n' else '') +
          (if "2條件1=於早期乳癌已使用過本藥品或pertuzumab與trastuzumab併用者，不得再次申請本藥品"
-           then '● 規則2-條件1：未曾於早期乳癌使用pertuzumab與trastuzumab併用\n' else '') +
+           then '● 1規則2-條件1：未曾於早期乳癌使用pertuzumab與trastuzumab併用\n' else '') +
          (if "2條件2=病摘敘明早期乳癌治療結束至首次疾病復發轉移時間超過12個月以上"
-           then '● 規則2-條件2：病摘敘明早期乳癌治療結束至首次疾病復發轉移超過12個月\n' else '') +
+           then '● 1規則2-條件2：病摘敘明早期乳癌治療結束至首次疾病復發轉移超過12個月\n' else '') +
          '\n'
     else '') +
 
@@ -402,9 +362,9 @@ define function "符合項目"():
   (if Reusable."續用申請" and "主要規定二"
     then '<主要規定二：續用條件－治療持續給付>\n' +
          (if "規則1-1=每18週須再次申請並檢附療效評估資料"
-           then '● 續用規則1-1：於18週內再次申請並檢附療效評估資料\n' else '') +
+           then '● 2規則1-1：於18週內再次申請並檢附療效評估資料\n' else '') +
          (if "規則1-2=疾病有惡化情形須停止使用"
-           then '● 續用規則1-2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
+           then '● 2規則1-2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '') +
 
@@ -412,19 +372,19 @@ define function "符合項目"():
   (if "主要規定三"
     then '<主要規定三：藥品使用規則>\n' +
          (if "三種用藥合併每周療程上限18個療程"
-           then '● 規則3：每周療程合計≤18個療程且總日數≤126天\n' else '') +
+           then '● 3規則3：每周療程合計≤18個療程且總日數≤126天\n' else '') +
          (if "三種用藥合併每三周療程上限18個療程"
-           then '● 規則3：每三周療程合計≤18個療程且總日數≤378天\n' else '') +
+           then '● 3規則3：每三周療程合計≤18個療程且總日數≤378天\n' else '') +
          '\n'
     else '')
 
 
 //============================================
-// 列出「不符合」項目判斷式 - 代碼或條件不符
+// 列出「不符合」項目判斷式 - 條件或代碼不符合
 //============================================
 
-define function "不符合項目_代碼或條件不符"():
-  // 主要規定一：初次使用條件 - 代碼條件不符
+define function "不符合項目_條件或代碼不符合"():
+  // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
     not "ICD代碼檢核_布林值" or
     not "1條件3-2=癌症分期分數或結果為M>=1" or
@@ -432,18 +392,18 @@ define function "不符合項目_代碼或條件不符"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "ICD代碼檢核_布林值"
-           then '▲ 規則1-0：主要疾病之ICD代碼未使用C50\n' else '') +
+           then '▲ 1規則1-0：主要疾病之ICD代碼未使用C50\n' else '') +
          (if not "1條件3-2=癌症分期分數或結果為M>=1"
-           then '▲ 規則1-條件3-2：癌症分期不符合（需M≥1，具遠處轉移）\n' else '') +
+           then '▲ 1規則1-條件3-2：癌症分期不符合（需M≥1，具遠處轉移）\n' else '') +
          (if not "1條件3-4=具HER2過度表現"
-           then '▲ 規則1-條件3-4：HER2未過度表現或未提供（需IHC3+或FISH+）\n' else '') +
+           then '▲ 1規則1-條件3-4：HER2未過度表現或未提供（需IHC3+或FISH+）\n' else '') +
          '\n'
     else '') +
 
-  // 主要規定三：藥品使用規則 - 代碼條件不符
+  // 主要規定三：藥品使用規則 - 條件或代碼不符合
   (if not "主要規定三"
     then '<主要規定三：藥品使用規則>\n' +
-         '▲ 規則3：三種用藥（L01FY01/L01FD01andL01FD02）合計療程超過18個療程\n' +
+         '▲ 3規則3：三種用藥（L01FY01/L01FD01andL01FD02）合計療程超過18個療程\n' +
          '\n'
     else '')
 
@@ -462,13 +422,13 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "1條件1=與docetaxel併用"
-           then '▲ 規則1-條件1：未申請本藥品與docetaxel併用\n' else '') +
+           then '▲ 1規則1-條件1：未申請本藥品與docetaxel併用\n' else '') +
          (if not ("1條件3-1=3個月內影像報告" or "1條件3-3=3個月內有檢查報告")
-           then '▲ 規則1-條件3：未提供3個月內影像報告或檢查報告\n' else '') +
+           then '▲ 1規則1-條件3：未提供影像或檢查報告資料\n' else '') +
          (if not "1條件2-1=未曾以抗HER2療法治療" and not "1條件2-2=未曾以化學療法治療"
-           then '▲ 規則1-條件2：曾以抗HER2療法且曾以化學療法治療\n' else '') +
+           then '▲ 1規則1-條件2：曾以抗HER2療法且曾以化學療法治療\n' else '') +
          (if not "2條件2=病摘敘明早期乳癌治療結束至首次疾病復發轉移時間超過12個月以上"
-           then '▲ 規則2-條件2：病摘未敘明早期乳癌治療結束至首次疾病復發轉移時間超過12個月\n' else '') +
+           then '▲ 1規則2-條件2：病摘未敘明早期乳癌治療結束至首次疾病復發轉移時間超過12個月\n' else '') +
          '\n'
     else '') +
 
@@ -479,9 +439,9 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
          (if not "規則1-1=每18週須再次申請並檢附療效評估資料"
-           then '▲ 續用規則1-1：未於18週內再次申請或未檢附療效評估資料\n' else '') +
+           then '▲ 2規則1-1：未於18週內再次申請或未檢附療效評估資料\n' else '') +
          (if not "規則1-2=疾病有惡化情形須停止使用"
-           then '▲ 續用規則1-2：未提供前次治療後影像學報告\n' else '') +
+           then '▲ 2規則1-2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '')
 
@@ -536,10 +496,10 @@ define "報告總結":
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +
-  '\n【▲不符合項目 - 代碼或條件不符】\n' +
-  (if "不符合項目_代碼或條件不符"() = '' then '無\n' else "不符合項目_代碼或條件不符"()) +
   '\n【▲不符合項目 - 必要資料未填寫】\n' +
   (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
+  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
+  (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"()) +
   '\n【申請結果】\n' +
   "乳癌PertuzumabTrastuzumabSC轉移性申請之CQL檢核結果" +
   '\n===============================================\n'

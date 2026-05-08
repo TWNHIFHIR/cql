@@ -78,6 +78,38 @@ define "續用申請":
 define "申請類型未知":
   "申請類型" = '無法判斷申請類型'
 
+// 報告呈現用：判斷必要資料是否至少有填寫，避免把未填資料誤列為代碼或條件不符。
+define "有Claim資料":
+  exists (
+    [Claim] C
+    where C.item is not null
+      or C.diagnosis is not null
+  )
+
+define "有MedicationRequest資料":
+  exists (
+    [MedicationRequest] MR
+    where MR.medication is not null
+      or MR.dosageInstruction is not null
+  )
+
+define "有Observation資料":
+  exists (
+    [Observation] O
+    where O.code is not null
+      or O.value is not null
+      or O.component is not null
+      or O.interpretation is not null
+  )
+
+define "有DiagnosticReport資料":
+  exists (
+    [DiagnosticReport] DR
+    where DR.code is not null
+      or DR.effective is not null
+      or DR.conclusion is not null
+  )
+
 // 醫令類別=1 (orderType = '1')
 define "醫令類別為1":
  exists (
