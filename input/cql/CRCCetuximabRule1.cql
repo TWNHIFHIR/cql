@@ -11,6 +11,7 @@ include CRCReusable version '1.0.0' called Reusable
  
 context Patient
 
+
 //============================================
 // 主要規定一：初次使用條件
 //============================================
@@ -27,26 +28,23 @@ define "本次申請紀錄":
 define "本次申請起始日期":
   FHIRHelpers.ToDateTime(("本次申請紀錄".dosageInstruction[0].timing.repeat.bounds as Period).start)
 
-
-
-
 /*規則1*/
 //條件1
 //條件1
-define "1規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用":
+define "規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用":
   Reusable."HasConcurrentMedicationOrders2"(CodeConcept.L01FE01, CodeConcept.L01BC02, CodeConcept.L01CE02)
   and Reusable."醫令類別為1"
 
 
 //條件2
-define "1規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用":
+define "規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用":
   Reusable."HasConcurrentMedicationOrders2"(CodeConcept.L01FE01, CodeConcept.L01BC02, CodeConcept.L01XA03)
   and Reusable."醫令類別為1"
 
 
 
 //條件3
-define "1規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)":
+define "規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)":
   exists (
     [Observation] RasObs
     where RasObs.status = 'final'
@@ -67,14 +65,14 @@ define "1規則1-3=用於治療具表皮生長因子受體表現型(EGFR express
     )
   )
 
-define "1規則1":
-  (("1規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用"
-  or "1規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用")
-  and "1規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)")
+define "規則1":
+  (("規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用"
+  or "規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用")
+  and "規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)")
 
 /*規則2*/
 //條件1
-define "1規則2-1=K-ras為原生型(wild type)" :
+define "規則2-1=K-ras為原生型(wild type)" :
   exists (
     [Observation] RasObs
     where RasObs.status = 'final'
@@ -90,10 +88,9 @@ define "1規則2-1=K-ras為原生型(wild type)" :
         where Cdg.code in CodeConcept.GeneTest
       )
     )
-    and exists (
-      RasObs.interpretation.coding I
-      where I.code = 'NEG'
-    )
+    and RasObs.value is not null
+    and RasObs.value is FHIR.string
+    and (RasObs.value as FHIR.string).value in { 'NEG', 'Negative', 'Not Detected' }
   )
 
 //條件2-1
@@ -101,14 +98,7 @@ define "1規則2-1=K-ras為原生型(wild type)" :
 define "ICD代碼檢核_布林值": Reusable."主要疾病之ICD-10使用C18、C19、C20、C21"
 
 //條件2-2
-define "1規則2-2-2資料已填寫":
-  exists (
-    [DiagnosticReport] O
-    where exists (O.code.coding)
-      and O.effective is not null
-  )
-
-define "1規則2-2-2=三個月內有影像檢查報告":
+define "規則2-2-2=三個月內有影像檢查報告":
   exists (
     [DiagnosticReport] O
     where exists (
@@ -124,15 +114,8 @@ define "1規則2-2-2=三個月內有影像檢查報告":
     and FHIRHelpers.ToDateTime(O.effective) <= "本次申請起始日期"
   )
 
-
-define "1規則2-2-2檢核結果":
-  if not "1規則2-2-2資料已填寫"
-    then '未提供三個月內影像檢查報告資料'
-  else if not "1規則2-2-2=三個月內有影像檢查報告"
-    then '未符合「三個月內且代碼正確」之影像檢查報告條件'
-  else '三個月內有影像檢查報告'
 //條件2-3
-define "1規則2-2-3=癌症分期分數或結果為M≠0":
+define "規則2-2-3=癌症分期分數或結果為M≠0":
   Count(
     [Observation] O
     where exists (
@@ -146,7 +129,7 @@ define "1規則2-2-3=癌症分期分數或結果為M≠0":
   ) > 0
 
 //條件2-4
-define "1規則2-2-4=用藥線別為第一線":
+define "規則2-2-4=用藥線別為第一線":
   exists (
     [Claim] C
       where exists (
@@ -162,17 +145,17 @@ define "1規則2-2-4=用藥線別為第一線":
       )
   )
 
-define "1規則2=轉移性直腸結腸癌病患之第一線治療":
+define "規則2=轉移性直腸結腸癌病患之第一線治療":
   Reusable."主要疾病之ICD-10使用C18、C19、C20、C21"
-  and "1規則2-2-2=三個月內有影像檢查報告"
-  and "1規則2-2-3=癌症分期分數或結果為M≠0"
-  and "1規則2-2-4=用藥線別為第一線"
+  and "規則2-2-2=三個月內有影像檢查報告"
+  and "規則2-2-3=癌症分期分數或結果為M≠0"
+  and "規則2-2-4=用藥線別為第一線"
 
 define "主要規定一":
   Reusable."初次申請" and
-  "1規則1"
-  and "1規則2-1=K-ras為原生型(wild type)"
-  and "1規則2=轉移性直腸結腸癌病患之第一線治療"
+  "規則1"
+  and "規則2-1=K-ras為原生型(wild type)"
+  and "規則2=轉移性直腸結腸癌病患之第一線治療"
 
 
 //============================================
@@ -180,14 +163,7 @@ define "主要規定一":
 //============================================
 
 /*規則1*/
-define "2規則1資料已填寫":
-  exists (
-    [DiagnosticReport] Report
-    where exists (Report.code.coding)
-      and Report.effective is not null
-  )
-
-define "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用":
+define "規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用":
   exists (
     [MedicationRequest] MRPlan
      where MRPlan.intent = 'plan'
@@ -213,16 +189,9 @@ define "2規則1=提出客觀證據（如：影像學）證實無惡化，才可
     )
   and Reusable."醫令類別為1"
 
-define "2規則1檢核結果":
-  if not "2規則1資料已填寫"
-    then '未提供客觀證據（如：影像學）資料'
-  else if not "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
-    then '未符合「三個月內且代碼正確」之影像或檢查報告條件'
-  else '提出客觀證據（如：影像學）證實無惡化'
-
 define "主要規定二":
   Reusable."續用申請" and
-  "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
+  "規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
 
 
 //============================================
@@ -231,14 +200,14 @@ define "主要規定二":
 
 /*規則1*/
 //條件1
-define "3規則1-1=Panitumumab與cetuximab二者僅能擇一使用":
+define "規則1-1=Panitumumab與cetuximab二者僅能擇一使用":
   not (
     Reusable."HasMedicationUse"(CodeConcept.L01FE02)
     and Reusable."HasMedicationUse"(CodeConcept.L01FE01)
   )
 
 //條件2
-define "3規則1-2=無法忍受化療(其副作用)時(有註記)":
+define "規則1-2=無法忍受化療(其副作用)時(有註記)":
   exists (
     [Claim] C
     where exists (
@@ -248,39 +217,39 @@ define "3規則1-2=無法忍受化療(其副作用)時(有註記)":
   )
 
 //條件3
-define "3規則1-3=Panitumumab與Cetuximab使用時間不重疊":
+define "規則1-3=Panitumumab與Cetuximab使用時間不重疊":
   not Reusable."HasMedicationPeriodsOverlap"(CodeConcept.L01FE02, CodeConcept.L01FE01)
   
 //條件4
-define "3規則1-4=每次申請事前審查之療程以18週為限":
+define "規則1-4=每次申請事前審查之療程以18週為限":
   Reusable."HasMedicationPlanDurationWithin"(CodeConcept.L01FE01, 126)
 
 //條件5
-define "3規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)":
+define "規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)":
   Reusable."HasMedicationTotalDurationWithin"(CodeConcept.L01FE, 252)
 
 define "3規則1":
-("3規則1-2=無法忍受化療(其副作用)時(有註記)" and "3規則1-3=Panitumumab與Cetuximab使用時間不重疊")//情況1: 有「無法忍受化療副作用」註記時，允許互換使用兩種藥物，但使用時間不可重疊
+("規則1-2=無法忍受化療(其副作用)時(有註記)" and "規則1-3=Panitumumab與Cetuximab使用時間不重疊")//情況1: 有「無法忍受化療副作用」註記時，允許互換使用兩種藥物，但使用時間不可重疊
 or
-(not "3規則1-2=無法忍受化療(其副作用)時(有註記)" and "3規則1-1=Panitumumab與cetuximab二者僅能擇一使用")//情況2: 沒有「無法忍受化療副作用」註記時，二者僅能擇一使用（只能有其中一種藥物的使用記錄）
-and "3規則1-4=每次申請事前審查之療程以18週為限"
-and "3規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)"
+(not "規則1-2=無法忍受化療(其副作用)時(有註記)" and "規則1-1=Panitumumab與cetuximab二者僅能擇一使用")//情況2: 沒有「無法忍受化療副作用」註記時，二者僅能擇一使用（只能有其中一種藥物的使用記錄）
+and "規則1-4=每次申請事前審查之療程以18週為限"
+and "規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)"
 
 /*規則2*/
 //條件1
-define "3規則2-1=未使用bevacizumab藥品":
+define "規則2-1=未使用bevacizumab藥品":
   not Reusable."HasMedicationUse"(CodeConcept.L01FG01)
 
 //條件2
-define "3規則2-2=本藥品未與bevacizumab併用":
+define "規則2-2=本藥品未與bevacizumab併用":
   not Reusable."HasConcurrentMedicationPlan"(CodeConcept.L01FE01, CodeConcept.L01FG01)
 
-define "3規則2":
-  "3規則2-1=未使用bevacizumab藥品"
-  or "3規則2-2=本藥品未與bevacizumab併用"
+define "規則2":
+  "規則2-1=未使用bevacizumab藥品"
+  or "規則2-2=本藥品未與bevacizumab併用"
 
 define "主要規定三":
-  "3規則1" and "3規則2"
+  "3規則1" and "規則2"
 
 
 //============================================
@@ -289,50 +258,50 @@ define "主要規定三":
 
 define function "符合項目"():
   // 主要規定一：初次使用條件
-  (if Reusable."初次申請" and ("1規則1" or "1規則2-1=K-ras為原生型(wild type)" or "1規則2-2-2=三個月內有影像檢查報告" or "1規則2-2-3=癌症分期分數或結果為M≠0" or "1規則2-2-4=用藥線別為第一線")
+  (if Reusable."初次申請" and ("規則1" or "規則2-1=K-ras為原生型(wild type)" or "規則2-2-2=三個月內有影像檢查報告" or "規則2-2-3=癌症分期分數或結果為M≠0" or "規則2-2-4=用藥線別為第一線")
     then '<主要規定一：初次使用條件>\n' +
-         (if "1規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用" 
-           then '● 1規則1-1：Cetuximab與FOLFIRI（Folinic acid/5-fluorouracil/irinotecan）合併使用\n' else '') +
-         (if "1規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用" 
-           then '● 1規則1-2：Cetuximab與FOLFOX（Folinic acid/5-fluorouracil/oxaliplatin）合併使用\n' else '') +
-         (if "1規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)" 
-           then '● 1規則1-3：用於治療具表皮生長因子受體表現型（EGFR expressing）\n' else '') +
-         (if "1規則2-1=K-ras為原生型(wild type)" 
-           then '● 1規則2-1：K-ras為原生型（wild type）\n' else '') +
+         (if "規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用" 
+           then '● 規則1-1：Cetuximab與FOLFIRI（Folinic acid/5-fluorouracil/irinotecan）合併使用\n' else '') +
+         (if "規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用" 
+           then '● 規則1-2：Cetuximab與FOLFOX（Folinic acid/5-fluorouracil/oxaliplatin）合併使用\n' else '') +
+         (if "規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)" 
+           then '● 規則1-3：用於治療具表皮生長因子受體表現型（EGFR expressing）\n' else '') +
+         (if "規則2-1=K-ras為原生型(wild type)" 
+           then '● 規則2-1：K-ras為原生型（wild type）\n' else '') +
          (if Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
-           then '● 1規則2-2-1：主要疾病之ICD代碼為C18、C19、C20、C21\n' else '') +
-         (if "1規則2-2-2=三個月內有影像檢查報告"
-           then '● 1規則2-2-2：三個月內有影像檢查報告\n' else '') +
-         (if "1規則2-2-3=癌症分期分數或結果為M≠0" 
-           then '● 1規則2-2-3：癌症分期為轉移性（M≠0）\n' else '') +
-         (if "1規則2-2-4=用藥線別為第一線" 
-           then '● 1規則2-2-4：用藥線別為第一線\n' else '') +
+           then '● 規則2-2-1：主要疾病之ICD代碼為C18、C19、C20、C21\n' else '') +
+         (if "規則2-2-2=三個月內有影像檢查報告"
+           then '● 規則2-2-2：三個月內有影像檢查報告\n' else '') +
+         (if "規則2-2-3=癌症分期分數或結果為M≠0" 
+           then '● 規則2-2-3：癌症分期為轉移性（M≠0）\n' else '') +
+         (if "規則2-2-4=用藥線別為第一線" 
+           then '● 規則2-2-4：用藥線別為第一線\n' else '') +
          '\n'  
     else '') +
   
   // 主要規定二：續用條件
-  (if Reusable."續用申請" and "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用" 
+  (if Reusable."續用申請" and "規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用" 
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '● 2規則1：提出客觀證據（如：影像學）證實無惡化\n' +
+         '● 續用規則1：提出客觀證據（如：影像學）證實無惡化\n' +
          '\n'  
     else '') +
   
   // 主要規定三：藥品使用規則
-  (if "3規則1-1=Panitumumab與cetuximab二者僅能擇一使用" or "3規則1-2=無法忍受化療(其副作用)時(有註記)" or "3規則1-3=Panitumumab與Cetuximab使用時間不重疊" or "3規則1-4=每次申請事前審查之療程以18週為限" or "3規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)" or "3規則2-1=未使用bevacizumab藥品" or "3規則2-2=本藥品未與bevacizumab併用"
+  (if "規則1-1=Panitumumab與cetuximab二者僅能擇一使用" or "規則1-2=無法忍受化療(其副作用)時(有註記)" or "規則1-3=Panitumumab與Cetuximab使用時間不重疊" or "規則1-4=每次申請事前審查之療程以18週為限" or "規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)" or "規則2-1=未使用bevacizumab藥品" or "規則2-2=本藥品未與bevacizumab併用"
     then '<主要規定三：藥品使用規則>\n' +
-         (if "3規則1-2=無法忍受化療(其副作用)時(有註記)" and "3規則1-3=Panitumumab與Cetuximab使用時間不重疊"
-           then '● 3規則1：有「無法忍受化療副作用」註記，且Panitumumab與Cetuximab使用時間不重疊\n' 
-           else if not "3規則1-2=無法忍受化療(其副作用)時(有註記)" and "3規則1-1=Panitumumab與cetuximab二者僅能擇一使用"
-           then '● 3規則1-2：Panitumumab與cetuximab二者僅擇一使用\n'
+         (if "規則1-2=無法忍受化療(其副作用)時(有註記)" and "規則1-3=Panitumumab與Cetuximab使用時間不重疊"
+           then '● 規則3-1-1：有「無法忍受化療副作用」註記，且Panitumumab與Cetuximab使用時間不重疊\n' 
+           else if not "規則1-2=無法忍受化療(其副作用)時(有註記)" and "規則1-1=Panitumumab與cetuximab二者僅能擇一使用"
+           then '● 規則3-1-2：Panitumumab與cetuximab二者僅擇一使用\n'
            else '') +
-         (if "3規則1-4=每次申請事前審查之療程以18週為限" 
-           then '● 3規則1-4：每次申請事前審查之療程以18週為限\n' else '') +
-         (if "3規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)" 
-           then '● 3規則1-5：Panitumumab與cetuximab使用總療程併計算，以全部36週為上限\n' else '') +
-         (if "3規則2-1=未使用bevacizumab藥品" 
-           then '● 3規則2-1：未使用bevacizumab藥品\n' else '') +
-         (if "3規則2-2=本藥品未與bevacizumab併用" 
-           then '● 3規則2-2：本藥品未與bevacizumab併用\n' else '')
+         (if "規則1-4=每次申請事前審查之療程以18週為限" 
+           then '● 規則3-1-3：每次申請事前審查之療程以18週為限\n' else '') +
+         (if "規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)" 
+           then '● 規則3-1-4：Panitumumab與cetuximab使用總療程併計算，以全部36週為上限\n' else '') +
+         (if "規則2-1=未使用bevacizumab藥品" 
+           then '● 規則3-2-1：未使用bevacizumab藥品\n' else '') +
+         (if "規則2-2=本藥品未與bevacizumab併用" 
+           then '● 規則3-2-2：本藥品未與bevacizumab併用\n' else '')
     else '')
 
 //============================================
@@ -341,45 +310,36 @@ define function "符合項目"():
 
 define function "不符合項目_代碼或條件不符"():
   // 主要規定一：初次使用條件 - 代碼條件不符
-  (if Reusable."初次申請" and (not "1規則2-1=K-ras為原生型(wild type)" or not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" or ("1規則2-2-2資料已填寫" and not "1規則2-2-2=三個月內有影像檢查報告") or not "1規則2-2-3=癌症分期分數或結果為M≠0" or not "1規則2-2-4=用藥線別為第一線")
+  (if Reusable."初次申請" and (not "規則2-1=K-ras為原生型(wild type)" or not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" or not "規則2-2-3=癌症分期分數或結果為M≠0" or not "規則2-2-4=用藥線別為第一線")
     then '<主要規定一：初次使用條件>\n' +
-         (if not "1規則2-1=K-ras為原生型(wild type)" 
-           then '▲ 1規則2-1：未符合K-ras為原生型條件\n' else '') +
+         (if not "規則2-1=K-ras為原生型(wild type)" 
+           then '▲ 規則2-1：K-ras非原生型或未提供檢測結果\n' else '') +
          (if not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
-           then '▲ 1規則2-2-1：未符合主要疾病之ICD代碼為C18、C19、C20、C21條件\n' else '') +
-         (if "1規則2-2-2資料已填寫" and not "1規則2-2-2=三個月內有影像檢查報告"
-           then '▲ 未符合「三個月內且代碼正確」之影像或檢查報告條件\n' else '') +
-         (if not "1規則2-2-3=癌症分期分數或結果為M≠0" 
-           then '▲ 1規則2-2-3：未符合癌症分期分數或結果為M≠0條件\n' else '') +
-         (if not "1規則2-2-4=用藥線別為第一線" 
-           then '▲ 1規則2-2-4：未符合用藥線別為第一線條件\n' else '') +
+           then '▲ 規則2-2-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
+         (if not "規則2-2-3=癌症分期分數或結果為M≠0" 
+           then '▲ 規則2-2-3：癌症分期分數或結果不為M≠0\n' else '') +
+         (if not "規則2-2-4=用藥線別為第一線" 
+           then '▲ 規則2-2-4：用藥線別不為第一線\n' else '') +
          '\n'  
     else '') +
   
-  // 主要規定二：續用條件 - 代碼條件不符
-  (if Reusable."續用申請" and "2規則1資料已填寫" and not "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
-    then '<主要規定二：續用條件－治療持續給付>\n' +
-         '▲ 未符合「三個月內且代碼正確」之影像或檢查報告條件\n' +
-         '\n'
-    else '') +
-
   // 主要規定三：藥品使用規則 - 代碼條件不符
-  (if not "3規則1" or not "3規則2"
+  (if not "3規則1" or not "規則2"
     then '<主要規定三：藥品使用規則>\n' +
          (if not "3規則1"
-           then '▲ 3規則1：未符合Panitumumab與cetuximab使用規定條件\n' +
-                (if "3規則1-2=無法忍受化療(其副作用)時(有註記)" and not "3規則1-3=Panitumumab與Cetuximab使用時間不重疊"
+           then '▲ 規則3-1：Panitumumab與cetuximab使用規定不符\n' +
+                (if "規則1-2=無法忍受化療(其副作用)時(有註記)" and not "規則1-3=Panitumumab與Cetuximab使用時間不重疊"
                   then '  （有「無法忍受化療副作用」註記，但Panitumumab與Cetuximab使用時間重疊）\n'
-                  else if not "3規則1-2=無法忍受化療(其副作用)時(有註記)" and not "3規則1-1=Panitumumab與cetuximab二者僅能擇一使用"
+                  else if not "規則1-2=無法忍受化療(其副作用)時(有註記)" and not "規則1-1=Panitumumab與cetuximab二者僅能擇一使用"
                   then '  （無「無法忍受化療副作用」註記，但二者同時使用）\n'
                   else '')
            else '') +
-         (if not "3規則1-4=每次申請事前審查之療程以18週為限" 
-           then '▲ 3規則1-4：未符合每次申請事前審查之療程以18週為上限條件\n' else '') +
-         (if not "3規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)" 
-           then '▲ 3規則1-5：未符合Panitumumab與cetuximab使用總療程以36週為上限條件\n' else '') +
-         (if not ("3規則2-1=未使用bevacizumab藥品" or "3規則2-2=本藥品未與bevacizumab併用")
-           then '▲ 3規則2：未符合本藥品不得與bevacizumab併用條件\n' else '')
+         (if not "規則1-4=每次申請事前審查之療程以18週為限" 
+           then '▲ 規則3-1-3：每次申請事前審查之療程超過18週上限\n' else '') +
+         (if not "規則1-5=二者使用總療程併計算,以全部36週為上限(Panitumumab與cetuximab)" 
+           then '▲ 規則3-1-4：Panitumumab與cetuximab使用總療程超過36週上限\n' else '') +
+         (if not ("規則2-1=未使用bevacizumab藥品" or "規則2-2=本藥品未與bevacizumab併用")
+           then '▲ 規則3-2：因與bevacizumab併用，故不符合本藥品之使用規則\n' else '')
     else '')
 
 //============================================
@@ -388,24 +348,24 @@ define function "不符合項目_代碼或條件不符"():
 
 define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
-  (if Reusable."初次申請" and (not "1規則1" or not "1規則2-2-2資料已填寫")
+  (if Reusable."初次申請" and (not "規則1" or not "規則2-2-2=三個月內有影像檢查報告")
     then '<主要規定一：初次使用條件>\n' +
-         (if not "1規則1"
-           then '▲ 1規則1：未提供化學療法併用資料或EGFR表現型檢測結果資料\n' +
-                (if not ("1規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用" or "1規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用")
+         (if not "規則1"
+           then '▲ 規則1：未提供化學療法併用資料或EGFR表現型檢測結果\n' +
+                (if not ("規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用" or "規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用")
                   then '  （需有FOLFIRI或FOLFOX之處方）\n' else '') +
-                (if not "1規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)"
+                (if not "規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)"
                   then '  （需提供EGFR expressing檢測結果）\n' else '')
            else '') +
-         (if not "1規則2-2-2資料已填寫"
-           then '▲ 1規則2-2-2：未提供三個月內影像檢查報告資料\n' else '') +
+         (if not "規則2-2-2=三個月內有影像檢查報告"
+           then '▲ 規則2-2-2：未提供三個月內影像檢查報告\n' else '') +
          '\n'  
     else '') +
   
   // 主要規定二：續用條件 - 必要資料未填寫
-  (if Reusable."續用申請" and not "1規則2-2-2資料已填寫"
+  (if Reusable."續用申請" and not "規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '▲ 2規則1：未提供客觀證據（如：影像學）資料\n' +
+         '▲ 續用規則1：未提供客觀證據（如：影像學）\n' +
          '\n'  
     else '')
 
@@ -416,16 +376,16 @@ define function "不符合項目_必要資料未填寫"():
 define "大腸直腸癌Cetuximab第一線治療申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "1規則1" and
-      "1規則2-1=K-ras為原生型(wild type)" and
-      "1規則2=轉移性直腸結腸癌病患之第一線治療" and
+      "規則1" and
+      "規則2-1=K-ras為原生型(wild type)" and
+      "規則2=轉移性直腸結腸癌病患之第一線治療" and
       "3規則1" and  
-      "3規則2"
+      "規則2"
     )
     when Reusable."續用申請" then (
-      "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用" and
+      "規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用" and
       "3規則1" and  
-      "3規則2"
+      "規則2"
     )
     else false
   end
@@ -434,18 +394,18 @@ define "大腸直腸癌Cetuximab第一線治療申請結果_布林":
 define "大腸直腸癌Cetuximab第一線治療申請結果":
   if (
     Reusable."初次申請" and 
-    "1規則1" and
-    "1規則2-1=K-ras為原生型(wild type)" and
-    "1規則2=轉移性直腸結腸癌病患之第一線治療" and
+    "規則1" and
+    "規則2-1=K-ras為原生型(wild type)" and
+    "規則2=轉移性直腸結腸癌病患之第一線治療" and
     "3規則1" and  
-    "3規則2"
+    "規則2"
   )
   then '✓通過：初次使用－大腸直腸癌 Cetuximab 第一線用藥申請'
   else if (
     Reusable."續用申請" and
-    "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用" and
+    "規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用" and
     "3規則1" and  
-    "3規則2"
+    "規則2"
   )
   then '✓通過：續用－大腸直腸癌 Cetuximab 第一線用藥申請'
   else if Reusable."初次申請"
@@ -464,10 +424,10 @@ define "報告總結":
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +
+  '\n【▲不符合項目 - 代碼或條件不符】\n' +
+  (if "不符合項目_代碼或條件不符"() = '' then '無\n' else "不符合項目_代碼或條件不符"()) +
   '\n【▲不符合項目 - 必要資料未填寫】\n' +
   (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
-  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
-  (if "不符合項目_代碼或條件不符"() = '' then '無\n' else "不符合項目_代碼或條件不符"()) +
   '\n【申請結果】\n' +
   "大腸直腸癌Cetuximab第一線治療申請結果" +
   '\n===============================================\n'
