@@ -128,7 +128,7 @@ define "規則1-2-1-4=三個月內有檢查報告":
     where exists (
       O2.code.coding Cdg
       where Cdg in CodeConcept.LOINC
-      and Cdg.code in CodeConcept.DiagnosticReport
+      and Cdg.code in CodeConcept.DiagnosticReportCode
     )
     and O2.effective is not null
     and FHIRHelpers.ToDateTime(O2.effective) >= "本次申請起始日期" - 90 days
