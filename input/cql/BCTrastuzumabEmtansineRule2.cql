@@ -38,17 +38,7 @@ define "3個月內有檢查報告":
 Reusable."HasRecentMolecularReport"("本次申請起始日期", 90)
 
 define "癌症分期分數或結果為M>=1":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '399390009'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and O.value is not null
-        and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[^0].*')
-  )
+  Reusable."癌症分期分數或結果為M>=1"
 
 define "3個月內影像報告":
 Reusable."HasRecentImageReport"("本次申請起始日期", 90) 
@@ -230,7 +220,7 @@ define "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移":
 
 
 //條件3
-define "條件3=並同時符合下列情形":
+define "1規則3=並同時符合下列情形":
 "1條件3-1=之前分別接受過trastuzumab與一種taxane藥物治療，或其合併療法，或pertuzumab與trastuzumab與一種taxane藥物治療"
 and "1條件3-2=之前已經接受過轉移性癌症治療，或在輔助療法治療期間或完成治療後6個月內癌症復發"
 and "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移"
@@ -240,7 +230,7 @@ and "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移"
 define "主要規定一":
 "1條件1=限單獨使用於先前未使用過本藥品"
 and "1條件2=HER2過度表現(IHC3+或FISH+)之轉移性乳癌病人作為二線治療"
-and "條件3=並同時符合下列情形"
+and "1規則3=並同時符合下列情形"
 
 
 //============================================
@@ -261,7 +251,7 @@ define "前次申請紀錄":
   Reusable."LatestMedicationPlanBefore"(CodeConcept.L01FD03, "本次申請起始日期")
 
 // 檢查本次申請療程長度是否在12週內
-define "規則1-1=每12週須再次申請並檢附療效評估資料":
+define "2規則1-1=每12週須再次申請並檢附療效評估資料":
   Reusable."醫令類別為1" 
   and Reusable."續用註記為2"
   and "本次申請紀錄" is not null
@@ -284,7 +274,7 @@ define "前次用藥開始日期":
   Reusable."GetStartTime"("前次治療紀錄")
 
 // 規則1-2: 疾病有惡化情形須停止使用(續用須檢附前次治療後影像學報告)
-define "規則1-2=疾病有惡化情形須停止使用":
+define "2規則1-2=疾病有惡化情形須停止使用":
   Reusable."HasImageReportBetweenPreviousTreatmentAndCurrentApply"(CodeConcept.L01FD03)
 
 // 主要規定二
@@ -292,8 +282,8 @@ define "主要規定二":
 Reusable."續用註記為2"
 and Reusable."醫令類別為1"
 and "本次申請紀錄" is not null
-and "規則1-1=每12週須再次申請並檢附療效評估資料"
-and "規則1-2=疾病有惡化情形須停止使用"
+and "2規則1-1=每12週須再次申請並檢附療效評估資料"
+and "2規則1-2=疾病有惡化情形須停止使用"
 
 //============================================
 // 主要規定三：藥品使用規則
@@ -311,7 +301,7 @@ define "符合條件之本藥品處方":
       and end of (MRTotal.dosageInstruction[0].timing.repeat.bounds as Period) is not null
       and Reusable."HasMedicationCode"(MRTotal, CodeConcept.L01FD03)
 
-define "規則1=每位病人至多給付10個月(13個療程為上限)":
+define "3規則1=每位病人至多給付10個月(13個療程為上限)":
   Sum(
     "符合條件之本藥品處方" MRTotal
       return
@@ -332,7 +322,7 @@ define "曾使用lapatinib":
 define "曾使用trastuzumab deruxtecan":
   Reusable."HasMedicationUse"(CodeConcept.L01FD04)
 
-define "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換":
+define "3規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換":
   not (
     ("曾使用Trastuzumab emtansine" and "曾使用lapatinib")
     or ("曾使用Trastuzumab emtansine" and "曾使用trastuzumab deruxtecan")
@@ -342,8 +332,33 @@ define "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能
 
 //主要規定三
 define "主要規定三":
-"規則1=每位病人至多給付10個月(13個療程為上限)"
-and "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
+"3規則1=每位病人至多給付10個月(13個療程為上限)"
+and "3規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
+
+
+//============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請" and (
+          not Reusable."HER2檢測資料存在" or
+          not Reusable."癌症分期資料存在" or
+          ("3個月內有檢查報告" and not Reusable."影像報告資料存在") or
+          (not Reusable."檢查報告資料存在" and "3個月內影像報告") or
+          not "1條件3-2=之前已經接受過轉移性癌症治療，或在輔助療法治療期間或完成治療後6個月內癌症復發" or
+          not "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移"
+        )
+    )
+    or (
+      Reusable."續用申請" and (
+          not "2規則1-1=每12週須再次申請並檢附療效評估資料" or
+          not "2規則1-2=疾病有惡化情形須停止使用"
+        )
+    )
+  )
 
 
 //============================================
@@ -355,7 +370,7 @@ define function "符合項目"():
   (if Reusable."初次申請" and (
     "1條件1=限單獨使用於先前未使用過本藥品" or
     "1條件2=HER2過度表現(IHC3+或FISH+)之轉移性乳癌病人作為二線治療" or
-    "條件3=並同時符合下列情形"
+    "1規則3=並同時符合下列情形"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "1條件1=限單獨使用於先前未使用過本藥品"
@@ -379,23 +394,23 @@ define function "符合項目"():
 
   // 主要規定二：續用條件
   (if Reusable."續用申請" and (
-    "規則1-1=每12週須再次申請並檢附療效評估資料" or
-    "規則1-2=疾病有惡化情形須停止使用"
+    "2規則1-1=每12週須再次申請並檢附療效評估資料" or
+    "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if "規則1-1=每12週須再次申請並檢附療效評估資料"
+         (if "2規則1-1=每12週須再次申請並檢附療效評估資料"
            then '● 2條件1：於12週內再次申請並檢附療效評估資料\n' else '') +
-         (if "規則1-2=疾病有惡化情形須停止使用"
+         (if "2規則1-2=疾病有惡化情形須停止使用"
            then '● 2條件2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '') +
 
   // 主要規定三：藥品使用規則
-  (if "規則1=每位病人至多給付10個月(13個療程為上限)" or "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
+  (if "3規則1=每位病人至多給付10個月(13個療程為上限)" or "3規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
     then '<主要規定三：藥品使用規則>\n' +
-         (if "規則1=每位病人至多給付10個月(13個療程為上限)"
+         (if "3規則1=每位病人至多給付10個月(13個療程為上限)"
            then '● 3規則1：本藥品使用療程符合10個月/13個療程上限(≤280天)\n' else '') +
-         (if "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
+         (if "3規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
            then '● 3規則2：未與lapatinib或trastuzumab deruxtecan交替或混用，符合擇一給付規定\n' else '')
     else '')
 
@@ -407,25 +422,25 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    not Reusable."ICD-10使用C50" or
-    not Reusable."用藥線別=2" or
+    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
+    Reusable."用藥線別資料存在" and not Reusable."用藥線別=2" or
     not "1條件1=限單獨使用於先前未使用過本藥品" or
-    not "HER2過度表現(IHC3+或FISH+)" or
-    not "癌症分期分數或結果為M>=1" or
+    Reusable."HER2檢測資料存在" and not "HER2過度表現(IHC3+或FISH+)" or
+    Reusable."癌症分期資料存在" and not "癌症分期分數或結果為M>=1" or
     not "1條件3-1=之前分別接受過trastuzumab與一種taxane藥物治療，或其合併療法，或pertuzumab與trastuzumab與一種taxane藥物治療" or
     not "1條件3-2=之前已經接受過轉移性癌症治療，或在輔助療法治療期間或完成治療後6個月內癌症復發" or
     not "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not Reusable."ICD-10使用C50"
+         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not Reusable."用藥線別=2"
+         (if Reusable."用藥線別資料存在" and not Reusable."用藥線別=2"
            then '▲ 1條件2(線別)：用藥線別非第二線\n' else '') +
          (if not "1條件1=限單獨使用於先前未使用過本藥品"
            then '▲ 1條件1：先前已使用過本藥品，不符合初次申請條件\n' else '') +
-         (if not "HER2過度表現(IHC3+或FISH+)"
+         (if Reusable."HER2檢測資料存在" and not "HER2過度表現(IHC3+或FISH+)"
            then '▲ 1條件2(HER2)：HER2非過度表現(非IHC3+或FISH+)\n' else '') +
-         (if not "癌症分期分數或結果為M>=1"
+         (if Reusable."癌症分期資料存在" and not "癌症分期分數或結果為M>=1"
            then '▲ 1條件2(分期)：癌症分期M<1，未確認為轉移性乳癌\n' else '') +
          (if not "1條件3-1=之前分別接受過trastuzumab與一種taxane藥物治療，或其合併療法，或pertuzumab與trastuzumab與一種taxane藥物治療"
            then '▲ 1條件3-1：無trastuzumab與taxane之治療紀錄(含合併療法及pertuzumab三藥合療)\n' else '') +
@@ -437,12 +452,12 @@ define function "不符合項目_條件或代碼不符合"():
     else '') +
 
   // 主要規定三：藥品使用規則 - 療程超標或條件不符
-  (if not "規則1=每位病人至多給付10個月(13個療程為上限)"
+  (if not "3規則1=每位病人至多給付10個月(13個療程為上限)"
     then '<主要規定三：藥品使用規則>\n' +
          '▲ 3規則1：本藥品使用療程超過10個月/13個療程上限(280天)\n' + '\n'
     else '') +
 
-  (if not "規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
+  (if not "3規則2=Trastuzumab emtansine、lapatinib和trastuzumab deruxtecan僅能擇一給付，不得互換"
     then '<主要規定三：藥品使用規則>\n' +
          '▲ 3規則2：曾與lapatinib或trastuzumab deruxtecan交替或混用，違反擇一給付規定\n' + '\n'
     else '')
@@ -455,21 +470,21 @@ define function "不符合項目_條件或代碼不符合"():
 define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
-    not "HER2過度表現(IHC3+或FISH+)" or
-    not "癌症分期分數或結果為M>=1" or
-    ("3個月內有檢查報告" and not "3個月內影像報告") or
-    (not "3個月內有檢查報告" and "3個月內影像報告") or
+    not Reusable."HER2檢測資料存在" or
+    not Reusable."癌症分期資料存在" or
+    ("3個月內有檢查報告" and not Reusable."影像報告資料存在") or
+    (not Reusable."檢查報告資料存在" and "3個月內影像報告") or
     not "1條件3-2=之前已經接受過轉移性癌症治療，或在輔助療法治療期間或完成治療後6個月內癌症復發" or
     not "1條件3-3=合併有主要臟器(不包含骨及軟組織)轉移"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not "HER2過度表現(IHC3+或FISH+)"
+         (if not Reusable."HER2檢測資料存在"
            then '▲ 1條件2(HER2)：未提供HER2檢測報告(IHC或FISH)\n' else '') +
-         (if not "癌症分期分數或結果為M>=1"
+         (if not Reusable."癌症分期資料存在"
            then '▲ 1條件2(分期)：未提供癌症分期分數或結果資料\n' else '') +
-         (if "3個月內有檢查報告" and not "3個月內影像報告"
+         (if "3個月內有檢查報告" and not Reusable."影像報告資料存在"
            then '▲ 1條件2(報告)：已提供分子檢查報告但缺少3個月內影像報告，兩者須同時提供\n' else '') +
-         (if not "3個月內有檢查報告" and "3個月內影像報告"
+         (if not Reusable."檢查報告資料存在" and "3個月內影像報告"
            then '▲ 1條件2(報告)：已提供影像報告但缺少3個月內分子檢查報告，兩者須同時提供\n' else '') +
          (if not "1條件3-2=之前已經接受過轉移性癌症治療，或在輔助療法治療期間或完成治療後6個月內癌症復發"
            then '▲ 1條件3-2：未於病摘中敘明轉移性癌症治療史或癌症復發狀況\n' else '') +
@@ -480,13 +495,13 @@ define function "不符合項目_必要資料未填寫"():
 
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and (
-    not "規則1-1=每12週須再次申請並檢附療效評估資料" or
-    not "規則1-2=疾病有惡化情形須停止使用"
+    not "2規則1-1=每12週須再次申請並檢附療效評估資料" or
+    not "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if not "規則1-1=每12週須再次申請並檢附療效評估資料"
+         (if not "2規則1-1=每12週須再次申請並檢附療效評估資料"
            then '▲ 2條件1：未於12週內再次申請，或未檢附療效評估資料，或申請療程超過12週(84天)\n' else '') +
-         (if not "規則1-2=疾病有惡化情形須停止使用"
+         (if not "2規則1-2=疾病有惡化情形須停止使用"
            then '▲ 2條件2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '')
@@ -499,8 +514,7 @@ define function "不符合項目_必要資料未填寫"():
 define "乳癌TrastuzumabEmtansine晚期申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "主要規定一" and
-      "主要規定三"
+      "主要規定一"
     )
     when Reusable."續用申請" then
       "主要規定二"
@@ -510,8 +524,7 @@ define "乳癌TrastuzumabEmtansine晚期申請結果_布林":
 define "乳癌TrastuzumabEmtansine晚期申請之CQL檢核結果":
   if (
     Reusable."初次申請" and
-    "主要規定一" and
-    "主要規定三"
+    "主要規定一"
   )
   then '✓通過：初次使用－晚期乳癌Trastuzumab Emtansine用藥申請'
 
@@ -536,6 +549,7 @@ define "乳癌TrastuzumabEmtansine晚期申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 晚期乳癌之Trastuzumab Emtansine申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +

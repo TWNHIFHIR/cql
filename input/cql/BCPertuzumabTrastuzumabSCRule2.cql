@@ -64,17 +64,7 @@ Reusable."HasRecentImageReport"("本次申請起始日期", 90)
 
 //1條件3-2
 define "1條件3-2=癌症分期分數或結果為M>=1":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '399390009'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and O.value is not null
-        and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[^0].*')
-  )
+  Reusable."癌症分期分數或結果為M>=1"
 
 //1條件3-3(檢查報告)
 define "1條件3-3=3個月內有檢查報告":
@@ -177,7 +167,7 @@ define "前次申請紀錄":
   Reusable."LatestMedicationPlanBefore"(CodeConcept.L01FY01, "本次申請起始日期")
 
 // 檢查18週間隔的邏輯
-define "規則1-1=每18週須再次申請並檢附療效評估資料":
+define "2規則1-1=每18週須再次申請並檢附療效評估資料":
   Reusable."醫令類別為1" 
   and Reusable."續用註記為2"
   and "前次申請紀錄" is not null
@@ -201,14 +191,14 @@ define "前次用藥開始日期":
   Reusable."GetStartTime"("前次治療紀錄")
 
 // 規則1-2: 疾病有惡化情形須停止使用(續用須檢附前次治療後影像學報告)
-define "規則1-2=疾病有惡化情形須停止使用":
+define "2規則1-2=疾病有惡化情形須停止使用":
   Reusable."HasImageReportBetweenPreviousTreatmentAndCurrentApply"(CodeConcept.L01FY01)
 
 // 主要規定二
 define "主要規定二":
 Reusable."續用註記為2"
-and "規則1-1=每18週須再次申請並檢附療效評估資料"
-and "規則1-2=疾病有惡化情形須停止使用"
+and "2規則1-1=每18週須再次申請並檢附療效評估資料"
+and "2規則1-2=疾病有惡化情形須停止使用"
 
 
 //============================================
@@ -328,6 +318,29 @@ define "主要規定三":
 
 
 //============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請" and (
+          not "1條件1=與docetaxel併用" or
+          not ("1條件3-1=3個月內影像報告" or "1條件3-3=3個月內有檢查報告") or
+          not ("1條件2-1=未曾以抗HER2療法治療" or "1條件2-2=未曾以化學療法治療") or
+          not "2條件2=病摘敘明早期乳癌治療結束至首次疾病復發轉移時間超過12個月以上"
+        )
+    )
+    or (
+      Reusable."續用申請" and (
+          not "2規則1-1=每18週須再次申請並檢附療效評估資料" or
+          not "2規則1-2=疾病有惡化情形須停止使用"
+        )
+    )
+  )
+
+
+//============================================
 // 列出「符合」項目判斷式
 //============================================
 
@@ -361,9 +374,9 @@ define function "符合項目"():
   // 主要規定二：續用條件
   (if Reusable."續用申請" and "主要規定二"
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if "規則1-1=每18週須再次申請並檢附療效評估資料"
+         (if "2規則1-1=每18週須再次申請並檢附療效評估資料"
            then '● 2規則1-1：於18週內再次申請並檢附療效評估資料\n' else '') +
-         (if "規則1-2=疾病有惡化情形須停止使用"
+         (if "2規則1-2=疾病有惡化情形須停止使用"
            then '● 2規則1-2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '') +
@@ -386,17 +399,17 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    not "ICD代碼檢核_布林值" or
-    not "1條件3-2=癌症分期分數或結果為M>=1" or
-    not "1條件3-4=具HER2過度表現"
+    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
+    Reusable."癌症分期資料存在" and not "1條件3-2=癌症分期分數或結果為M>=1" or
+    Reusable."HER2檢測資料存在" and not "1條件3-4=具HER2過度表現"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not "ICD代碼檢核_布林值"
+         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
            then '▲ 1規則1-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not "1條件3-2=癌症分期分數或結果為M>=1"
+         (if Reusable."癌症分期資料存在" and not "1條件3-2=癌症分期分數或結果為M>=1"
            then '▲ 1規則1-條件3-2：癌症分期不符合（需M≥1，具遠處轉移）\n' else '') +
-         (if not "1條件3-4=具HER2過度表現"
-           then '▲ 1規則1-條件3-4：HER2未過度表現或未提供（需IHC3+或FISH+）\n' else '') +
+         (if Reusable."HER2檢測資料存在" and not "1條件3-4=具HER2過度表現"
+           then '▲ 1規則1-條件3-4：HER2檢測結果不符合過度表現條件（需IHC3+或FISH+）\n' else '') +
          '\n'
     else '') +
 
@@ -425,7 +438,7 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 1規則1-條件1：未申請本藥品與docetaxel併用\n' else '') +
          (if not ("1條件3-1=3個月內影像報告" or "1條件3-3=3個月內有檢查報告")
            then '▲ 1規則1-條件3：未提供影像或檢查報告資料\n' else '') +
-         (if not "1條件2-1=未曾以抗HER2療法治療" and not "1條件2-2=未曾以化學療法治療"
+         (if not Reusable."HER2檢測資料存在" and not "1條件2-2=未曾以化學療法治療"
            then '▲ 1規則1-條件2：曾以抗HER2療法且曾以化學療法治療\n' else '') +
          (if not "2條件2=病摘敘明早期乳癌治療結束至首次疾病復發轉移時間超過12個月以上"
            then '▲ 1規則2-條件2：病摘未敘明早期乳癌治療結束至首次疾病復發轉移時間超過12個月\n' else '') +
@@ -434,13 +447,13 @@ define function "不符合項目_必要資料未填寫"():
 
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and (
-    not "規則1-1=每18週須再次申請並檢附療效評估資料" or
-    not "規則1-2=疾病有惡化情形須停止使用"
+    not "2規則1-1=每18週須再次申請並檢附療效評估資料" or
+    not "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if not "規則1-1=每18週須再次申請並檢附療效評估資料"
+         (if not "2規則1-1=每18週須再次申請並檢附療效評估資料"
            then '▲ 2規則1-1：未於18週內再次申請或未檢附療效評估資料\n' else '') +
-         (if not "規則1-2=疾病有惡化情形須停止使用"
+         (if not "2規則1-2=疾病有惡化情形須停止使用"
            then '▲ 2規則1-2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '')
@@ -453,12 +466,10 @@ define function "不符合項目_必要資料未填寫"():
 define "乳癌PertuzumabTrastuzumabSC轉移性申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "主要規定一" and
-      "主要規定三"
+      "主要規定一"
     )
     when Reusable."續用申請" then (
-      "主要規定二" and
-      "主要規定三"
+      "主要規定二"
     )
     else false
   end
@@ -466,15 +477,13 @@ define "乳癌PertuzumabTrastuzumabSC轉移性申請結果_布林":
 define "乳癌PertuzumabTrastuzumabSC轉移性申請之CQL檢核結果":
   if (
     Reusable."初次申請" and
-    "主要規定一" and
-    "主要規定三"
+    "主要規定一"
   )
   then '✓通過：初次使用－轉移性乳癌 PertuzumabTrastuzumabSC 用藥申請'
 
   else if (
     Reusable."續用申請" and
-    "主要規定二" and
-    "主要規定三"
+    "主要規定二"
   )
   then '✓通過：續用－轉移性乳癌 PertuzumabTrastuzumabSC 用藥申請'
 
@@ -493,6 +502,7 @@ define "乳癌PertuzumabTrastuzumabSC轉移性申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 轉移性乳癌之PertuzumabTrastuzumabSC 申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +

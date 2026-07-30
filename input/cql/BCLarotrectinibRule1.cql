@@ -109,7 +109,7 @@ define "1條件4=病摘說明沒有合適的替代治療選項":
         )
     )
 
-define "規則1":
+define "1規則1":
 "1條件1=NTRK基因融合且無已知的後天阻抗性突變" 
 and "1條件2=轉移性實體腫瘤"
 and "1條件3=病摘說明手術切除會造成嚴重病症"
@@ -128,10 +128,7 @@ define "年齡計算用申請日期":
   date from "本次申請起始日期"
 
 define "申請日時病人年齡歲數":
-  if Patient.birthDate is null or "年齡計算用申請日期" is null then null
-  else difference in years between
-    FHIRHelpers.ToDate(Patient.birthDate)
-    and "年齡計算用申請日期"
+  Reusable."PatientAgeInYearsAt"("年齡計算用申請日期")
 
 define "3條件1=滿18歲":
   if "申請日時病人年齡歲數" is null then false
@@ -184,7 +181,7 @@ or "3條件4-2=術後輔助性化學治療"
 or "3條件4-3=轉移性化學治療"
 
 
-define "規則3":
+define "1規則3":
 if "3條件1=滿18歲"
 then "3條件2=曾接受一線治療後無效或復發"
 else "3條件3=分泌型乳腺癌" and "3條件4=三項擇一"
@@ -192,7 +189,7 @@ else "3條件3=分泌型乳腺癌" and "3條件4=三項擇一"
 
 //主要規定一
 define "主要規定一":
-"規則1" and "規則3"
+"1規則1" and "1規則3"
 
 
 //============================================
@@ -215,7 +212,7 @@ define "前次用藥開始日期":
   Reusable."GetStartTime"("前次治療紀錄")
 
 // 條件1:影像證據顯示病情有無惡化
-define "規則1=影像證據顯示病情有無惡化":
+define "2規則1=影像證據顯示病情有無惡化":
   Reusable."HasImageReportBetweenPreviousTreatmentAndCurrentApply"(CodeConcept.L01EX12)
 
 
@@ -224,7 +221,7 @@ define "主要規定二":
 Reusable."續用註記為2"
 and Reusable."醫令類別為1"
 and "本次申請紀錄" is not null
-and "規則1=影像證據顯示病情有無惡化"
+and "2規則1=影像證據顯示病情有無惡化"
 
 
 //============================================
@@ -235,6 +232,24 @@ and "規則1=影像證據顯示病情有無惡化"
 define "主要規定三=每次申請之療程以12週為限":
   Reusable."HasMedicationPlanDurationWithin"(CodeConcept.L01EX12, 84)
   and Reusable."醫令類別為1"
+
+
+//============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請" and (
+          not "1條件1=NTRK基因融合且無已知的後天阻抗性突變" or
+          not "1條件3=病摘說明手術切除會造成嚴重病症" or
+          not "1條件4=病摘說明沒有合適的替代治療選項" or
+          not "1規則3"
+        )
+    )
+    or (Reusable."續用申請" and not "主要規定二")
+  )
 
 
 //============================================
@@ -292,13 +307,13 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    not "ICD代碼檢核_布林值" or
-    not "癌症分期分數或結果為M≠0"
+    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
+    Reusable."癌症分期資料存在" and not "癌症分期分數或結果為M≠0"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not "ICD代碼檢核_布林值"
+         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
            then '▲ 1條件2-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not "癌症分期分數或結果為M≠0"
+         (if Reusable."癌症分期資料存在" and not "癌症分期分數或結果為M≠0"
            then '▲ 1條件2-1：癌症分期結果非M≠0（非轉移性）\n' else '') +
          '\n'
     else '') +
@@ -320,7 +335,7 @@ define function "不符合項目_必要資料未填寫"():
     not "1條件1=NTRK基因融合且無已知的後天阻抗性突變" or
     not "1條件3=病摘說明手術切除會造成嚴重病症" or
     not "1條件4=病摘說明沒有合適的替代治療選項" or
-    not "規則3"
+    not "1規則3"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "1條件1=NTRK基因融合且無已知的後天阻抗性突變"
@@ -329,7 +344,7 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 1條件3：病摘未說明手術切除會造成嚴重病症\n' else '') +
          (if not "1條件4=病摘說明沒有合適的替代治療選項"
            then '▲ 1條件4：病摘未說明沒有合適的替代治療選項\n' else '') +
-         (if not "規則3"
+         (if not "1規則3"
            then if "3條件1=滿18歲"
                 then '▲ 1規則3（成人）：未提供曾接受一線治療後無效或復發之紀錄\n'
                 else '▲ 1規則3（兒童）：' +
@@ -355,12 +370,10 @@ define function "不符合項目_必要資料未填寫"():
 define "乳癌Larotrectinib申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "主要規定一" and
-      "主要規定三=每次申請之療程以12週為限"
+      "主要規定一"
     )
     when Reusable."續用申請" then (
-      "主要規定二" and
-      "主要規定三=每次申請之療程以12週為限"
+      "主要規定二"
     )
     else false
   end
@@ -368,15 +381,13 @@ define "乳癌Larotrectinib申請結果_布林":
 define "乳癌Larotrectinib申請之CQL檢核結果":
   if (
     Reusable."初次申請" and
-    "主要規定一" and
-    "主要規定三=每次申請之療程以12週為限"
+    "主要規定一"
   )
   then '✓通過：初次使用－乳癌 Larotrectinib 用藥申請'
 
   else if (
     Reusable."續用申請" and
-    "主要規定二" and
-    "主要規定三=每次申請之療程以12週為限"
+    "主要規定二"
   )
   then '✓通過：續用－乳癌 Larotrectinib 用藥申請'
 
@@ -394,6 +405,7 @@ define "乳癌Larotrectinib申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 乳癌之 Larotrectinib 申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【年齡檢核】' +
   '申請日時病人年齡歲數：' +

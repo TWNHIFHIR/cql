@@ -26,20 +26,20 @@ define "醫令類別為1_布林值":Reusable."醫令類別為1"
 
 //條件1:轉移性乳癌
 //條件1-1
-define "規則1-1-1=3個月內影像報告":
+define "1規則1-1-1=3個月內影像報告":
 Reusable."HasRecentImageReport"("本次申請起始日期", 90)
 
 
 //條件1-3
-define "規則1-1-3=癌症分期分數或結果為M=0":
+define "1規則1-1-3=癌症分期分數或結果為M=0":
   Reusable."癌症分期分數或結果為M=0"
 
 //條件1-4(檢查報告)
-define "規則1-1-4=3個月內有檢查報告":
+define "1規則1-1-4=3個月內有檢查報告":
 Reusable."HasRecentMolecularReport"("本次申請起始日期", 90)
 
 //條件1-5
-define "規則1-1-5=Olaparib申請":
+define "1規則1-1-5=Olaparib申請":
   Reusable."醫令類別為1" 
   and exists (        
     [MedicationRequest] MRPlan
@@ -47,36 +47,36 @@ define "規則1-1-5=Olaparib申請":
       and Reusable."HasMedicationCode"(MRPlan, CodeConcept.L01XK01)
   )
 
-define "規則1-1=早期乳癌":
+define "1規則1-1=早期乳癌":
   "ICD代碼檢核_布林值" 
   and "醫令類別為1_布林值" 
-  and "規則1-1-5=Olaparib申請"
-  and "規則1-1-3=癌症分期分數或結果為M=0"
-  and ("規則1-1-1=3個月內影像報告" or "規則1-1-4=3個月內有檢查報告")
+  and "1規則1-1-5=Olaparib申請"
+  and "1規則1-1-3=癌症分期分數或結果為M=0"
+  and ("1規則1-1-1=3個月內影像報告" or "1規則1-1-4=3個月內有檢查報告")
 
 
 //條件2:成年
-define "規則1-2=成年": 
+define "1規則1-2=成年": 
   exists (
     [Claim] C
     where C.created is not null
-    and AgeInDaysAt(C.created) >= 18
+    and Reusable."IsPatientAdultAt"(date from C.created)
   )
 
 
 //條件3:遺傳性 BRCA1/2(germline BRCA1/2)突變
-define "規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變":
+define "1規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變":
   Reusable."HasTestObservationResult"(CodeConcept.BRCA1or2, { 'POS' }, '(?i).*(Positive|Pathogenic|Likely Pathogenic).*')
 
 
 //條件4:HER2陰性
-define "規則1-4=檢驗檢查-HER2陰性":
+define "1規則1-4=檢驗檢查-HER2陰性":
   Reusable."HasHER2NegativeTest"
 
-define "規則1-4=基因檢測-HER2陰性":
+define "1規則1-4=基因檢測-HER2陰性":
   Reusable."HasHER2NegativeGene"
 
-define "規則1-4=HER2陰性":
+define "1規則1-4=HER2陰性":
   Reusable."HasHER2Negative"
 
 
@@ -130,28 +130,28 @@ define "影像報告日期早於此次申請藥物起始日":
 
 //條件5-2:三陰性乳癌
 //條件5-2-1:ER陰性
-define "條件5-2-1=檢驗檢查-ER陰性":
+define "1規則1-5-2-1=檢驗檢查-ER陰性":
   Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
 
-define "條件5-2-1=基因檢測-ER陰性":
+define "1規則1-5-2-1=基因檢測-ER陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularER)
 
-define "條件5-2-1=ER陰性":
+define "1規則1-5-2-1=ER陰性":
   Reusable."HasMarkerNegativeWithGeneLoinc"(CodeConcept.MolecularER)
 
 //條件5-2-2:PR陰性
-define "條件5-2-2=檢驗檢查-PR陰性":
+define "1規則1-5-2-2=檢驗檢查-PR陰性":
   Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.MolecularPR, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
 
-define "條件5-2-2=基因檢測-PR陰性":
+define "1規則1-5-2-2=基因檢測-PR陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularPR)
 
-define "條件5-2-2=PR陰性":
+define "1規則1-5-2-2=PR陰性":
   Reusable."HasMarkerNegativeWithGeneLoinc"(CodeConcept.MolecularPR)
 
 
 //條件5-2-3:針對曾接受前導性化療的病人，須符合於乳房和/或手術切除的淋巴結中發現有殘餘的侵襲性癌症(non-pCR)(病摘或病理報告結果須至少一項符合)
-define "條件5-2-3=病摘或病理報告結果其一符合non-pCR":
+define "1規則1-5-2-3=病摘或病理報告結果其一符合non-pCR":
   exists (
     [DiagnosticReport] O2
     where exists (
@@ -178,7 +178,7 @@ define "條件5-2-3=病摘或病理報告結果其一符合non-pCR":
 
 
 //條件5-2-4:針對曾接受手術且接續術後輔助性化療的病人，須具有腋窩淋巴結陽性(≧pN1)，或腋窩淋巴結陰性(pN0)且原發性病理腫瘤大小≧2公分(≧pT2)(病摘或病理報告結果須至少一項符合)
-define "條件5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2":  
+define "1規則1-5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2":  
   exists (
     [DiagnosticReport] O2
     where exists (
@@ -204,46 +204,46 @@ define "條件5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2":
   )
 
 
-define "條件5-2-3":
-"條件5-2-3=病摘或病理報告結果其一符合non-pCR"
+define "1規則1-5-2-3":
+"1規則1-5-2-3=病摘或病理報告結果其一符合non-pCR"
   and "前導性化療早於本品申請起始日"
 
-define "條件5-2-4":
-"條件5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2"
+define "1規則1-5-2-4":
+"1規則1-5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2"
   and "前導性化療早於本品申請起始日"
   and "影像報告日期早於此次申請藥物起始日"
 
-define "條件5-2":
-  if ("條件5-2-1=ER陰性" and "條件5-2-2=PR陰性")
-    then ("條件5-2-3" or "條件5-2-4")
+define "1規則1-5-2":
+  if ("1規則1-5-2-1=ER陰性" and "1規則1-5-2-2=PR陰性")
+    then ("1規則1-5-2-3" or "1規則1-5-2-4")
   else false
 
 
 //條件5-3:HR陽性且HER2陰性乳癌
 //條件5-3-1:ER陽性
-define "條件5-3-1=檢驗檢查-ER陽性":
+define "1規則1-5-3-1=檢驗檢查-ER陽性":
   Reusable."HasTestObservationResult"(CodeConcept.MolecularER, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
 
-define "條件5-3-1=基因檢測-ER陽性":
+define "1規則1-5-3-1=基因檢測-ER陽性":
   Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularER, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
 
-define "條件5-3-1=ER陽性":
-  "條件5-3-1=檢驗檢查-ER陽性" or "條件5-3-1=基因檢測-ER陽性"
+define "1規則1-5-3-1=ER陽性":
+  "1規則1-5-3-1=檢驗檢查-ER陽性" or "1規則1-5-3-1=基因檢測-ER陽性"
 
 //條件5-3-2:PR陽性
-define "條件5-3-2=檢驗檢查-PR陽性":
+define "1規則1-5-3-2=檢驗檢查-PR陽性":
   Reusable."HasTestObservationResult"(CodeConcept.MolecularPR, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
 
-define "條件5-3-2=基因檢測-PR陽性":
+define "1規則1-5-3-2=基因檢測-PR陽性":
   Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularPR, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
 
 
-define "條件5-3-2=PR陽性":
-  "條件5-3-2=檢驗檢查-PR陽性" or "條件5-3-2=基因檢測-PR陽性"
+define "1規則1-5-3-2=PR陽性":
+  "1規則1-5-3-2=檢驗檢查-PR陽性" or "1規則1-5-3-2=基因檢測-PR陽性"
 
 
 //條件5-3-3:曾接受前導性化療的病人，須為 non-pCR(病摘或病理報告結果須至少一項符合)
-define "條件5-3-3=曾接受前導性化療的病人，須為non-pCR":
+define "1規則1-5-3-3=曾接受前導性化療的病人，須為non-pCR":
   exists (
     [DiagnosticReport] O2
     where exists (
@@ -270,7 +270,7 @@ define "條件5-3-3=曾接受前導性化療的病人，須為non-pCR":
 
 
 //條件5-3-4:曾接受手術且接續術後輔助性化療的病人，須具有4個以上經病理學證實的陽性淋巴結(病摘或病理報告結果須至少一項符合)
-define "條件5-3-4=曾接受手術且接續術後輔助性化療的病人，須具有4個以上經病理學證實的陽性淋巴結":  
+define "1規則1-5-3-4=曾接受手術且接續術後輔助性化療的病人，須具有4個以上經病理學證實的陽性淋巴結":  
   exists (
     [DiagnosticReport] O2
     where exists (
@@ -295,26 +295,26 @@ define "條件5-3-4=曾接受手術且接續術後輔助性化療的病人，須
       )
   )
 
-define "條件5-3-3":
-"條件5-3-3=曾接受前導性化療的病人，須為non-pCR"
+define "1規則1-5-3-3":
+"1規則1-5-3-3=曾接受前導性化療的病人，須為non-pCR"
   and "前導性化療早於本品申請起始日"
 
-define "條件5-3-4":
-"條件5-3-4=曾接受手術且接續術後輔助性化療的病人，須具有4個以上經病理學證實的陽性淋巴結"
+define "1規則1-5-3-4":
+"1規則1-5-3-4=曾接受手術且接續術後輔助性化療的病人，須具有4個以上經病理學證實的陽性淋巴結"
   and "前導性化療早於本品申請起始日"
   and "影像報告日期早於此次申請藥物起始日"
 
-define "條件5-3":
-  if ("條件5-3-1=ER陽性" and "條件5-3-2=PR陽性")
-    then ("條件5-3-3" or "條件5-3-4")
+define "1規則1-5-3":
+  if ("1規則1-5-3-1=ER陽性" and "1規則1-5-3-2=PR陽性")
+    then ("1規則1-5-3-3" or "1規則1-5-3-4")
   else false
 
-define "規則1-5=高復發風險":
-"條件5-2" or "條件5-3"
+define "1規則1-5=高復發風險":
+"1規則1-5-2" or "1規則1-5-3"
 
 
 //條件6:曾接受前導性化療或術後輔助性化療(至少6個週期、須含有anthracyclines 類藥物、taxane 類藥物，或兩者的複方；亦允許含鉑化療)
-define "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期":
+define "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期":
   Reusable."醫令類別為1" 
   and exists (
     [MedicationRequest] MRApply
@@ -333,7 +333,7 @@ define "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6�
   )
 
 //條件7:須在最後一次治療(包括手術、化療或放療)完成後的12週內使用olaparib(手術、化療或放療須至少一項符合)
-define "規則1-7=須在最後一次治療完成後的12週內使用olaparib":
+define "1規則1-7=須在最後一次治療完成後的12週內使用olaparib":
   Reusable."醫令類別為1"
   and exists (
     [MedicationRequest] MRApply
@@ -375,19 +375,19 @@ define "規則1-7=須在最後一次治療完成後的12週內使用olaparib":
   )
 
 /*規則1*/
-define "規則1":
-"規則1-1=早期乳癌"
-and "規則1-2=成年"
-and "規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變"
-and "規則1-4=HER2陰性"
-and "規則1-5=高復發風險"
-and "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期"
-and "規則1-7=須在最後一次治療完成後的12週內使用olaparib"
+define "1規則1":
+"1規則1-1=早期乳癌"
+and "1規則1-2=成年"
+and "1規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變"
+and "1規則1-4=HER2陰性"
+and "1規則1-5=高復發風險"
+and "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期"
+and "1規則1-7=須在最後一次治療完成後的12週內使用olaparib"
 
 /*規則2之條件，皆於規則1中已涵蓋*/
 
 //主要規定一
-define "主要規定一": "規則1"
+define "主要規定一": "1規則1"
 
 //============================================
 // 主要規定二：續用條件－治療持續給付
@@ -409,14 +409,14 @@ define "前次用藥開始日期":
   Reusable."GetStartTime"("前次治療紀錄")
 
 // 條件1:影像證據顯示病情有無惡化
-define "規則1=影像證據顯示病情有無惡化":
+define "2規則1=影像證據顯示病情有無惡化":
   Reusable."HasImageReportBetweenPreviousTreatmentAndCurrentApply"(CodeConcept.L01XK01)
 
 
 // 主要規定二
 define "主要規定二":
 Reusable."續用註記為2"
-and "規則1=影像證據顯示病情有無惡化"
+and "2規則1=影像證據顯示病情有無惡化"
 
 
 //============================================
@@ -425,15 +425,15 @@ and "規則1=影像證據顯示病情有無惡化"
 
 /*規則1*/
 //每次申請之療程以3個月為限
-define "規則1=每次申請之療程以3個月為限":
+define "3規則1=每次申請之療程以3個月為限":
   Reusable."HasMedicationPlanDurationWithin"(CodeConcept.L01XK01, 84)
 
 /*規則2*/
-define "規則2=依藥品仿單記載以1年為上限":
+define "3規則2=依藥品仿單記載以1年為上限":
   Reusable."HasMedicationTotalDurationWithin"(CodeConcept.L01XK01, 365)
 
 /*規則3:用於術後輔助治療，olaparib 與 pembrolizumab 僅能擇一給付。(由於此處皆為術後輔助治療，故使用過pembrolizumab者不得使用本品)*/
-define "規則3=Olaparib、pembrolizumab僅得擇一使用":
+define "3規則3=Olaparib、pembrolizumab僅得擇一使用":
   not (
     Reusable."HasMedicationUse"(CodeConcept.L01XK01)
     and Reusable."HasMedicationUse"(CodeConcept.L01FF02)
@@ -441,16 +441,37 @@ define "規則3=Olaparib、pembrolizumab僅得擇一使用":
 
 
 /*規則4*/
-define "規則4=Olaparib每日最多使用4粒":
+define "3規則4=Olaparib每日最多使用4粒":
   Reusable."HasDailyDoseAtMost"(CodeConcept.L01XK01, 4.0, '{tbl}', 'QD')
 
 // 主要規定三
 define "主要規定三":
-"規則1=每次申請之療程以3個月為限"
-and "規則2=依藥品仿單記載以1年為上限"
-and "規則3=Olaparib、pembrolizumab僅得擇一使用"
-and "規則4=Olaparib每日最多使用4粒"
+"3規則1=每次申請之療程以3個月為限"
+and "3規則2=依藥品仿單記載以1年為上限"
+and "3規則3=Olaparib、pembrolizumab僅得擇一使用"
+and "3規則4=Olaparib每日最多使用4粒"
 
+
+
+//============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請" and (
+          not "1規則1-1-5=Olaparib申請" or
+          not ("1規則1-1-1=3個月內影像報告" or "1規則1-1-4=3個月內有檢查報告") or
+          not Reusable."BRCA1或BRCA2檢測資料存在" or
+          not Reusable."HER2檢測資料存在" or
+          not "1規則1-5=高復發風險" or
+          not "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" or
+          not "1規則1-7=須在最後一次治療完成後的12週內使用olaparib"
+        )
+    )
+    or (Reusable."續用申請" and not "2規則1=影像證據顯示病情有無惡化")
+  )
 
 
 //============================================
@@ -460,71 +481,71 @@ and "規則4=Olaparib每日最多使用4粒"
 define function "符合項目"():
   // 主要規定一：初次使用條件
   (if Reusable."初次申請" and (
-    "規則1-1=早期乳癌" or 
-    "規則1-2=成年" or 
-    "規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" or 
-    "規則1-4=HER2陰性" or 
-    "規則1-5=高復發風險" or 
-    "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" or 
-    "規則1-7=須在最後一次治療完成後的12週內使用olaparib"
+    "1規則1-1=早期乳癌" or 
+    "1規則1-2=成年" or 
+    "1規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" or 
+    "1規則1-4=HER2陰性" or 
+    "1規則1-5=高復發風險" or 
+    "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" or 
+    "1規則1-7=須在最後一次治療完成後的12週內使用olaparib"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "ICD代碼檢核_布林值" 
            then '● 1規則1-1-0：ICD代碼為C50\n' else '') +
-         (if "規則1-1-1=3個月內影像報告" 
+         (if "1規則1-1-1=3個月內影像報告" 
            then '● 1規則1-1-1：3個月內影像報告\n' else '') +
-         (if "規則1-1-3=癌症分期分數或結果為M=0" 
+         (if "1規則1-1-3=癌症分期分數或結果為M=0" 
            then '● 1規則1-1-3：癌症分期分數或結果為M=0（早期）\n' else '') +
-         (if "規則1-1-4=3個月內有檢查報告" 
+         (if "1規則1-1-4=3個月內有檢查報告" 
            then '● 1規則1-1-4：3個月內有檢查報告\n' else '') +
-         (if "規則1-1-5=Olaparib申請" 
+         (if "1規則1-1-5=Olaparib申請" 
            then '● 1規則1-1-5：Olaparib申請\n' else '') +
-         (if "規則1-2=成年" 
+         (if "1規則1-2=成年" 
            then '● 1規則1-2：成年（≥18歲）\n' else '') +
-         (if "規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" 
+         (if "1規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" 
            then '● 1規則1-3：遺傳性BRCA1/2（germline BRCA1/2）突變\n' else '') +
-         (if "規則1-4=HER2陰性" 
+         (if "1規則1-4=HER2陰性" 
            then '● 1規則1-4：HER2陰性\n' else '') +
-         (if "條件5-2-1=ER陰性" 
+         (if "1規則1-5-2-1=ER陰性" 
            then '● 1規則1-5-2-1：ER陰性\n' else '') +
-         (if "條件5-2-2=PR陰性" 
+         (if "1規則1-5-2-2=PR陰性" 
            then '● 1規則1-5-2-2：PR陰性\n' else '') +
-         (if "條件5-2-3=病摘或病理報告結果其一符合non-pCR" 
+         (if "1規則1-5-2-3=病摘或病理報告結果其一符合non-pCR" 
            then '● 1規則1-5-2-3：病摘或病理報告結果符合non-pCR\n' else '') +
-         (if "條件5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2" 
+         (if "1規則1-5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2" 
            then '● 1規則1-5-2-4：病摘或病理報告結果符合≧pN1且≧pT2\n' else '') +
-         (if "條件5-3-1=ER陽性" 
+         (if "1規則1-5-3-1=ER陽性" 
            then '● 1規則1-5-3-1：ER陽性\n' else '') +
-         (if "條件5-3-2=PR陽性" 
+         (if "1規則1-5-3-2=PR陽性" 
            then '● 1規則1-5-3-2：PR陽性\n' else '') +
-         (if "條件5-3-3=曾接受前導性化療的病人，須為non-pCR" 
+         (if "1規則1-5-3-3=曾接受前導性化療的病人，須為non-pCR" 
            then '● 1規則1-5-3-3：曾接受前導性化療的病人，須為non-pCR\n' else '') +
-         (if "條件5-3-4=曾接受手術且接續術後輔助性化療的病人，須具有4個以上經病理學證實的陽性淋巴結" 
+         (if "1規則1-5-3-4=曾接受手術且接續術後輔助性化療的病人，須具有4個以上經病理學證實的陽性淋巴結" 
            then '● 1規則1-5-3-4：具有4個以上經病理學證實的陽性淋巴結\n' else '') +
-         (if "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" 
+         (if "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" 
            then '● 1規則1-6：曾接受前導性化療或術後輔助性化療，且至少6個週期\n' else '') +
-         (if "規則1-7=須在最後一次治療完成後的12週內使用olaparib" 
+         (if "1規則1-7=須在最後一次治療完成後的12週內使用olaparib" 
            then '● 1規則1-7：於最後一次治療完成後的12週內使用olaparib\n' else '') +
          '\n'
     else '') +
   
   // 主要規定二：續用條件
-  (if Reusable."續用申請" and "規則1=影像證據顯示病情有無惡化"
+  (if Reusable."續用申請" and "2規則1=影像證據顯示病情有無惡化"
     then '<主要規定二：續用條件－治療持續給付>\n' +
          '● 2規則1：已檢附前次治療後影像學報告，確認無惡化\n' +
          '\n'
     else '') +
   
   // 主要規定三：藥品使用規則
-  (if "規則1=每次申請之療程以3個月為限" or "規則2=依藥品仿單記載以1年為上限" or "規則3=Olaparib、pembrolizumab僅得擇一使用" or "規則4=Olaparib每日最多使用4粒"
+  (if "3規則1=每次申請之療程以3個月為限" or "3規則2=依藥品仿單記載以1年為上限" or "3規則3=Olaparib、pembrolizumab僅得擇一使用" or "3規則4=Olaparib每日最多使用4粒"
     then '<主要規定三：藥品使用規則>\n' +
-         (if "規則1=每次申請之療程以3個月為限" 
+         (if "3規則1=每次申請之療程以3個月為限" 
            then '● 3規則1：每次申請之療程≤3個月（84天）\n' else '') +
-         (if "規則2=依藥品仿單記載以1年為上限" 
+         (if "3規則2=依藥品仿單記載以1年為上限" 
            then '● 3規則2：使用總療程≤1年（365天）\n' else '') +
-         (if "規則3=Olaparib、pembrolizumab僅得擇一使用" 
+         (if "3規則3=Olaparib、pembrolizumab僅得擇一使用" 
            then '● 3規則3：Olaparib與pembrolizumab僅得擇一使用\n' else '') +
-         (if "規則4=Olaparib每日最多使用4粒" 
+         (if "3規則4=Olaparib每日最多使用4粒" 
            then '● 3規則4：每日劑量≤4粒\n' else '')
     else '')
 
@@ -535,30 +556,30 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    not "ICD代碼檢核_布林值" or 
-    not "規則1-1-3=癌症分期分數或結果為M=0" or 
-    not "規則1-2=成年"
+    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
+    Reusable."癌症分期資料存在" and not "1規則1-1-3=癌症分期分數或結果為M=0" or 
+    not "1規則1-2=成年"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not "ICD代碼檢核_布林值" 
+         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
            then '▲ 1規則1-1-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not "規則1-1-3=癌症分期分數或結果為M=0" 
+         (if Reusable."癌症分期資料存在" and not "1規則1-1-3=癌症分期分數或結果為M=0" 
            then '▲ 1規則1-1-3：癌症分期分數或結果不為M=0（非早期）\n' else '') +
-         (if not "規則1-2=成年" 
+         (if not "1規則1-2=成年" 
            then '▲ 1規則1-2：非成年患者（<18歲）\n' else '') +
          '\n'
     else '') +
   
   // 主要規定三：藥品使用規則 - 條件或代碼不符合
-  (if not "規則1=每次申請之療程以3個月為限" or not "規則2=依藥品仿單記載以1年為上限" or not "規則3=Olaparib、pembrolizumab僅得擇一使用" or not "規則4=Olaparib每日最多使用4粒"
+  (if not "3規則1=每次申請之療程以3個月為限" or not "3規則2=依藥品仿單記載以1年為上限" or not "3規則3=Olaparib、pembrolizumab僅得擇一使用" or not "3規則4=Olaparib每日最多使用4粒"
     then '<主要規定三：藥品使用規則>\n' +
-         (if not "規則1=每次申請之療程以3個月為限" 
+         (if not "3規則1=每次申請之療程以3個月為限" 
            then '▲ 3規則1：每次申請之療程超過3個月（84天）\n' else '') +
-         (if not "規則2=依藥品仿單記載以1年為上限" 
+         (if not "3規則2=依藥品仿單記載以1年為上限" 
            then '▲ 3規則2：使用總療程超過1年（365天）\n' else '') +
-         (if not "規則3=Olaparib、pembrolizumab僅得擇一使用" 
+         (if not "3規則3=Olaparib、pembrolizumab僅得擇一使用" 
            then '▲ 3規則3：同時使用Olaparib與pembrolizumab\n' else '') +
-         (if not "規則4=Olaparib每日最多使用4粒" 
+         (if not "3規則4=Olaparib每日最多使用4粒" 
            then '▲ 3規則4：每日劑量超過4粒\n' else '')
     else '')
 
@@ -569,37 +590,37 @@ define function "不符合項目_條件或代碼不符合"():
 define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
-    not "規則1-1-5=Olaparib申請" or 
-    not ("規則1-1-1=3個月內影像報告" or "規則1-1-4=3個月內有檢查報告") or 
-    not "規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" or 
-    not "規則1-4=HER2陰性" or 
-    not "規則1-5=高復發風險" or 
-    not "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" or 
-    not "規則1-7=須在最後一次治療完成後的12週內使用olaparib"
+    not "1規則1-1-5=Olaparib申請" or 
+    not ("1規則1-1-1=3個月內影像報告" or "1規則1-1-4=3個月內有檢查報告") or 
+    not Reusable."BRCA1或BRCA2檢測資料存在" or 
+    not Reusable."HER2檢測資料存在" or 
+    not "1規則1-5=高復發風險" or 
+    not "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" or 
+    not "1規則1-7=須在最後一次治療完成後的12週內使用olaparib"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not "規則1-1-5=Olaparib申請" 
+         (if not "1規則1-1-5=Olaparib申請" 
            then '▲ 1規則1-1-5：未申請Olaparib\n' else '') +
-         (if not ("規則1-1-1=3個月內影像報告" or "規則1-1-4=3個月內有檢查報告") 
+         (if not ("1規則1-1-1=3個月內影像報告" or "1規則1-1-4=3個月內有檢查報告") 
            then '▲ 1規則1-1-1/1-1-4：未提供影像或檢查報告資料\n' else '') +
-         (if not "規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" 
+         (if not Reusable."BRCA1或BRCA2檢測資料存在" 
            then '▲ 1規則1-3：未提供遺傳性BRCA1/2（germline BRCA1/2）突變檢測資料\n' else '') +
-         (if not "規則1-4=HER2陰性" 
+         (if not Reusable."HER2檢測資料存在" 
            then '▲ 1規則1-4：未提供HER2檢測資料\n' else '') +
-         (if not "規則1-5=高復發風險" 
+         (if not "1規則1-5=高復發風險" 
            then '▲ 1規則1-5：未符合高復發風險條件（需符合三陰性或HR陽性HER2陰性之相關標準）\n' +
-                (if not "條件5-2" and not "條件5-3"
+                (if not "1規則1-5-2" and not "1規則1-5-3"
                   then '  - 未符合三陰性乳癌或HR陽性且HER2陰性乳癌之高復發風險條件\n' else '')
            else '') +
-         (if not "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" 
+         (if not "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" 
            then '▲ 1規則1-6：未提供前導性化療資料\n' else '') +
-         (if not "規則1-7=須在最後一次治療完成後的12週內使用olaparib" 
+         (if not "1規則1-7=須在最後一次治療完成後的12週內使用olaparib" 
            then '▲ 1規則1-7：未於最後一次治療完成後的12週內使用olaparib\n' else '') +
          '\n'
     else '') +
   
   // 主要規定二：續用條件 - 必要資料未填寫
-  (if Reusable."續用申請" and not "規則1=影像證據顯示病情有無惡化"
+  (if Reusable."續用申請" and not "2規則1=影像證據顯示病情有無惡化"
     then '<主要規定二：續用條件－治療持續給付>\n' +
          '▲ 2規則1：未提供前次治療後影像學報告資料\n' +
          '\n'
@@ -612,24 +633,24 @@ define function "不符合項目_必要資料未填寫"():
 define "乳癌Olaparib申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "規則1-1=早期乳癌" and
-      "規則1-2=成年" and
-      "規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" and
-      "規則1-4=HER2陰性" and
-      "規則1-5=高復發風險" and
-      "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" and
-      "規則1-7=須在最後一次治療完成後的12週內使用olaparib" and
-      "規則1=每次申請之療程以3個月為限" and
-      "規則2=依藥品仿單記載以1年為上限" and
-      "規則3=Olaparib、pembrolizumab僅得擇一使用" and
-      "規則4=Olaparib每日最多使用4粒"
+      "1規則1-1=早期乳癌" and
+      "1規則1-2=成年" and
+      "1規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" and
+      "1規則1-4=HER2陰性" and
+      "1規則1-5=高復發風險" and
+      "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" and
+      "1規則1-7=須在最後一次治療完成後的12週內使用olaparib" and
+      "3規則1=每次申請之療程以3個月為限" and
+      "3規則2=依藥品仿單記載以1年為上限" and
+      "3規則3=Olaparib、pembrolizumab僅得擇一使用" and
+      "3規則4=Olaparib每日最多使用4粒"
     )
     when Reusable."續用申請" then (
-      "規則1=影像證據顯示病情有無惡化" and
-      "規則1=每次申請之療程以3個月為限" and
-      "規則2=依藥品仿單記載以1年為上限" and
-      "規則3=Olaparib、pembrolizumab僅得擇一使用" and
-      "規則4=Olaparib每日最多使用4粒"
+      "2規則1=影像證據顯示病情有無惡化" and
+      "3規則1=每次申請之療程以3個月為限" and
+      "3規則2=依藥品仿單記載以1年為上限" and
+      "3規則3=Olaparib、pembrolizumab僅得擇一使用" and
+      "3規則4=Olaparib每日最多使用4粒"
     )
     else false
   end
@@ -637,27 +658,27 @@ define "乳癌Olaparib申請結果_布林":
 define "乳癌Olaparib申請之CQL檢核結果":
   if (
     Reusable."初次申請" and 
-    "規則1-1=早期乳癌" and
-    "規則1-2=成年" and
-    "規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" and
-    "規則1-4=HER2陰性" and
-    "規則1-5=高復發風險" and
-    "規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" and
-    "規則1-7=須在最後一次治療完成後的12週內使用olaparib" and
-    "規則1=每次申請之療程以3個月為限" and
-    "規則2=依藥品仿單記載以1年為上限" and
-    "規則3=Olaparib、pembrolizumab僅得擇一使用" and
-    "規則4=Olaparib每日最多使用4粒"
+    "1規則1-1=早期乳癌" and
+    "1規則1-2=成年" and
+    "1規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變" and
+    "1規則1-4=HER2陰性" and
+    "1規則1-5=高復發風險" and
+    "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" and
+    "1規則1-7=須在最後一次治療完成後的12週內使用olaparib" and
+    "3規則1=每次申請之療程以3個月為限" and
+    "3規則2=依藥品仿單記載以1年為上限" and
+    "3規則3=Olaparib、pembrolizumab僅得擇一使用" and
+    "3規則4=Olaparib每日最多使用4粒"
   )
   then '✓通過：初次使用－高復發風險之早期乳癌 Olaparib 用藥申請'
 
   else if (
     Reusable."續用申請" and
-    "規則1=影像證據顯示病情有無惡化" and
-    "規則1=每次申請之療程以3個月為限" and
-    "規則2=依藥品仿單記載以1年為上限" and
-    "規則3=Olaparib、pembrolizumab僅得擇一使用" and
-    "規則4=Olaparib每日最多使用4粒"
+    "2規則1=影像證據顯示病情有無惡化" and
+    "3規則1=每次申請之療程以3個月為限" and
+    "3規則2=依藥品仿單記載以1年為上限" and
+    "3規則3=Olaparib、pembrolizumab僅得擇一使用" and
+    "3規則4=Olaparib每日最多使用4粒"
   )
   then '✓通過：續用－高復發風險之早期乳癌 Olaparib 用藥申請'
   
@@ -675,6 +696,7 @@ define "乳癌Olaparib申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 高復發風險之早期乳癌 Olaparib 申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +

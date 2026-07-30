@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "LCAtezDurvRule1",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/LCAtezDurvRule1",
+  "version": "1.0.0",
+  "name": "LCAtezDurvRule1",
+  "title": "Atezolizumab、Durvalumab給付規定(小細胞肺癌)",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-07-30",
+  "description": "此 Library 為肺癌_小細胞肺癌_atezolizumab、durvalumab之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-LCAtezDurvRule1.cql"
+    }
+  ]
+}

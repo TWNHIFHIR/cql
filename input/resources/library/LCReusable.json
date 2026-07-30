@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "LCReusable",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/LCReusable",
+  "version": "1.0.0",
+  "name": "LCReusable",
+  "title": "肺癌規則共通模組",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-07-30",
+  "description": "此 Library 為肺癌給付檢核條件所使用之共用邏輯與輔助函式。",
+  "content": [
+    {
+      "id": "ig-loader-LCReusable.cql"
+    }
+  ]
+}

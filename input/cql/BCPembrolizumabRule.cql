@@ -104,14 +104,10 @@ define "年齡計算用申請日期":
   date from "本次申請起始日期"
 
 define "申請日時病人年齡歲數":
-  if Patient.birthDate is null or "年齡計算用申請日期" is null then null
-  else difference in years between
-    FHIRHelpers.ToDate(Patient.birthDate)
-    and "年齡計算用申請日期"
+  Reusable."PatientAgeInYearsAt"("年齡計算用申請日期")
 
 define "是否滿18歲":
-  if "申請日時病人年齡歲數" is null then false
-  else "申請日時病人年齡歲數" >= 18
+  Reusable."IsPatientAdultAt"("年齡計算用申請日期")
 
 
 define "1條件3=成年(>=18y)":
@@ -209,6 +205,16 @@ define "3條件3=GOT<60U/L及GPT<60U/L":
       OBs.code.coding Cdg
       where Cdg in CodeConcept.LOINC
         and Cdg.code in CodeConcept.GOT
+    )
+    and OBs.value is Quantity
+    and OBs.value < 60
+  )
+  and exists (
+    [Observation] OBs
+      where Reusable."IsTestObservation"(OBs)
+    and exists (
+      OBs.code.coding Cdg
+      where Cdg in CodeConcept.LOINC
         and Cdg.code in CodeConcept.GPT
     )
      and OBs.value is Quantity
@@ -538,7 +544,7 @@ and not "2條件1-2=治療期間合併申報標靶藥物"
 
 /*規則3*/
 //自初次處方用藥日起17個療程
-define "規則3=自初次處方用藥日起17個療程":
+define "3規則3=自初次處方用藥日起17個療程":
 "1條件1=pembrolizumab用於早期三陰性乳癌依前述療程規定至多使用17個療程"
 
 /*規則4*/
@@ -551,6 +557,30 @@ define "主要規定三":
   "三規則1=pembrolizumab用於早期三陰性乳癌依前述療程規定至多使用17個療程，且用於術後輔助治療，pembrolizumab與olaparib僅能擇一支付"
   and "三規則2"
   and "每次申請以12週為限"
+
+
+//============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請" and (
+          not "一規則2=術前前導性治療併用Carboplatin和Paclitaxel且至多4個療程" or
+          not "一規則3" or
+          not "一規則4"
+        )
+    )
+    or (
+      Reusable."續用申請" and (
+          not "二規則1=接續限pembrolizumab每3週1次與cyclophosphamide和doxorubicin或epirubicin併用至多4個療程，做為初診斷病人前導性治療用藥" or
+          not "二規則2" or
+          not "二規則4"
+        )
+    )
+    or (not "每次申請以12週為限")
+  )
 
 
 //============================================
@@ -618,21 +648,21 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    not Reusable."ICD-10使用C50" or
+    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
     not "病摘早期三陰性乳癌" or
     not "給付適應症條件P131" or
-    not Reusable."用藥線別=1" or
+    Reusable."用藥線別資料存在" and not Reusable."用藥線別=1" or
     not "1條件2=非轉移性、第II期至第IIIb期（cT1c N1-2 或 T2-4 N0-2）" or
     not "1條件3=成年(>=18y)"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not Reusable."ICD-10使用C50"
+         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
            then '▲ 1條件ICD代碼：主要疾病ICD代碼未使用C50\n' else '') +
          (if not "病摘早期三陰性乳癌"
            then '▲ 1條件1：病摘未記載早期三陰性乳癌\n' else '') +
          (if not "給付適應症條件P131"
-           then '▲ 1條件1：給付適應症未填寫P131\n' else '') +
-         (if not Reusable."用藥線別=1"
+           then '▲ 1條件1：給付適應症不符合P131\n' else '') +
+         (if Reusable."用藥線別資料存在" and not Reusable."用藥線別=1"
            then '▲ 1條件1：用藥線別非第一線\n' else '') +
          (if not "1條件2=非轉移性、第II期至第IIIb期（cT1c N1-2 或 T2-4 N0-2）"
            then '▲ 1條件2：癌症分期不符(非M0、或非cT1c N1-2、或非T2-4 N0-2)\n' else '') +
@@ -699,7 +729,7 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 1條件4-1：未提供疾病影像報告資料\n' else '') +
          (if not "4條件3=使用免疫檢查點抑制劑之治療計畫"
            then '▲ 1條件4-3：未附免疫檢查點抑制劑治療計畫\n' else '') +
-         (if not "4條件4=使用於早期三陰性乳癌用藥時，初次申請時需檢附ER、PR及HER2為陰性之檢測報告"
+         (if not Reusable."HER2檢測資料存在"
            then '▲ 1條件4-4：未提供ER、PR及HER2陰性之檢測報告\n' else '') +
          '\n'
     else '') +
@@ -736,22 +766,24 @@ define function "不符合項目_必要資料未填寫"():
 define "乳癌Pembrolizumab申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "主要規定一" and
-      "主要規定三"
+      "主要規定一"
     )
     when Reusable."續用申請" then (
-      "主要規定二" and
-      "主要規定三"
+      "主要規定二"
     )
     else false
   end
 
 define "乳癌Pembrolizumab申請之CQL檢核結果":
-  case
-    when Reusable."申請類型未知" then '無法判斷申請類型，請確認續用註記'
-    when "乳癌Pembrolizumab申請結果_布林" then '符合給付規定'
-    else '不符合給付規定'
-  end
+  if (Reusable."初次申請" and "乳癌Pembrolizumab申請結果_布林")
+  then '✓通過：初次使用－乳癌 Pembrolizumab 用藥申請'
+  else if (Reusable."續用申請" and "乳癌Pembrolizumab申請結果_布林")
+  then '✓通過：續用－乳癌 Pembrolizumab 用藥申請'
+  else if Reusable."初次申請"
+  then '✖不通過：初次使用－乳癌 Pembrolizumab 用藥申請'
+  else if Reusable."續用申請"
+  then '✖不通過：續用－乳癌 Pembrolizumab 用藥申請'
+  else '✖不通過：無法判定申請類型－乳癌 Pembrolizumab 用藥申請' 
 
 
 //============================================
@@ -760,6 +792,7 @@ define "乳癌Pembrolizumab申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 早期三陰性乳癌之Pembrolizumab申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +

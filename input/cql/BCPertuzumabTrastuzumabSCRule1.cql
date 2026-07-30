@@ -45,17 +45,7 @@ define "1條件2=具HER2過度表現":
 
 //1條件3:具腋下淋巴結轉移
 define "1條件3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '399390009'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and O.value is not null
-        and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*N[^0][a-zA-Z]?.*')
-  )
+  Reusable."癌症分期分數或結果為N>=1"
 
 
 //1條件4:無遠處臟器轉移之早期乳癌病人
@@ -80,7 +70,7 @@ define "1條件4=無遠處臟器轉移之早期乳癌病人":
 
 
 //規則1
-define "規則1":
+define "1規則1":
 "1條件1=PertuzumabTrastuzumabSC之用藥申請與化學療法併用"
 and "1條件2=具HER2過度表現"
 and "1條件3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)"
@@ -287,12 +277,12 @@ define "2條件2=若未接受術前輔助治療，即先行手術者，可給予
 and "2條件2-2=可給予術後輔助治療以18個療程為使用上限"
 
 //規則2
-define "規則2":
+define "1規則2":
 "2條件1=使用於術前輔助治療，經外科手術後達病理上完全緩解者（pCR），得繼續使用至18個療程為上限" or "2條件2=若未接受術前輔助治療，即先行手術者，可給予術後輔助治療，以18個療程為使用上限"
 
 // 主要規定一
 define "主要規定一":
-"規則1" and "規則2"
+"1規則1" and "1規則2"
 
 
 //============================================
@@ -312,7 +302,7 @@ define "前次申請紀錄":
   Reusable."LatestMedicationPlanBefore"(CodeConcept.L01FY01, "本次申請起始日期")
 
 // 檢查本次申請療程長度是否在24週內
-define "規則1-1=每24週須再次申請並檢附療效評估資料":
+define "2規則1-1=每24週須再次申請並檢附療效評估資料":
   Reusable."醫令類別為1" 
   and Reusable."續用註記為2"
   and "本次申請紀錄" is not null
@@ -330,7 +320,7 @@ define "前次用藥開始日期":
   Reusable."GetStartTime"("前次治療紀錄")
 
 // 規則1-2: 疾病有惡化情形須停止使用(續用須檢附前次治療後影像學報告)
-define "規則1-2=疾病有惡化情形須停止使用":
+define "2規則1-2=疾病有惡化情形須停止使用":
   Reusable."HasImageReportBetweenPreviousTreatmentAndCurrentApply"(CodeConcept.L01FY01)
 
 // 主要規定二
@@ -338,8 +328,8 @@ define "主要規定二":
 Reusable."續用註記為2"
 and Reusable."醫令類別為1"
 and "本次申請紀錄" is not null
-and "規則1-1=每24週須再次申請並檢附療效評估資料"
-and "規則1-2=疾病有惡化情形須停止使用"
+and "2規則1-1=每24週須再次申請並檢附療效評估資料"
+and "2規則1-2=疾病有惡化情形須停止使用"
 
 
 //============================================
@@ -466,13 +456,35 @@ define "主要規定三":
 
 
 //============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請" and (
+          not "1條件1=PertuzumabTrastuzumabSC之用藥申請與化學療法併用" or
+          not ("1條件4-1=3個月內影像報告" or "1條件4-3=3個月內有檢查報告") or
+          not "1規則2"
+        )
+    )
+    or (
+      Reusable."續用申請" and (
+          not "2規則1-1=每24週須再次申請並檢附療效評估資料" or
+          not "2規則1-2=疾病有惡化情形須停止使用"
+        )
+    )
+  )
+
+
+//============================================
 // 列出「符合」項目判斷式
 //============================================
 
 define function "符合項目"():
   // 主要規定一：初次使用條件
   (if Reusable."初次申請" and (
-    "規則1" or "規則2"
+    "1規則1" or "1規則2"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "ICD代碼檢核_布林值"
@@ -504,13 +516,13 @@ define function "符合項目"():
 
   // 主要規定二：續用條件
   (if Reusable."續用申請" and (
-    "規則1-1=每24週須再次申請並檢附療效評估資料" or
-    "規則1-2=疾病有惡化情形須停止使用"
+    "2規則1-1=每24週須再次申請並檢附療效評估資料" or
+    "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if "規則1-1=每24週須再次申請並檢附療效評估資料"
+         (if "2規則1-1=每24週須再次申請並檢附療效評估資料"
            then '● 2規則1-1：於24週內再次申請並檢附療效評估資料\n' else '') +
-         (if "規則1-2=疾病有惡化情形須停止使用"
+         (if "2規則1-2=疾病有惡化情形須停止使用"
            then '● 2規則1-2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '') +
@@ -533,19 +545,19 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    not "ICD代碼檢核_布林值" or
-    not "1條件2=具HER2過度表現" or
-    not "1條件3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)" or
-    not "1條件4-2=癌症分期分數或結果為M=0"
+    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
+    Reusable."HER2檢測資料存在" and not "1條件2=具HER2過度表現" or
+    Reusable."癌症分期資料存在" and not "1條件3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)" or
+    Reusable."癌症分期資料存在" and not "1條件4-2=癌症分期分數或結果為M=0"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not "ICD代碼檢核_布林值"
+         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
            then '▲ 1規則1-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not "1條件2=具HER2過度表現"
-           then '▲ 1規則1-條件2：HER2未過度表現或未提供（需IHC3+或FISH+）\n' else '') +
-         (if not "1條件3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)"
+         (if Reusable."HER2檢測資料存在" and not "1條件2=具HER2過度表現"
+           then '▲ 1規則1-條件2：HER2檢測結果不符合過度表現條件（需IHC3+或FISH+）\n' else '') +
+         (if Reusable."癌症分期資料存在" and not "1條件3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)"
            then '▲ 1規則1-條件3：癌症分期不符合（需N≥1，具腋下淋巴結轉移）\n' else '') +
-         (if not "1條件4-2=癌症分期分數或結果為M=0"
+         (if Reusable."癌症分期資料存在" and not "1條件4-2=癌症分期分數或結果為M=0"
            then '▲ 1規則1-條件4：癌症分期不符合（M需為0，無遠處臟器轉移）\n' else '') +
          '\n'
     else '') +
@@ -567,7 +579,7 @@ define function "不符合項目_必要資料未填寫"():
   (if Reusable."初次申請" and (
     not "1條件1=PertuzumabTrastuzumabSC之用藥申請與化學療法併用" or
     not ("1條件4-1=3個月內影像報告" or "1條件4-3=3個月內有檢查報告") or
-    not "規則2"
+    not "1規則2"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "1條件1=PertuzumabTrastuzumabSC之用藥申請與化學療法併用"
@@ -581,13 +593,13 @@ define function "不符合項目_必要資料未填寫"():
 
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and (
-    not "規則1-1=每24週須再次申請並檢附療效評估資料" or
-    not "規則1-2=疾病有惡化情形須停止使用"
+    not "2規則1-1=每24週須再次申請並檢附療效評估資料" or
+    not "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if not "規則1-1=每24週須再次申請並檢附療效評估資料"
+         (if not "2規則1-1=每24週須再次申請並檢附療效評估資料"
            then '▲ 2規則1-1：未於24週內再次申請或未檢附療效評估資料\n' else '') +
-         (if not "規則1-2=疾病有惡化情形須停止使用"
+         (if not "2規則1-2=疾病有惡化情形須停止使用"
            then '▲ 2規則1-2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '')
@@ -600,12 +612,10 @@ define function "不符合項目_必要資料未填寫"():
 define "乳癌PertuzumabTrastuzumabSC申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "主要規定一" and
-      "主要規定三"
+      "主要規定一"
     )
     when Reusable."續用申請" then (
-      "主要規定二" and
-      "主要規定三"
+      "主要規定二"
     )
     else false
   end
@@ -613,15 +623,13 @@ define "乳癌PertuzumabTrastuzumabSC申請結果_布林":
 define "乳癌PertuzumabTrastuzumabSC申請之CQL檢核結果":
   if (
     Reusable."初次申請" and
-    "主要規定一" and
-    "主要規定三"
+    "主要規定一"
   )
   then '✓通過：初次使用－早期乳癌 PertuzumabTrastuzumabSC 用藥申請'
 
   else if (
     Reusable."續用申請" and
-    "主要規定二" and
-    "主要規定三"
+    "主要規定二"
   )
   then '✓通過：續用－早期乳癌 PertuzumabTrastuzumabSC 用藥申請'
 
@@ -640,6 +648,7 @@ define "乳癌PertuzumabTrastuzumabSC申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 早期乳癌之PertuzumabTrastuzumabSC 申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +

@@ -7,7 +7,7 @@
   <title value="臺灣健保預檢規則實作指引"/>
   <status value="draft"/>
   <experimental value="false"/>
-  <date value="2026-05-08"/>
+  <date value="2026-07-30"/>
   <publisher value="Example Publisher"/>
   <contact>
   <name value="衛生福利部中央健康保險署"/>
@@ -26,7 +26,7 @@
   <dependsOn id="TWPAS">
     <uri value="https://nhicore.nhi.gov.tw/pas/ImplementationGuide/tw.gov.mohw.nhi.pas"/>
     <packageId value="tw.gov.mohw.nhi.pas"/>
-    <version value="1.2.2"/>
+    <version value="1.2.4"/>
   </dependsOn>
   <dependsOn id="CQL">
     <uri value="http://hl7.org/fhir/uv/cql/ImplementationGuide/hl7.fhir.uv.cql"/>
@@ -203,7 +203,107 @@
     </resource>
     <resource>
       <reference>
-        <reference value="Library/FHIRHelpers"/>
+        <reference value="Library/LCAlectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCAtezDurvRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCBevacizumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCBrigatinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCCeritinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCCodeConcept"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCCrizotinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCDabrafenibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCDurvalumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCEntrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCLarotrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCLorlatinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCOsimertinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCOsimertinibRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPemNivAteRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPemNivAteRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPembrAtezoRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPembrAtezoRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPembrolizumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCReusable"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCTepotinibRule1"/>
       </reference>
     </resource>
 

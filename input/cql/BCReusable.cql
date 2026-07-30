@@ -8,6 +8,26 @@ include BCCodeConcept version '1.0.0' called CodeConcept
 
 context Patient
 
+// 病人年齡計算
+// ReferenceDate 使用申請起始日期轉成 Date 後傳入。
+define function "PatientAgeInYearsAt"(ReferenceDate Date):
+  if Patient.birthDate is null or ReferenceDate is null then null
+  else difference in years between
+    FHIRHelpers.ToDate(Patient.birthDate)
+    and ReferenceDate
+
+define function "IsPatientAtLeastAgeAt"(ReferenceDate Date, MinimumAge Integer):
+  "PatientAgeInYearsAt"(ReferenceDate) is not null
+  and "PatientAgeInYearsAt"(ReferenceDate) >= MinimumAge
+
+define function "IsPatientYoungerThanAgeAt"(ReferenceDate Date, MaximumAge Integer):
+  "PatientAgeInYearsAt"(ReferenceDate) is not null
+  and "PatientAgeInYearsAt"(ReferenceDate) < MaximumAge
+
+define function "IsPatientAdultAt"(ReferenceDate Date):
+  "IsPatientAtLeastAgeAt"(ReferenceDate, 18)
+
+
 //乳癌疾病代碼：ICD-10-CM = C50
 define "ICD-10使用C50":
   exists (
@@ -185,6 +205,52 @@ define "醫令類別為1":
       )
   )
 
+// 是否有主要疾病 ICD 診斷資料（不限定是否為 C50）。
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+// 是否有用藥線別資料（不限定線別內容）。
+define "用藥線別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.modifier M
+              where exists (
+                M.coding Cdg
+                  where Cdg in CodeConcept.NHILOT
+              )
+          )
+      )
+  )
+
+// 是否有醫令類別資料（不限定是否為癌症治療）。
+define "醫令類別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.productOrService.coding PSC
+              where PSC in CodeConcept.NHIOrderType
+          )
+      )
+  )
+
 //影像報告
 define function "IsImageReport"(Report DiagnosticReport):
   exists (
@@ -225,6 +291,27 @@ define function "HasRecentMolecularReport"(ReferenceDate DateTime, LookbackDays 
       and "IsReportWithinDaysBefore"(Report, ReferenceDate, LookbackDays)
   )
 
+// 是否有影像報告資料（不限定時間）。
+define "影像報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where "IsImageReport"(Report)
+      and Report.effective is not null
+  )
+
+// 是否有分子/病理檢查報告資料（不限定時間）。
+define "檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where "IsMolecularReport"(Report)
+      and Report.effective is not null
+  )
+
+// 是否有影像或分子/病理檢查報告資料（不限定時間）。
+define "影像或檢查報告資料存在":
+  "影像報告資料存在"
+  or "檢查報告資料存在"
+
 define function "IsTestObservation"(OBs Observation):
   exists (
     OBs.category C
@@ -257,6 +344,64 @@ define function "IsObservationDateTimeWithinDaysBefore"(OBs Observation, Referen
   and ReferenceDate is not null
   and FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime) <= ReferenceDate
   and (duration in days between FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime) and ReferenceDate) <= LookbackDays
+
+// 是否有癌症分期資料（不限定 M/N 值內容）。
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+// 是否有指定 LOINC 檢驗 Observation（不限定結果）。
+define function "HasTestObservationData"(MarkerCodes List<String>):
+  exists (
+    [Observation] OBs
+      where "IsTestObservation"(OBs)
+        and exists (
+          OBs.code.coding Cdg
+            where Cdg in CodeConcept.LOINC
+              and Cdg.code in MarkerCodes
+        )
+        and (OBs.value is not null or OBs.interpretation is not null)
+  )
+
+// 是否有指定 geneInfo component 檢驗資料（不限定結果）。
+define function "HasGeneInfoComponentData"(MarkerCodes List<String>):
+  exists (
+    [Observation] OBs
+      where "IsGeneInfoObservation"(OBs)
+        and "IsGenePanelObservation"(OBs)
+        and exists (
+          OBs.component Comp
+            where exists (
+              Comp.code.coding Cdg
+                where Cdg in CodeConcept.LOINC
+                  and Cdg.code in MarkerCodes
+            )
+            and Comp.value is not null
+        )
+  )
+
+define function "HasMarkerData"(MarkerCodes List<String>):
+  "HasTestObservationData"(MarkerCodes)
+  or "HasGeneInfoComponentData"(MarkerCodes)
+
+define "HER2檢測資料存在":
+  "HasMarkerData"(CodeConcept.HER2)
+
+define "ER檢測資料存在":
+  "HasMarkerData"(CodeConcept.MolecularER)
+
+define "PR檢測資料存在":
+  "HasMarkerData"(CodeConcept.MolecularPR)
+
+define "BRCA1或BRCA2檢測資料存在":
+  "HasMarkerData"(CodeConcept.BRCA1or2)
 
 define function "HasTestObservationResult"(MarkerCodes List<String>, ResultCodes List<String>, ValuePattern String):
   exists (
@@ -431,8 +576,8 @@ define function "HasTestObservationWithValuePattern"(MarkerCodes List<String>, V
             where Cdg in CodeConcept.LOINC
               and Cdg.code in MarkerCodes
         )
-        and OBs.value is string
-        and Matches(OBs.value as string, ValuePattern)
+        and OBs.value is FHIR.string
+        and Matches((OBs.value as FHIR.string).value, ValuePattern)
   )
 
 define function "HasGeneInfoObservationWithTextPattern"(MarkerCodes List<String>, TextPattern String):
@@ -521,8 +666,7 @@ define "HasHER2LowExpression":
   "HasHER2LowExpressionTest"
   or "HasHER2LowExpressionGene"
 
-//癌症分期分數或結果為 M1-M9
-define "癌症分期分數或結果為M≠0":
+define function "HasCancerStageValue"(ValuePattern String):
   exists (
     [Observation] O
       where exists (
@@ -532,22 +676,32 @@ define "癌症分期分數或結果為M≠0":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[1-9].*')
+        and Matches((O.value as FHIR.string).value, ValuePattern)
   )
+
+//癌症分期分數或結果為 M1-M9
+define "癌症分期分數或結果為M≠0":
+  "HasCancerStageValue"('.*M[1-9].*')
 
 //癌症分期分數或結果為 M0
 define "癌症分期分數或結果為M=0":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '399390009'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and O.value is not null
-        and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M0.*')
-  )
+  "HasCancerStageValue"('.*M0.*')
+
+//癌症分期分數或結果為 M1-M9
+define "癌症分期分數或結果為M>=1":
+  "HasCancerStageValue"('.*M[1-9].*')
+
+//癌症分期分數或結果為 N0
+define "癌症分期分數或結果為N=0":
+  "HasCancerStageValue"('.*N0.*')
+
+//癌症分期分數或結果為 N1-N9
+define "癌症分期分數或結果為N>=1":
+  "HasCancerStageValue"('.*N[1-9].*')
+
+//癌症分期分數或結果為 N1-N9
+define "癌症分期分數或結果為N≠0":
+  "癌症分期分數或結果為N>=1"
 
 // 檢查 MedicationRequest 是否有有效的時間資訊
 define function "HasValidTiming"(MR MedicationRequest):
@@ -595,6 +749,31 @@ define function "HasMedicationUse"(DrugCodes List<String>):
   exists (
     [MedicationRequest] MR
     where "HasMedicationCode"(MR, DrugCodes)
+  )
+
+// 是否有指定藥物本次申請紀錄，不檢查療程時間。
+define function "HasMedicationPlanRecord"(DrugCodes List<String>):
+  exists (
+    [MedicationRequest] MR
+    where MR.intent = 'plan'
+      and "HasMedicationCode"(MR, DrugCodes)
+  )
+
+// 是否有指定藥物歷史醫令紀錄，不檢查療程時間。
+define function "HasMedicationOrderRecord"(DrugCodes List<String>):
+  exists (
+    [MedicationRequest] MR
+    where MR.intent = 'order'
+      and "HasMedicationCode"(MR, DrugCodes)
+  )
+
+// 是否有指定藥物本次申請療程起迄日期。
+define function "HasMedicationPlanTiming"(DrugCodes List<String>):
+  exists (
+    [MedicationRequest] MR
+    where MR.intent = 'plan'
+      and "HasMedicationCode"(MR, DrugCodes)
+      and "HasValidTiming"(MR)
   )
 
 // 本次藥物申請（plan）

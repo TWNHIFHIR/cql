@@ -7,7 +7,7 @@ using FHIR version '4.0.1'
 /*國際標準碼*/
 codesystem "SNOMED": 'http://snomed.info/sct'
 codesystem "LOINC": 'http://loinc.org'
-codesystem "InterpretationCodes": 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation'
+codesystem "InterpretationCodes": 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation' version '4.0.0'
 
 
 /*TWNHI Pas*/

@@ -26,29 +26,29 @@ define "醫令類別為1_布林值":Reusable."醫令類別為1"
 //條件1:單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人
 
 //條件1-1:單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)
-define "條件1-1=檢驗檢查-HER2過度表現(IHC3+或FISH+)":
+define "1規則1-1=檢驗檢查-HER2過度表現(IHC3+或FISH+)":
   Reusable."HasHER2OverexpressionTest"
 
-define "條件1-1=基因檢測-HER2過度表現(IHC3+或FISH+)":
+define "1規則1-1=基因檢測-HER2過度表現(IHC3+或FISH+)":
   Reusable."HasHER2OverexpressionGene"
 
-define "條件1-1=HER2過度表現(IHC3+或FISH+)":
-  "條件1-1=檢驗檢查-HER2過度表現(IHC3+或FISH+)"
-  or "條件1-1=基因檢測-HER2過度表現(IHC3+或FISH+)"
+define "1規則1-1=HER2過度表現(IHC3+或FISH+)":
+  "1規則1-1=檢驗檢查-HER2過度表現(IHC3+或FISH+)"
+  or "1規則1-1=基因檢測-HER2過度表現(IHC3+或FISH+)"
 
-define "條件1-1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)":
+define "1規則1-1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)":
   exists (
     [MedicationRequest] MR
       where MR.intent = 'plan'
         and Reusable."HasMedicationCode"(MR, CodeConcept.L01FD01)
         and Reusable."醫令類別為1"
   )
-  and "條件1-1=HER2過度表現(IHC3+或FISH+)"
+  and "1規則1-1=HER2過度表現(IHC3+或FISH+)"
 
 
 //條件1-2:曾接受過一次以上化學治療之轉移性乳癌病人
 
-define "條件1-2-1=病摘應說明曾接受哪種化學治療":
+define "1規則1-2-1=病摘應說明曾接受哪種化學治療":
     exists (
         [Claim] C
         where exists (
@@ -60,29 +60,19 @@ define "條件1-2-1=病摘應說明曾接受哪種化學治療":
         )
     )
 
-define "條件1-2-2=3個月內影像報告":
+define "1規則1-2-2=3個月內影像報告":
 Reusable."HasRecentImageReport"("本次申請起始日期", 90)
 
-define "條件1-2-3=癌症分期分數或結果為M>=1":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '399390009'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and O.value is not null
-        and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[^0].*')
-  )
+define "1規則1-2-3=癌症分期分數或結果為M>=1":
+  Reusable."癌症分期分數或結果為M>=1"
 
-define "規則1-2-4=有檢查報告":
+define "1規則1-2-4=有檢查報告":
   exists (
     [DiagnosticReport] O2
     where Reusable."IsMolecularReport"(O2)
   ) 
 
-define "條件1-2-5=併用化學治療":
+define "1規則1-2-5=併用化學治療":
   exists (
     [MedicationRequest] MRPlan
     where MRPlan.intent = 'plan'
@@ -103,18 +93,18 @@ define "條件1-2-5=併用化學治療":
   and Reusable."醫令類別為1"  
 
 
-define "條件1-2=曾接受過一次以上化學治療之轉移性乳癌病人":
+define "1規則1-2=曾接受過一次以上化學治療之轉移性乳癌病人":
 Reusable."ICD-10使用C50"
-and "條件1-2-1=病摘應說明曾接受哪種化學治療"
-and "條件1-2-3=癌症分期分數或結果為M>=1"
-and "規則1-2-4=有檢查報告"
-and "條件1-2-5=併用化學治療"
-or "條件1-2-2=3個月內影像報告"
+and "1規則1-2-1=病摘應說明曾接受哪種化學治療"
+and "1規則1-2-3=癌症分期分數或結果為M>=1"
+and "1規則1-2-4=有檢查報告"
+and "1規則1-2-5=併用化學治療"
+or "1規則1-2-2=3個月內影像報告"
 
 //規則1
 
-define "規則1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人":
-"條件1-1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)" and "條件1-2=曾接受過一次以上化學治療之轉移性乳癌病人"
+define "1規則1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人":
+"1規則1-1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)" and "1規則1-2=曾接受過一次以上化學治療之轉移性乳癌病人"
 
 
 /*規則2*/
@@ -145,31 +135,31 @@ define "2條件2=未曾接受過化學治療":
 
 define "2條件2=使用於未曾接受過化學治療之轉移性乳癌病患":
 Reusable."ICD-10使用C50"
-and "條件1-2-3=癌症分期分數或結果為M>=1"
+and "1規則1-2-3=癌症分期分數或結果為M>=1"
 and "2條件2=未曾接受過化學治療"
-or ("條件1-2-2=3個月內影像報告" and "規則1-2-4=有檢查報告")
+or ("1規則1-2-2=3個月內影像報告" and "1規則1-2-4=有檢查報告")
 
 //條件2-3:且為HER2過度表現(IHC3+或FISH+)者
-define "條件2-3=且為HER2過度表現(IHC3+或FISH+)者":
-"條件1-1=HER2過度表現(IHC3+或FISH+)"
+define "1規則2-3=且為HER2過度表現(IHC3+或FISH+)者":
+"1規則1-1=HER2過度表現(IHC3+或FISH+)"
 
-define "規則2=與paclitaxel或docetaxel併用，使用於未曾接受過化學治療之轉移性乳癌病患，且為HER2過度表現(IHC3+或FISH+)者":
+define "1規則2=與paclitaxel或docetaxel併用，使用於未曾接受過化學治療之轉移性乳癌病患，且為HER2過度表現(IHC3+或FISH+)者":
 "2條件1=與paclitaxel或docetaxel併用"
 and "2條件2=使用於未曾接受過化學治療之轉移性乳癌病患"
-and "條件2-3=且為HER2過度表現(IHC3+或FISH+)者"
+and "1規則2-3=且為HER2過度表現(IHC3+或FISH+)者"
 
 /*規則3*/
 
 //3條件1:轉移性乳癌
 define "3條件1=轉移性乳癌":
 Reusable."ICD-10使用C50"
-and "條件1-2-3=癌症分期分數或結果為M>=1"
-and "條件1-2-2=3個月內影像報告" 
-and "規則1-2-4=有檢查報告"
+and "1規則1-2-3=癌症分期分數或結果為M>=1"
+and "1規則1-2-2=3個月內影像報告" 
+and "1規則1-2-4=有檢查報告"
 
 //3條件2:HER2過度表現之病人
 define "3條件2=HER2過度表現之病人":
-"條件2-3=且為HER2過度表現(IHC3+或FISH+)者"
+"1規則2-3=且為HER2過度表現(IHC3+或FISH+)者"
 
 // 本次申請紀錄（以最新一筆申請作為本次申請）
 define "本次申請紀錄":
@@ -183,7 +173,7 @@ define "本次申請起始日期":
 define "3條件3=僅限先前未使用過本藥品者方可使用":
   not Reusable."HasPriorMedicationUse"(CodeConcept.L01FD01, CodeConcept.L01FD01)
 
-define "規則3=轉移性乳癌且HER2過度表現之病人，僅限先前未使用過本藥品者方可使用":
+define "1規則3=轉移性乳癌且HER2過度表現之病人，僅限先前未使用過本藥品者方可使用":
 "3條件1=轉移性乳癌"
 and "3條件2=HER2過度表現之病人"
 and "3條件3=僅限先前未使用過本藥品者方可使用"
@@ -275,7 +265,7 @@ define "4條件1-2=病摘應說明先前使用過docetaxel及pertuzumab與trastu
 define "4條件1=若先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化者，得再次申請本藥品":
 "4條件1-1=先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限"
 and "4條件1-2=病摘應說明先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化"
-and "條件1-2-2=3個月內影像報告" 
+and "1規則1-2-2=3個月內影像報告" 
 
 //4條件2:若先前使用過docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品
 //4條件2-1
@@ -349,19 +339,19 @@ define "4條件2-2=病摘應說明先前使用過docetaxel及pertuzumab與trastu
 define "4條件2=若先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化者，得再次申請本藥品":
 "4條件2-1=先前使用過docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限"
 and "4條件2-2=病摘應說明先前使用過docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限未惡化"
-and "條件1-2-2=3個月內影像報告" 
+and "1規則1-2-2=3個月內影像報告" 
 
 /*規則4*/
-define "規則4=若先前使用過docetaxel及pertuzumab與trastuzumab併用或docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品":
+define "1規則4=若先前使用過docetaxel及pertuzumab與trastuzumab併用或docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品":
 "4條件1=若先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化者，得再次申請本藥品"
 or "4條件2=若先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化者，得再次申請本藥品"
 
 //主要規定一
 define "主要規定一":
-"規則1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人"
-or "規則2=與paclitaxel或docetaxel併用，使用於未曾接受過化學治療之轉移性乳癌病患，且為HER2過度表現(IHC3+或FISH+)者"
-or "規則3=轉移性乳癌且HER2過度表現之病人，僅限先前未使用過本藥品者方可使用"
-or "規則4=若先前使用過docetaxel及pertuzumab與trastuzumab併用或docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品"
+"1規則1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人"
+or "1規則2=與paclitaxel或docetaxel併用，使用於未曾接受過化學治療之轉移性乳癌病患，且為HER2過度表現(IHC3+或FISH+)者"
+or "1規則3=轉移性乳癌且HER2過度表現之病人，僅限先前未使用過本藥品者方可使用"
+or "1規則4=若先前使用過docetaxel及pertuzumab與trastuzumab併用或docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品"
 
 
 
@@ -379,7 +369,7 @@ define "前次申請紀錄":
   Reusable."LatestMedicationPlanBefore"(CodeConcept.L01FD01, "本次申請起始日期")
 
 // 檢查本次申請療程長度是否在18週內
-define "規則1-1=每18週須再次申請並檢附療效評估資料":
+define "2規則1-1=每18週須再次申請並檢附療效評估資料":
   Reusable."醫令類別為1" 
   and Reusable."續用註記為2"
   and "本次申請紀錄" is not null
@@ -402,7 +392,7 @@ define "前次用藥開始日期":
   Reusable."GetStartTime"("前次治療紀錄")
 
 // 規則1-2: 疾病有惡化情形須停止使用(續用須檢附前次治療後影像學報告)
-define "規則1-2=疾病有惡化情形須停止使用":
+define "2規則1-2=疾病有惡化情形須停止使用":
   Reusable."HasImageReportBetweenPreviousTreatmentAndCurrentApply"(CodeConcept.L01FD01)
 
 // 主要規定二
@@ -410,8 +400,44 @@ define "主要規定二":
 Reusable."續用註記為2"
 and Reusable."醫令類別為1"
 and "本次申請紀錄" is not null
-and "規則1-1=每18週須再次申請並檢附療效評估資料"
-and "規則1-2=疾病有惡化情形須停止使用"
+and "2規則1-1=每18週須再次申請並檢附療效評估資料"
+and "2規則1-2=疾病有惡化情形須停止使用"
+
+
+//============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請"
+          and "1規則1-1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)"
+          and not "1規則1-2-1=病摘應說明曾接受哪種化學治療"
+    )
+    or (
+      Reusable."初次申請" and (
+          not Reusable."影像報告資料存在" or
+          not "1規則1-2-4=有檢查報告"
+        )
+    )
+    or (
+      Reusable."初次申請"
+          and "4條件1-1=先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限"
+          and not "4條件1-2=病摘應說明先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化"
+    )
+    or (
+      Reusable."初次申請"
+          and "4條件2-1=先前使用過docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限"
+          and not "4條件2-2=病摘應說明先前使用過docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限未惡化"
+    )
+    or (
+      Reusable."續用申請" and (
+          not "2規則1-1=每18週須再次申請並檢附療效評估資料" or
+          not "2規則1-2=疾病有惡化情形須停止使用"
+        )
+    )
+  )
 
 
 //============================================
@@ -421,35 +447,35 @@ and "規則1-2=疾病有惡化情形須停止使用"
 define function "符合項目"():
   // 主要規定一：初次使用條件
   (if Reusable."初次申請" and (
-    "規則1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人" or
-    "規則2=與paclitaxel或docetaxel併用，使用於未曾接受過化學治療之轉移性乳癌病患，且為HER2過度表現(IHC3+或FISH+)者" or
-    "規則3=轉移性乳癌且HER2過度表現之病人，僅限先前未使用過本藥品者方可使用" or
-    "規則4=若先前使用過docetaxel及pertuzumab與trastuzumab併用或docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品"
+    "1規則1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人" or
+    "1規則2=與paclitaxel或docetaxel併用，使用於未曾接受過化學治療之轉移性乳癌病患，且為HER2過度表現(IHC3+或FISH+)者" or
+    "1規則3=轉移性乳癌且HER2過度表現之病人，僅限先前未使用過本藥品者方可使用" or
+    "1規則4=若先前使用過docetaxel及pertuzumab與trastuzumab併用或docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if "規則1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人"
+         (if "1規則1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)，曾接受過一次以上化學治療之轉移性乳癌病人"
            then '● 1規則1：單獨使用，HER2過度表現(IHC3+或FISH+)，曾接受過化學治療之轉移性乳癌病人\n' else '') +
-         (if "條件1-1=HER2過度表現(IHC3+或FISH+)"
+         (if "1規則1-1=HER2過度表現(IHC3+或FISH+)"
            then '  ● 1條件1-1：HER2過度表現(IHC3+或FISH+)\n' else '') +
-         (if "條件1-2-1=病摘應說明曾接受哪種化學治療"
+         (if "1規則1-2-1=病摘應說明曾接受哪種化學治療"
            then '  ● 1條件1-2-1：病摘已說明曾接受之化學治療\n' else '') +
-         (if "條件1-2-3=癌症分期分數或結果為M>=1"
+         (if "1規則1-2-3=癌症分期分數或結果為M>=1"
            then '  ● 1條件1-2-3：癌症分期M≥1(轉移性)\n' else '') +
-         (if "規則1-2-4=有檢查報告"
+         (if "1規則1-2-4=有檢查報告"
            then '  ● 1條件1-2-4：已提供基因/病理檢查報告\n' else '') +
-         (if "條件1-2-2=3個月內影像報告"
+         (if "1規則1-2-2=3個月內影像報告"
            then '  ● 1條件1-2-2：已提供3個月內影像報告\n' else '') +
-         (if "規則2=與paclitaxel或docetaxel併用，使用於未曾接受過化學治療之轉移性乳癌病患，且為HER2過度表現(IHC3+或FISH+)者"
+         (if "1規則2=與paclitaxel或docetaxel併用，使用於未曾接受過化學治療之轉移性乳癌病患，且為HER2過度表現(IHC3+或FISH+)者"
            then '● 1規則2：與paclitaxel或docetaxel併用，未曾接受過化學治療，HER2過度表現(IHC3+或FISH+)\n' else '') +
          (if "2條件1=與paclitaxel或docetaxel併用"
            then '  ● 2條件1：已開立paclitaxel或docetaxel併用醫令\n' else '') +
          (if "2條件2=未曾接受過化學治療"
            then '  ● 2條件2：未曾接受過化學治療\n' else '') +
-         (if "規則3=轉移性乳癌且HER2過度表現之病人，僅限先前未使用過本藥品者方可使用"
+         (if "1規則3=轉移性乳癌且HER2過度表現之病人，僅限先前未使用過本藥品者方可使用"
            then '● 1規則3：轉移性乳癌，HER2過度表現，先前未使用過本藥品\n' else '') +
          (if "3條件3=僅限先前未使用過本藥品者方可使用"
            then '  ● 3條件3：先前未使用過本藥品\n' else '') +
-         (if "規則4=若先前使用過docetaxel及pertuzumab與trastuzumab併用或docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品"
+         (if "1規則4=若先前使用過docetaxel及pertuzumab與trastuzumab併用或docetaxel及pertuzumab與trastuzumab皮下注射複方製劑(如Phesgo)併用達18個月上限仍未惡化者，得再次申請本藥品"
            then '● 1規則4：先前使用過docetaxel及pertuzumab與trastuzumab(或Phesgo)併用達18個月上限仍未惡化，得再次申請\n' else '') +
          (if "4條件1=若先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化者，得再次申請本藥品"
            then '  ● 4條件1：先前使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化\n' else '') +
@@ -464,13 +490,13 @@ define function "符合項目"():
 
   // 主要規定二：續用條件
   (if Reusable."續用申請" and (
-    "規則1-1=每18週須再次申請並檢附療效評估資料" or
-    "規則1-2=疾病有惡化情形須停止使用"
+    "2規則1-1=每18週須再次申請並檢附療效評估資料" or
+    "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if "規則1-1=每18週須再次申請並檢附療效評估資料"
+         (if "2規則1-1=每18週須再次申請並檢附療效評估資料"
            then '● 2條件1：於18週內再次申請並檢附療效評估資料\n' else '') +
-         (if "規則1-2=疾病有惡化情形須停止使用"
+         (if "2規則1-2=疾病有惡化情形須停止使用"
            then '● 2條件2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '')
@@ -483,16 +509,16 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：共用條件或代碼不符合（適用所有規則）
   (if Reusable."初次申請" and (
-    not Reusable."ICD-10使用C50" or
-    not "條件1-1=HER2過度表現(IHC3+或FISH+)" or
-    not "條件1-2-3=癌症分期分數或結果為M>=1"
+    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
+    Reusable."HER2檢測資料存在" and not "1規則1-1=HER2過度表現(IHC3+或FISH+)" or
+    Reusable."癌症分期資料存在" and not "1規則1-2-3=癌症分期分數或結果為M>=1"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not Reusable."ICD-10使用C50"
+         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not "條件1-1=HER2過度表現(IHC3+或FISH+)"
+         (if Reusable."HER2檢測資料存在" and not "1規則1-1=HER2過度表現(IHC3+或FISH+)"
            then '▲ 1條件1-1：HER2非過度表現(非IHC3+或FISH+)\n' else '') +
-         (if not "條件1-2-3=癌症分期分數或結果為M>=1"
+         (if Reusable."癌症分期資料存在" and not "1規則1-2-3=癌症分期分數或結果為M>=1"
            then '▲ 1條件1-2-3：癌症分期未達轉移性(M<1)\n' else '') +
          '\n'
     else '') +
@@ -524,8 +550,8 @@ define function "不符合項目_條件或代碼不符合"():
 define function "不符合項目_必要資料未填寫"():
   // 規則1 ：需說明化學治療史
   (if Reusable."初次申請"
-    and "條件1-1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)"
-    and not "條件1-2-1=病摘應說明曾接受哪種化學治療"
+    and "1規則1-1=單獨使用於治療腫瘤細胞上有HER2過度表現(IHC3+或FISH+)"
+    and not "1規則1-2-1=病摘應說明曾接受哪種化學治療"
     then '<規則1：單獨使用，曾接受過化學治療>\n' +
          '▲ 1條件1-2-1：病摘未說明曾接受之化學治療種類\n' +
          '\n'
@@ -533,13 +559,13 @@ define function "不符合項目_必要資料未填寫"():
 
   // 共用：影像報告及基因/病理檢查報告（規則1/2/3/4 皆需）
   (if Reusable."初次申請" and (
-    not "條件1-2-2=3個月內影像報告" or
-    not "規則1-2-4=有檢查報告"
+    not Reusable."影像報告資料存在" or
+    not "1規則1-2-4=有檢查報告"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not "條件1-2-2=3個月內影像報告"
+         (if not Reusable."影像報告資料存在"
            then '▲ 1條件1-2-2：未提供影像報告資料\n' else '') +
-         (if not "規則1-2-4=有檢查報告"
+         (if not "1規則1-2-4=有檢查報告"
            then '▲ 1條件1-2-4：未提供基因或病理檢查報告資料\n' else '') +
          '\n'
     else '') +
@@ -564,13 +590,13 @@ define function "不符合項目_必要資料未填寫"():
 
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and (
-    not "規則1-1=每18週須再次申請並檢附療效評估資料" or
-    not "規則1-2=疾病有惡化情形須停止使用"
+    not "2規則1-1=每18週須再次申請並檢附療效評估資料" or
+    not "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if not "規則1-1=每18週須再次申請並檢附療效評估資料"
+         (if not "2規則1-1=每18週須再次申請並檢附療效評估資料"
            then '▲ 2條件1：未於18週內再次申請或申請期間不符126天\n' else '') +
-         (if not "規則1-2=疾病有惡化情形須停止使用"
+         (if not "2規則1-2=疾病有惡化情形須停止使用"
            then '▲ 2條件2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '')
@@ -609,16 +635,14 @@ define "乳癌Trastuzumab3申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 轉移性乳癌之Trastuzumab申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +
-  (if not "乳癌Trastuzumab3申請結果_布林"
-    then
-      '\n【▲不符合項目 - 必要資料未填寫】\n' +
-      (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
-      '\n【▲不符合項目 - 條件或代碼不符合】\n' +
-      (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"())
-    else '') +
+  '\n【▲不符合項目 - 必要資料未填寫】\n' +
+  (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
+  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
+  (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"()) +
   '\n【申請結果】\n' +
   "乳癌Trastuzumab3申請之CQL檢核結果" +
   '\n===============================================\n'

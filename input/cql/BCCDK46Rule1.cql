@@ -26,7 +26,7 @@ define "醫令類別為1_布林值":Reusable."醫令類別為1"
 //條件1:停經後乳癌婦女
 
 //條件1-1
-define "條件1-1=簡要病摘含有停經字樣":
+define "1規則1-1=簡要病摘含有停經字樣":
     exists (
         [Claim] C
         where exists (
@@ -39,11 +39,11 @@ define "條件1-1=簡要病摘含有停經字樣":
     )
 
 //條件1-2
-define "條件1-2=女性":
+define "1規則1-2=女性":
 Patient.gender = 'female'
 
 //條件1-3
-define "條件1-3=CDK46抑制劑申請":
+define "1規則1-3=CDK46抑制劑申請":
   exists (        
     [MedicationRequest] MRPlan
     where MRPlan.intent = 'plan'
@@ -51,11 +51,11 @@ define "條件1-3=CDK46抑制劑申請":
   )
 
 
-define "條件1-1=停經後乳癌婦女":
+define "1規則1-1=停經後乳癌婦女":
 "ICD代碼檢核_布林值" and "醫令類別為1_布林值"
-and "條件1-1=簡要病摘含有停經字樣" 
-and "條件1-2=女性"
-and "條件1-3=CDK46抑制劑申請"
+and "1規則1-1=簡要病摘含有停經字樣" 
+and "1規則1-2=女性"
+and "1規則1-3=CDK46抑制劑申請"
 
 //條件2:遠端轉移
 
@@ -63,23 +63,23 @@ and "條件1-3=CDK46抑制劑申請"
 define "ICD腫瘤代碼檢核_布林值": Reusable."ICD-10使用C77、C78、C79"
 
 //條件2-2
-define "條件2-2=6個月內影像報告":
+define "1規則2-2=6個月內影像報告":
 Reusable."HasRecentImageReport"("本次申請起始日期", 180)
 
 
 //條件2-3
-define "條件2-3=癌症分期分數或結果為M≠0":
+define "1規則2-3=癌症分期分數或結果為M≠0":
   Reusable."癌症分期分數或結果為M≠0"
 
-define "條件1-2=遠端轉移":
+define "1規則1-2=遠端轉移":
 "ICD腫瘤代碼檢核_布林值"
-or ("條件2-2=6個月內影像報告"    
-and "條件2-3=癌症分期分數或結果為M≠0") 
+or ("1規則2-2=6個月內影像報告"    
+and "1規則2-3=癌症分期分數或結果為M≠0") 
 
 
 //條件3:(1)荷爾蒙接受體為：ER或PR >30%。
 //條件3-1 ER
-define "條件3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)":
+define "1規則3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)":
   exists (
     [Observation] OBs
       where Reusable."IsTestObservation"(OBs)
@@ -97,7 +97,7 @@ define "條件3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)":
     )
   )
 
-define "條件3-1=基因檢測-荷爾蒙受體陽性(ER>30%)":
+define "1規則3-1=基因檢測-荷爾蒙受體陽性(ER>30%)":
   exists (
     [Observation] OBs
       where Reusable."IsGeneInfoObservation"(OBs)
@@ -120,12 +120,12 @@ define "條件3-1=基因檢測-荷爾蒙受體陽性(ER>30%)":
     )
   )
 
-define "條件3-1=荷爾蒙受體陽性(ER>30%)":
-  "條件3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)"
-  or "條件3-1=基因檢測-荷爾蒙受體陽性(ER>30%)"
+define "1規則3-1=荷爾蒙受體陽性(ER>30%)":
+  "1規則3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)"
+  or "1規則3-1=基因檢測-荷爾蒙受體陽性(ER>30%)"
 
 //條件3-2 PR
-define "條件3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)":
+define "1規則3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)":
   exists (
     [Observation] OBs
       where Reusable."IsTestObservation"(OBs)
@@ -143,7 +143,7 @@ define "條件3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)":
     )
   )
 
-define "條件3-2=基因檢測-荷爾蒙受體陽性(PR>30%)":
+define "1規則3-2=基因檢測-荷爾蒙受體陽性(PR>30%)":
   exists (
     [Observation] OBs
       where Reusable."IsGeneInfoObservation"(OBs)
@@ -166,22 +166,22 @@ define "條件3-2=基因檢測-荷爾蒙受體陽性(PR>30%)":
     )
   )
 
-define "條件3-2=荷爾蒙受體陽性(PR>30%)":
-  "條件3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)"
-  or "條件3-2=基因檢測-荷爾蒙受體陽性(PR>30%)"
+define "1規則3-2=荷爾蒙受體陽性(PR>30%)":
+  "1規則3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)"
+  or "1規則3-2=基因檢測-荷爾蒙受體陽性(PR>30%)"
 
 
-define "條件3=荷爾蒙接受體為：ER或PR >30%":
-"條件3-1=荷爾蒙受體陽性(ER>30%)" or "條件3-2=荷爾蒙受體陽性(PR>30%)"
+define "1規則3=荷爾蒙接受體為：ER或PR >30%":
+"1規則3-1=荷爾蒙受體陽性(ER>30%)" or "1規則3-2=荷爾蒙受體陽性(PR>30%)"
 
 
 //條件4:(2)HER-2 檢測為陰性
-define "條件4=HER-2 檢測為陰性":
+define "1規則4=HER-2 檢測為陰性":
   Reusable."HasTestObservationWithInterpretationCodes"(CodeConcept.HER2, { 'NEG', 'ND' })
   or Reusable."HasGeneInfoComponentResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
 //條件5:經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移
 //條件5-1
-define "條件5-1=未出現器官轉移危急症狀 (visceral crisis)":
+define "1規則5-1=未出現器官轉移危急症狀 (visceral crisis)":
   exists (
     [DiagnosticReport] O
     where Reusable."IsImageReport"(O)
@@ -193,7 +193,7 @@ define "條件5-1=未出現器官轉移危急症狀 (visceral crisis)":
   ) 
 
 //條件5-2
-define "條件5-2=無中樞神經系統(CNS)轉移":
+define "1規則5-2=無中樞神經系統(CNS)轉移":
   exists (
     [DiagnosticReport] O
     where Reusable."IsImageReport"(O)
@@ -203,12 +203,12 @@ define "條件5-2=無中樞神經系統(CNS)轉移":
     or Reusable."ICD-10使用C77、C78、C79但排除C79.3"
   )
 
-define "條件5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移":
-"條件5-1=未出現器官轉移危急症狀 (visceral crisis)"
-and "條件5-2=無中樞神經系統(CNS)轉移"
+define "1規則5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移":
+"1規則5-1=未出現器官轉移危急症狀 (visceral crisis)"
+and "1規則5-2=無中樞神經系統(CNS)轉移"
 
 //條件6:骨轉移不可為唯一轉移部位
-define "條件6=骨轉移不可為唯一轉移部位":
+define "1規則6=骨轉移不可為唯一轉移部位":
   exists (
     [DiagnosticReport] O
     where Reusable."IsImageReport"(O)
@@ -238,11 +238,11 @@ define "病患目前未接受卵巢功能抑制治療 (包含GnRH analogue等)":
   )
 
 //條件7-2
-define "條件7-2=年齡滿55歲":
+define "1規則7-2=年齡滿55歲":
  AgeInYears() >= 55
 
 //條件7-3
-define "條件7-3=曾接受雙側卵巢切除術":
+define "1規則7-3=曾接受雙側卵巢切除術":
   exists (
     [Claim] C
     where exists (
@@ -279,7 +279,7 @@ define "條件7-3=曾接受雙側卵巢切除術":
 
 //條件7-4:FSH及estradiol血液檢測值在停經後數值範圍內
 //條件7-4-1
-define "條件7-4-1=FSH血液檢測值在停經後數值範圍內":
+define "1規則7-4-1=FSH血液檢測值在停經後數值範圍內":
   exists (
     [Observation] OBs
       where Reusable."IsTestObservation"(OBs)
@@ -294,7 +294,7 @@ define "條件7-4-1=FSH血液檢測值在停經後數值範圍內":
   )
 
 //條件7-4-2
-define "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內":
+define "1規則7-4-2=Estradiol血液檢測值在停經後數值範圍內":
   exists (
     [Observation] OBs
       where Reusable."IsTestObservation"(OBs)
@@ -308,25 +308,25 @@ define "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內":
       and (OBs.value as Quantity).comparator = '<'
   )
 
-define "條件7-4=FSH及estradiol血液檢測值在停經後數值範圍內":
-"條件7-4-1=FSH血液檢測值在停經後數值範圍內"
-and "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內"
+define "1規則7-4=FSH及estradiol血液檢測值在停經後數值範圍內":
+"1規則7-4-1=FSH血液檢測值在停經後數值範圍內"
+and "1規則7-4-2=Estradiol血液檢測值在停經後數值範圍內"
 
-define "條件7":
+define "1規則7":
 "病患目前未接受卵巢功能抑制治療 (包含GnRH analogue等)"
-and ("條件7-2=年齡滿55歲"
-or "條件7-3=曾接受雙側卵巢切除術"
-or "條件7-4=FSH及estradiol血液檢測值在停經後數值範圍內")
+and ("1規則7-2=年齡滿55歲"
+or "1規則7-3=曾接受雙側卵巢切除術"
+or "1規則7-4=FSH及estradiol血液檢測值在停經後數值範圍內")
 
 //主要規定一之規則1
 define "主要規定一之規則1":
-"條件1-1=停經後乳癌婦女"
-and "條件1-2=遠端轉移"
-and "條件3=荷爾蒙接受體為：ER或PR >30%"
-and "條件4=HER-2 檢測為陰性"
-and "條件5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移"
-and "條件6=骨轉移不可為唯一轉移部位"
-and "條件7"
+"1規則1-1=停經後乳癌婦女"
+and "1規則1-2=遠端轉移"
+and "1規則3=荷爾蒙接受體為：ER或PR >30%"
+and "1規則4=HER-2 檢測為陰性"
+and "1規則5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移"
+and "1規則6=骨轉移不可為唯一轉移部位"
+and "1規則7"
 
 
 
@@ -337,7 +337,7 @@ and "條件7"
 //條件2:同規則1的條件2
 
 //條件3:與芳香環轉化酶抑制劑及GnRH analogue併用
-define "條件3=與芳香環轉化酶抑制劑及GnRH analogue併用":
+define "1規則3=與芳香環轉化酶抑制劑及GnRH analogue併用":
   Reusable."HasConcurrentMedicationOrders2"(
     CodeConcept."CDK46抑制劑",
     CodeConcept."芳香環轉化酶抑制劑",
@@ -354,13 +354,13 @@ define "條件3=與芳香環轉化酶抑制劑及GnRH analogue併用":
 
 //主要規定一之規則2
 define "主要規定一之規則2":
-"條件1-1=停經後乳癌婦女"
-and "條件1-2=遠端轉移"
-and "條件3=與芳香環轉化酶抑制劑及GnRH analogue併用"
-and "條件3=荷爾蒙接受體為：ER或PR >30%"
-and "條件4=HER-2 檢測為陰性"
-and "條件5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移"
-and "條件6=骨轉移不可為唯一轉移部位"
+"1規則1-1=停經後乳癌婦女"
+and "1規則1-2=遠端轉移"
+and "1規則3=與芳香環轉化酶抑制劑及GnRH analogue併用"
+and "1規則3=荷爾蒙接受體為：ER或PR >30%"
+and "1規則4=HER-2 檢測為陰性"
+and "1規則5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移"
+and "1規則6=骨轉移不可為唯一轉移部位"
 
 
 // 主要規定一
@@ -387,7 +387,7 @@ define "前次申請紀錄":
   Reusable."LatestMedicationPlanBefore"(CodeConcept."CDK46抑制劑", "本次申請起始日期")
 
 // 檢查本次申請療程長度是否在24週內
-define "條件1=每24週須再次申請並檢附療效評估資料":
+define "2規則1=每24週須再次申請並檢附療效評估資料":
   Reusable."醫令類別為1" 
   and Reusable."續用註記為2"
   and "本次申請紀錄" is not null
@@ -410,7 +410,7 @@ define "前次用藥開始日期":
   Reusable."GetStartTime"("前次治療紀錄")
 
 // 規則1-2: 疾病有惡化情形須停止使用(續用須檢附前次治療後影像學報告)
-define "條件2=疾病有惡化情形須停止使用":
+define "2規則2=疾病有惡化情形須停止使用":
   exists (
     [DiagnosticReport] O
     where Reusable."IsImageReport"(O)
@@ -424,8 +424,8 @@ define "主要規定二：續用條件":
 Reusable."續用註記為2"
 and Reusable."醫令類別為1"
 and "本次申請紀錄" is not null
-and "條件1=每24週須再次申請並檢附療效評估資料"
-and "條件2=疾病有惡化情形須停止使用"
+and "2規則1=每24週須再次申請並檢附療效評估資料"
+and "2規則2=疾病有惡化情形須停止使用"
 
 
 
@@ -435,7 +435,7 @@ and "條件2=疾病有惡化情形須停止使用"
 
 
 //條件1:(1)ribociclib每日最多處方3粒
-define "條件1=ribociclib每日最多處方3粒":
+define "3規則1=ribociclib每日最多處方3粒":
   exists (
     [MedicationRequest] MR
     where MR.intent = 'plan'
@@ -456,7 +456,7 @@ define "條件1=ribociclib每日最多處方3粒":
   )
 
 //條件2:(2)palbociclib每日最多處方1粒
-define "條件2=palbociclib每日最多處方1粒":
+define "3規則2=palbociclib每日最多處方1粒":
   exists (
     [MedicationRequest] MR
     where MR.intent = 'plan'
@@ -479,14 +479,14 @@ define "條件2=palbociclib每日最多處方1粒":
 //條件3-1:可忍受化療(其副作用)時（一般情況，不另外註記）
 
 //條件3-2
-define "條件3-2=Ribociclib、Palbociclib二者僅能擇一使用":
+define "3規則3-2=Ribociclib、Palbociclib二者僅能擇一使用":
   not (
     Reusable."HasMedicationUse"(CodeConcept.L01EF01)
     and Reusable."HasMedicationUse"(CodeConcept.L01EF02)
   )
 
 //條件3-3:無法忍受化療(其副作用)時（有註記）
-define "條件3-3=無法忍受化療(其副作用)時(有註記)":
+define "3規則3-3=無法忍受化療(其副作用)時(有註記)":
   exists (
     [Claim] C
       where exists (
@@ -499,22 +499,22 @@ define "條件3-3=無法忍受化療(其副作用)時(有註記)":
     )
 
 //條件3-4
-define "條件3-4=ribociclib、palbociclib二者可轉換":
+define "3規則3-4=ribociclib、palbociclib二者可轉換":
   Reusable."HasMedicationUse"(CodeConcept.L01EF01)
   or Reusable."HasMedicationUse"(CodeConcept.L01EF02)
 
-define "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用":
-  if "條件3-3=無法忍受化療(其副作用)時(有註記)"
-    then "條件3-4=ribociclib、palbociclib二者可轉換"
+define "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用":
+  if "3規則3-3=無法忍受化療(其副作用)時(有註記)"
+    then "3規則3-4=ribociclib、palbociclib二者可轉換"
   else
-    "條件3-2=Ribociclib、Palbociclib二者僅能擇一使用"
+    "3規則3-2=Ribociclib、Palbociclib二者僅能擇一使用"
 
 //條件4
-define "條件4=使用總療程合併計算，以每人終生給付24個月為上限":
+define "3規則4=使用總療程合併計算，以每人終生給付24個月為上限":
   Reusable."HasMedicationTotalDurationWithin"(CodeConcept."CDK46抑制劑", 720)
 
 //條件5:everolimus無效，不得再申請CDK4/6抑制劑
-define "條件5=未註記everolimus無效":
+define "3規則5=未註記everolimus無效":
   not exists (
     [Claim] C
       where exists (
@@ -527,7 +527,7 @@ define "條件5=未註記everolimus無效":
     )
 
 //條件6:abemaciclib無效，不得再申請CDK4/6抑制劑
-define "條件6=未註記abemaciclib無效":
+define "3規則6=未註記abemaciclib無效":
   not exists (
     [Claim] C
       where exists (
@@ -541,12 +541,39 @@ define "條件6=未註記abemaciclib無效":
 
 // 主要規定三
 define "主要規定三：藥品使用規則":
-("條件1=ribociclib每日最多處方3粒"
-or "條件2=palbociclib每日最多處方1粒")
-and "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用"
-and "條件4=使用總療程合併計算，以每人終生給付24個月為上限"
-and "條件5=未註記everolimus無效"
-and "條件6=未註記abemaciclib無效"
+("3規則1=ribociclib每日最多處方3粒"
+or "3規則2=palbociclib每日最多處方1粒")
+and "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用"
+and "3規則4=使用總療程合併計算，以每人終生給付24個月為上限"
+and "3規則5=未註記everolimus無效"
+and "3規則6=未註記abemaciclib無效"
+
+
+//============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請" and (
+          not "1規則1-1=簡要病摘含有停經字樣" or
+          not "1規則1-3=CDK46抑制劑申請" or
+          not "1規則1-2=遠端轉移" or
+          not Reusable."HER2檢測資料存在" or
+          not Reusable."ER檢測資料存在" or
+          not "1規則5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移" or
+          not "1規則6=骨轉移不可為唯一轉移部位" or
+          not "1規則7"
+        )
+    )
+    or (
+      Reusable."續用申請" and (
+          not "2規則1=每24週須再次申請並檢附療效評估資料" or
+          not "2規則2=疾病有惡化情形須停止使用"
+        )
+    )
+  )
 
 
 //============================================
@@ -556,87 +583,87 @@ and "條件6=未註記abemaciclib無效"
 define function "符合項目"():
   // 主要規定一：初次使用條件
   (if Reusable."初次申請" and (
-    "條件1-1=停經後乳癌婦女" or 
-    "條件1-2=遠端轉移" or 
-    "條件3=荷爾蒙接受體為：ER或PR >30%" or 
-    "條件4=HER-2 檢測為陰性" or 
-    "條件5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移" or 
-    "條件6=骨轉移不可為唯一轉移部位" or 
-    "條件7" or 
+    "1規則1-1=停經後乳癌婦女" or 
+    "1規則1-2=遠端轉移" or 
+    "1規則3=荷爾蒙接受體為：ER或PR >30%" or 
+    "1規則4=HER-2 檢測為陰性" or 
+    "1規則5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移" or 
+    "1規則6=骨轉移不可為唯一轉移部位" or 
+    "1規則7" or 
     "主要規定一之規則2"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if "條件1-1=簡要病摘含有停經字樣" 
+         (if "1規則1-1=簡要病摘含有停經字樣" 
            then '● 1條件1-1：簡要病摘含有停經字樣\n' else '') +
-         (if "條件1-2=女性" 
+         (if "1規則1-2=女性" 
            then '● 1條件1-2：女性\n' else '') +
-         (if "條件1-3=CDK46抑制劑申請" 
+         (if "1規則1-3=CDK46抑制劑申請" 
            then '● 1條件1-3：CDK46抑制劑申請\n' else '') +
          (if "ICD腫瘤代碼檢核_布林值" 
            then '● ICD腫瘤代碼檢核：ICD-10使用C77、C78、C79\n' else '') +
-         (if "條件2-2=6個月內影像報告" 
+         (if "1規則2-2=6個月內影像報告" 
            then '● 1條件2-2：6個月內影像報告\n' else '') +
-         (if "條件2-3=癌症分期分數或結果為M≠0" 
+         (if "1規則2-3=癌症分期分數或結果為M≠0" 
            then '● 1條件2-3：癌症分期分數或結果為M≠0\n' else '') +
-         (if "條件3-1=荷爾蒙受體陽性(ER>30%)" 
+         (if "1規則3-1=荷爾蒙受體陽性(ER>30%)" 
            then '● 1條件3-1：荷爾蒙受體陽性(ER>30%)\n' else '') +
-         (if "條件3-2=荷爾蒙受體陽性(PR>30%)" 
+         (if "1規則3-2=荷爾蒙受體陽性(PR>30%)" 
            then '● 1條件3-2：荷爾蒙受體陽性(PR>30%)\n' else '') +
-         (if "條件4=HER-2 檢測為陰性" 
+         (if "1規則4=HER-2 檢測為陰性" 
            then '● 1條件4：HER-2檢測為陰性\n' else '') +
-         (if "條件5-1=未出現器官轉移危急症狀 (visceral crisis)" 
+         (if "1規則5-1=未出現器官轉移危急症狀 (visceral crisis)" 
            then '● 1條件5-1：未出現器官轉移危急症狀(visceral crisis)\n' else '') +
-         (if "條件5-2=無中樞神經系統(CNS)轉移" 
+         (if "1規則5-2=無中樞神經系統(CNS)轉移" 
            then '● 1條件5-2：無中樞神經系統(CNS)轉移\n' else '') +
-         (if "條件6=骨轉移不可為唯一轉移部位" 
+         (if "1規則6=骨轉移不可為唯一轉移部位" 
            then '● 1條件6：骨轉移不為唯一轉移部位(已檢附影像報告)\n' else '') +
-         (if "條件7-2=年齡滿55歲" 
+         (if "1規則7-2=年齡滿55歲" 
            then '● 1條件7-2：年齡滿55歲\n' else '') +
-         (if "條件7-3=曾接受雙側卵巢切除術" 
+         (if "1規則7-3=曾接受雙側卵巢切除術" 
            then '● 1條件7-3：曾接受雙側卵巢切除術\n' else '') +
-         (if "條件7-4-1=FSH血液檢測值在停經後數值範圍內"
+         (if "1規則7-4-1=FSH血液檢測值在停經後數值範圍內"
            then '● 1條件7-4-1：FSH檢測值符合停經後標準\n' else '') +
-         (if "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內"
+         (if "1規則7-4-2=Estradiol血液檢測值在停經後數值範圍內"
            then '● 1條件7-4-2：Estradiol檢測值符合停經後標準\n' else '') +
-         (if "條件3=與芳香環轉化酶抑制劑及GnRH analogue併用" 
+         (if "1規則3=與芳香環轉化酶抑制劑及GnRH analogue併用" 
            then '● 1條件3：與芳香環轉化酶抑制劑及GnRH analogue併用\n' else '') +
          '\n'
     else '') +
   
   // 主要規定二：續用條件
   (if Reusable."續用申請" and (
-    "條件1=每24週須再次申請並檢附療效評估資料" or 
-    "條件2=疾病有惡化情形須停止使用"
+    "2規則1=每24週須再次申請並檢附療效評估資料" or 
+    "2規則2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if "條件1=每24週須再次申請並檢附療效評估資料" 
+         (if "2規則1=每24週須再次申請並檢附療效評估資料" 
            then '● 2條件1：於24週內再次申請並檢附療效評估資料\n' else '') +
-         (if "條件2=疾病有惡化情形須停止使用" 
+         (if "2規則2=疾病有惡化情形須停止使用" 
            then '● 2條件2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '') +
   
   // 主要規定三：藥品使用規則
-  (if "條件1=ribociclib每日最多處方3粒" or 
-      "條件2=palbociclib每日最多處方1粒" or
-      "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" or
-      "條件4=使用總療程合併計算，以每人終生給付24個月為上限" or
-      "條件5=未註記everolimus無效" or
-      "條件6=未註記abemaciclib無效"
+  (if "3規則1=ribociclib每日最多處方3粒" or 
+      "3規則2=palbociclib每日最多處方1粒" or
+      "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" or
+      "3規則4=使用總療程合併計算，以每人終生給付24個月為上限" or
+      "3規則5=未註記everolimus無效" or
+      "3規則6=未註記abemaciclib無效"
     then '<主要規定三：藥品使用規則>\n' +
          // 只顯示實際申請的藥品劑量規定
-         (if "條件1=ribociclib每日最多處方3粒" 
+         (if "3規則1=ribociclib每日最多處方3粒" 
            then '● 3條件1：ribociclib每日劑量≤3粒\n' 
-           else if "條件2=palbociclib每日最多處方1粒" 
+           else if "3規則2=palbociclib每日最多處方1粒" 
            then '● 3條件2：palbociclib每日劑量≤1粒\n' 
            else '') +
-         (if "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" 
+         (if "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" 
            then '● 3條件3：藥品擇一使用或符合轉換條件\n' else '') +
-         (if "條件4=使用總療程合併計算，以每人終生給付24個月為上限" 
+         (if "3規則4=使用總療程合併計算，以每人終生給付24個月為上限" 
            then '● 3條件4：使用總療程≤24個月(720天)\n' else '') +
-         (if "條件5=未註記everolimus無效" 
+         (if "3規則5=未註記everolimus無效" 
            then '● 3條件5：未註記everolimus無效\n' else '') +
-         (if "條件6=未註記abemaciclib無效" 
+         (if "3規則6=未註記abemaciclib無效" 
            then '● 3條件6：未註記abemaciclib無效\n' else '')
     else '')
 
@@ -647,34 +674,34 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    not Reusable."ICD-10使用C50" or 
-    not "條件1-2=女性"
+    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or 
+    not "1規則1-2=女性"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not Reusable."ICD-10使用C50" 
+         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" 
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not "條件1-2=女性" 
+         (if not "1規則1-2=女性" 
            then '▲ 1條件1-2：非女性\n' else '') +
          '\n'
     else '') +
   
   // 主要規定三：藥品使用規則 - 條件或代碼不符合
-  (if (not "條件1=ribociclib每日最多處方3粒" and not "條件2=palbociclib每日最多處方1粒") or
-      not "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" or
-      not "條件4=使用總療程合併計算，以每人終生給付24個月為上限" or
-      not "條件5=未註記everolimus無效" or
-      not "條件6=未註記abemaciclib無效"
+  (if (not "3規則1=ribociclib每日最多處方3粒" and not "3規則2=palbociclib每日最多處方1粒") or
+      not "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" or
+      not "3規則4=使用總療程合併計算，以每人終生給付24個月為上限" or
+      not "3規則5=未註記everolimus無效" or
+      not "3規則6=未註記abemaciclib無效"
     then '<主要規定三：藥品使用規則>\n' +
          // 只有當兩個劑量規定都不符合時才顯示錯誤（表示沒有申請或劑量都超標）
-         (if not "條件1=ribociclib每日最多處方3粒" and not "條件2=palbociclib每日最多處方1粒"
+         (if not "3規則1=ribociclib每日最多處方3粒" and not "3規則2=palbociclib每日最多處方1粒"
            then '▲ 3條件1/2：未申請CDK46抑制劑或劑量超標\n' else '') +
-         (if not "條件3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" 
+         (if not "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" 
            then '▲ 條件：藥品使用不符規定(本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用)\n' else '') +
-         (if not "條件4=使用總療程合併計算，以每人終生給付24個月為上限" 
+         (if not "3規則4=使用總療程合併計算，以每人終生給付24個月為上限" 
            then '▲ 3條件4：使用總療程超過24個月(720天)\n' else '') +
-         (if not "條件5=未註記everolimus無效" 
+         (if not "3規則5=未註記everolimus無效" 
            then '▲ 3條件5：病歷註記everolimus無效\n' else '') +
-         (if not "條件6=未註記abemaciclib無效" 
+         (if not "3規則6=未註記abemaciclib無效" 
            then '▲ 3條件6：病歷註記abemaciclib無效\n' else '')
     else '')
 
@@ -685,50 +712,50 @@ define function "不符合項目_條件或代碼不符合"():
 define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
-    not "條件1-1=簡要病摘含有停經字樣" or 
-    not "條件1-3=CDK46抑制劑申請" or 
-    not "條件1-2=遠端轉移" or 
-    not "條件3=荷爾蒙接受體為：ER或PR >30%" or 
-    not "條件4=HER-2 檢測為陰性" or 
-    not "條件5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移" or 
-    not "條件6=骨轉移不可為唯一轉移部位" or 
-    not "條件7"
+    not "1規則1-1=簡要病摘含有停經字樣" or 
+    not "1規則1-3=CDK46抑制劑申請" or 
+    not "1規則1-2=遠端轉移" or 
+    not Reusable."HER2檢測資料存在" or 
+    not Reusable."ER檢測資料存在" or 
+    not "1規則5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移" or 
+    not "1規則6=骨轉移不可為唯一轉移部位" or 
+    not "1規則7"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not "條件1-1=簡要病摘含有停經字樣" 
+         (if not "1規則1-1=簡要病摘含有停經字樣" 
            then '▲ 1條件1-1：簡要病摘未含有停經字樣\n' else '') +
-         (if not "條件1-3=CDK46抑制劑申請" 
+         (if not "1規則1-3=CDK46抑制劑申請" 
            then '▲ 1條件1-3：未提供CDK46抑制劑申請資料\n' else '') +
-         (if not "條件1-2=遠端轉移" 
+         (if not "1規則1-2=遠端轉移" 
            then '▲ 1條件1-2：未提供遠端轉移證據資料\n' else '') +
-         (if not "條件3=荷爾蒙接受體為：ER或PR >30%" 
+         (if not Reusable."HER2檢測資料存在" 
            then '▲ 1條件3：未提供荷爾蒙受體檢測資料\n' else '') +
-         (if not "條件4=HER-2 檢測為陰性" 
+         (if not Reusable."ER檢測資料存在" 
            then '▲ 1條件4：未提供HER-2檢測資料\n' else '') +
-         (if not "條件5-1=未出現器官轉移危急症狀 (visceral crisis)"
+         (if not "1規則5-1=未出現器官轉移危急症狀 (visceral crisis)"
            then '▲ 1條件5-1：有visceral crisis或未提供評估資料\n' else '') +
-         (if not "條件5-2=無中樞神經系統(CNS)轉移"
+         (if not "1規則5-2=無中樞神經系統(CNS)轉移"
            then '▲ 1條件5-2：有CNS轉移或未提供評估資料\n' else '') +
-         (if not "條件6=骨轉移不可為唯一轉移部位" 
+         (if not "1規則6=骨轉移不可為唯一轉移部位" 
            then '▲ 1條件6：未提供影像報告資料\n' else '') +
-         (if not "條件7"
-           then (if not "條件7-2=年齡滿55歲" then '▲ 1條件7-2：年齡未滿55歲\n' else '') +
-                (if not "條件7-3=曾接受雙側卵巢切除術" then '▲ 1條件7-3：未提供雙側卵巢切除術紀錄\n' else '') +
-                (if not "條件7-4-1=FSH血液檢測值在停經後數值範圍內" then '▲ 1條件7-4-1：FSH檢測值未達停經後標準\n' else '') +
-                (if not "條件7-4-2=Estradiol血液檢測值在停經後數值範圍內" then '▲ 1條件7-4-2：Estradiol檢測值未達停經後標準\n' else '')
+         (if not "1規則7"
+           then (if not "1規則7-2=年齡滿55歲" then '▲ 1條件7-2：年齡未滿55歲\n' else '') +
+                (if not "1規則7-3=曾接受雙側卵巢切除術" then '▲ 1條件7-3：未提供雙側卵巢切除術紀錄\n' else '') +
+                (if not "1規則7-4-1=FSH血液檢測值在停經後數值範圍內" then '▲ 1條件7-4-1：FSH檢測值未達停經後標準\n' else '') +
+                (if not "1規則7-4-2=Estradiol血液檢測值在停經後數值範圍內" then '▲ 1條件7-4-2：Estradiol檢測值未達停經後標準\n' else '')
            else '') +
          '\n'
     else '') +
   
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and (
-    not "條件1=每24週須再次申請並檢附療效評估資料" or 
-    not "條件2=疾病有惡化情形須停止使用"
+    not "2規則1=每24週須再次申請並檢附療效評估資料" or 
+    not "2規則2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if not "條件1=每24週須再次申請並檢附療效評估資料" 
+         (if not "2規則1=每24週須再次申請並檢附療效評估資料" 
            then '▲ 2條件1：未於24週內再次申請或未檢附療效評估資料\n' else '') +
-         (if not "條件2=疾病有惡化情形須停止使用" 
+         (if not "2規則2=疾病有惡化情形須停止使用" 
            then '▲ 2條件2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '')
@@ -740,12 +767,10 @@ define function "不符合項目_必要資料未填寫"():
 define "乳癌CDK46抑制劑申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "主要規定一" and
-      "主要規定三：藥品使用規則"
+      "主要規定一"
     )
     when Reusable."續用申請" then (
-      "主要規定二：續用條件" and
-      "主要規定三：藥品使用規則"
+      "主要規定二：續用條件"
     )
     else false
   end
@@ -753,15 +778,13 @@ define "乳癌CDK46抑制劑申請結果_布林":
 define "乳癌CDK46抑制劑申請之CQL檢核結果":
   if (
     Reusable."初次申請" and 
-    "主要規定一" and
-    "主要規定三：藥品使用規則"
+    "主要規定一"
   )
   then '✓通過：初次使用－乳癌CDK46抑制劑用藥申請'
 
   else if (
     Reusable."續用申請" and
-    "主要規定二：續用條件" and
-    "主要規定三：藥品使用規則"
+    "主要規定二：續用條件"
   )
   then '✓通過：續用－乳癌 CDK46抑制劑 用藥申請'
   else if Reusable."初次申請"
@@ -776,6 +799,7 @@ define "乳癌CDK46抑制劑申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 乳癌之CDK46抑制劑申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +

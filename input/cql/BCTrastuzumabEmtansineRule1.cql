@@ -407,7 +407,7 @@ define "前次申請紀錄":
   Reusable."LatestMedicationPlanBefore"(CodeConcept.L01FD03, "本次申請起始日期")
 
 // 檢查本次申請療程長度是否在24週內
-define "規則1-1=每24週須再次申請並檢附療效評估資料":
+define "2規則1-1=每24週須再次申請並檢附療效評估資料":
   Reusable."醫令類別為1" 
   and Reusable."續用註記為2"
   and "本次申請紀錄" is not null
@@ -425,7 +425,7 @@ define "前次用藥開始日期":
   Reusable."GetStartTime"("前次治療紀錄")
 
 // 規則1-2: 疾病有惡化情形須停止使用(續用須檢附前次治療後影像學報告)
-define "規則1-2=疾病有惡化情形須停止使用":
+define "2規則1-2=疾病有惡化情形須停止使用":
   Reusable."HasImageReportBetweenPreviousTreatmentAndCurrentApply"(CodeConcept.L01FD03)
 
 // 主要規定二
@@ -433,8 +433,8 @@ define "主要規定二":
 Reusable."續用註記為2"
 and Reusable."醫令類別為1"
 and "本次申請紀錄" is not null
-and "規則1-1=每24週須再次申請並檢附療效評估資料"
-and "規則1-2=疾病有惡化情形須停止使用"
+and "2規則1-1=每24週須再次申請並檢附療效評估資料"
+and "2規則1-2=疾病有惡化情形須停止使用"
 
 
 //============================================
@@ -453,7 +453,7 @@ define "符合條件之本藥品處方":
       and end of (MRTotal.dosageInstruction[0].timing.repeat.bounds as Period) is not null
       and Reusable."HasMedicationCode"(MRTotal, CodeConcept.L01FD03)
 
-define "規則1=每位病人使用本藥品以14個療程為上限":
+define "3規則1=每位病人使用本藥品以14個療程為上限":
   Sum(
     "符合條件之本藥品處方" MRTotal
       return
@@ -523,7 +523,7 @@ define "2條件3=不得與其他抗HER2藥物併用":
       and Reusable."HasMedicationCode"(MROrder1, CodeConcept."抗HER2藥物併用")
   )
 
-define "規則2":
+define "3規則2":
 "2條件1=未於術後12週內開始治療或提出治療申請" 
 or "2條件2"
 or "2條件3=不得與其他抗HER2藥物併用"
@@ -590,15 +590,37 @@ define "3條件2=本藥品與trastuzumab使用於早期乳癌手術前後的總�
           and end of (MR.dosageInstruction[0].timing.repeat.bounds as Period)
   ) <= 378
 
-define "規則3":
+define "3規則3":
 not "3條件1=本藥品申請通過後，如轉換成trastuzumab或其他抗HER2藥物後不得再次申請本藥品"
 and "3條件2=本藥品與trastuzumab使用於早期乳癌手術前後的總療程合併計算，每位病人以全部18個療程為上限"
 
 //主要規定三
 define "主要規定三":
-"規則1=每位病人使用本藥品以14個療程為上限"
-and not "規則2"
-and "規則3"
+"3規則1=每位病人使用本藥品以14個療程為上限"
+and not "3規則2"
+and "3規則3"
+
+
+//============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+define "必要資料皆存在":
+  not (
+    (
+      Reusable."初次申請" and (
+          not "1條件2=曾接受過至少6個療程的化學治療" or
+          not "1條件4=需符合下列任一條件"
+        )
+    )
+    or (
+      Reusable."續用申請" and (
+          not "2規則1-1=每24週須再次申請並檢附療效評估資料" or
+          not "2規則1-2=疾病有惡化情形須停止使用"
+        )
+    )
+    or (Reusable."初次申請" and "2條件1=未於術後12週內開始治療或提出治療申請")
+  )
 
 
 //============================================
@@ -628,29 +650,29 @@ define function "符合項目"():
 
   // 主要規定二：續用條件
   (if Reusable."續用申請" and (
-    "規則1-1=每24週須再次申請並檢附療效評估資料" or
-    "規則1-2=疾病有惡化情形須停止使用"
+    "2規則1-1=每24週須再次申請並檢附療效評估資料" or
+    "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if "規則1-1=每24週須再次申請並檢附療效評估資料"
+         (if "2規則1-1=每24週須再次申請並檢附療效評估資料"
            then '● 2條件1：於24週內再次申請並檢附療效評估資料\n' else '') +
-         (if "規則1-2=疾病有惡化情形須停止使用"
+         (if "2規則1-2=疾病有惡化情形須停止使用"
            then '● 2條件2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
          '\n'
     else '') +
 
   // 主要規定三：藥品使用規則
-  (if "規則1=每位病人使用本藥品以14個療程為上限" or "規則3"
+  (if "3規則1=每位病人使用本藥品以14個療程為上限" or "3規則3"
     then '<主要規定三：藥品使用規則>\n' +
-         (if "規則1=每位病人使用本藥品以14個療程為上限"
+         (if "3規則1=每位病人使用本藥品以14個療程為上限"
            then '● 3規則1：本藥品使用療程符合14個療程上限(≤294天)\n' else '') +
          (if not "2條件1=未於術後12週內開始治療或提出治療申請"
            then '● 3規則2-1：於術後12週(84天)內開始治療或提出申請\n' else '') +
          (if not "2條件2"
            then '● 3規則2-2：無左心室射出分率少於45%或有症狀心衰竭之禁忌症\n' else '') +
-         (if not "2條件3=不得與其他抗HER2藥物併用"
+         (if not Reusable."HER2檢測資料存在"
            then '● 3規則2-3：未與其他抗HER2藥物併用\n' else '') +
-         (if not "3條件1=本藥品申請通過後，如轉換成trastuzumab或其他抗HER2藥物後不得再次申請本藥品"
+         (if not Reusable."HER2檢測資料存在"
            then '● 3規則1：未曾由本藥品轉換為其他抗HER2藥物後再次申請本藥品\n' else '') +
          (if "3條件2=本藥品與trastuzumab使用於早期乳癌手術前後的總療程合併計算，每位病人以全部18個療程為上限"
            then '● 3規則2：與trastuzumab合併計算療程符合18個療程上限(≤378天)\n' else '')
@@ -664,19 +686,19 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    not Reusable."ICD-10使用C50" or
-    not "1條件1=使用於具HER2過度表現(IHC 3+或FISH+)之早期乳癌病人"
+    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
+    Reusable."HER2檢測資料存在" and not "1條件1=使用於具HER2過度表現(IHC 3+或FISH+)之早期乳癌病人"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not Reusable."ICD-10使用C50"
+         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not "1條件1=使用於具HER2過度表現(IHC 3+或FISH+)之早期乳癌病人"
+         (if Reusable."HER2檢測資料存在" and not "1條件1=使用於具HER2過度表現(IHC 3+或FISH+)之早期乳癌病人"
            then '▲ 1條件1：HER2非過度表現(非IHC3+或FISH+)\n' else '') +
          '\n'
     else '') +
 
   // 主要規定三：藥品使用規則 - 療程超標或條件不符
-  (if not "規則1=每位病人使用本藥品以14個療程為上限"
+  (if not "3規則1=每位病人使用本藥品以14個療程為上限"
     then '<主要規定三：藥品使用規則>\n' +
          '▲ 3規則1：本藥品使用療程超過14個療程上限(294天)\n' + '\n'
     else '') +
@@ -726,13 +748,13 @@ define function "不符合項目_必要資料未填寫"():
 
   // 主要規定二：續用條件 - 必要資料未填寫
   (if Reusable."續用申請" and (
-    not "規則1-1=每24週須再次申請並檢附療效評估資料" or
-    not "規則1-2=疾病有惡化情形須停止使用"
+    not "2規則1-1=每24週須再次申請並檢附療效評估資料" or
+    not "2規則1-2=疾病有惡化情形須停止使用"
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         (if not "規則1-1=每24週須再次申請並檢附療效評估資料"
+         (if not "2規則1-1=每24週須再次申請並檢附療效評估資料"
            then '▲ 2條件1：未於24週內再次申請，或未檢附療效評估資料，或申請療程超過24週(168天)\n' else '') +
-         (if not "規則1-2=疾病有惡化情形須停止使用"
+         (if not "2規則1-2=疾病有惡化情形須停止使用"
            then '▲ 2條件2：未提供前次治療後影像學報告資料\n' else '') +
          '\n'
     else '') +
@@ -751,8 +773,7 @@ define function "不符合項目_必要資料未填寫"():
 define "乳癌TrastuzumabEmtansine早期申請結果_布林":
   case
     when Reusable."初次申請" then (
-      "主要規定一" and
-      "主要規定三"
+      "主要規定一"
     )
     when Reusable."續用申請" then
       "主要規定二"
@@ -762,8 +783,7 @@ define "乳癌TrastuzumabEmtansine早期申請結果_布林":
 define "乳癌TrastuzumabEmtansine早期申請之CQL檢核結果":
   if (
     Reusable."初次申請" and
-    "主要規定一" and
-    "主要規定三"
+    "主要規定一"
   )
   then '✓通過：初次使用－早期乳癌Trastuzumab Emtansine用藥申請'
 
@@ -788,6 +808,7 @@ define "乳癌TrastuzumabEmtansine早期申請之CQL檢核結果":
 
 define "報告總結":
   '\n=== 早期乳癌之Trastuzumab Emtansine申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
   '\n【申請類型】' + Reusable."申請類型" + '\n' +
   '\n【●符合項目】\n' +
   (if "符合項目"() = '' then '無\n' else "符合項目"()) +

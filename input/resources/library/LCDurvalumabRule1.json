@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "LCDurvalumabRule1",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/LCDurvalumabRule1",
+  "version": "1.0.0",
+  "name": "LCDurvalumabRule1",
+  "title": "Durvalumab給付規定(非小細胞肺鞏固(單用))",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-07-30",
+  "description": "此 Library 為肺癌_非小細胞肺鞏固(單用) durvalumab之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-LCDurvalumabRule1.cql"
+    }
+  ]
+}

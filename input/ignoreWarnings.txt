@@ -1,1 +1,7 @@
 == Suppressed Messages ==
+
+# CQL Translator 名稱遮蔽提示：FHIRHelpers / FHIR Reference 相關的 operand 名稱與既有 identifier 同名
+%An operand identifier reference is hiding another identifier of the same name.%
+
+# HL7 Publisher 工具提示：建議 canonical resource 可分配 OID
+%could usefully have an OID assigned%

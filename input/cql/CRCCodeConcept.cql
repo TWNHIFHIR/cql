@@ -2,7 +2,6 @@ library CRCCodeConcept version '1.0.0'
 
 using FHIR version '4.0.1'
 
-include FHIRHelpers version '4.0.1' called FHIRHelpers
 
 
 //專門術語--------------------
@@ -45,6 +44,8 @@ define "DiagnosticReportCode": { '65755-1' }
 //GeneTest
 define "GeneTest": { '21702-6', '21703-4', '21719-0', '21720-8', '53620-1', '53621-9', '75974-6', '81420-2', '82535-6', '83059-6', '83060-4', '85509-8', '85510-6' }
 
+define "TrifluridineTipiracilGeneTest": { '21698-6', '21699-4', '21702-6', '21703-4', '21719-0', '21720-8', '53620-1', '53621-9', '53623-5', '53871-0', '75974-6', '81420-2', '82535-6', '83059-6', '83060-4', '85509-8', '85510-6' }
+
 //GeneTest
 define "LarotrectinibGeneTest": { '93813-4', '105596-1' }
 
@@ -75,9 +76,9 @@ define "Creatinine": { '2160-0', '94631', '95543', '95847', '12190-5', '12191-3'
 define "eGFR": { '33914-3', '45066-8' }
 
 //註記
-define "續用註記為1": { '1' } 
+define "註記為1": { '1' } 
 
-define "續用註記為2": { '2' } 
+define "註記為2": { '2' } 
 
 define "醫令類別": { '1' } 
 
