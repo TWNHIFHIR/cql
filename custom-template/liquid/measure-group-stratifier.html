@@ -1,6 +1,6 @@
 {% for stratifier in include.group.stratifier %}
 <tr>
-  {%include row-header.html header='Stratifier' %}
+  {% include row-header.html header='Stratifier' %}
   <td class="content-container">
     {% if stratifier.id.exists() %}
       <em>ID</em>: {{stratifier.id}}

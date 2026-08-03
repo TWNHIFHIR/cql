@@ -1,6 +1,6 @@
 {% if include.measure.library.exists() %}
-{%include section-header.html header='Measure Logic' %}
-{%include default.html header='Primary Library' content=include.measure.library %}
+{% include section-header.html header='Measure Logic' %}
+{% include default.html header='Primary Library' content=include.measure.library %}
 {% endif %}
 
 {% if include.measure.extension.where(url = 'http://hl7.org/fhir/uv/crmi/StructureDefinition/crmi-effectiveDataRequirements' or url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-effectiveDataRequirements').exists() %}

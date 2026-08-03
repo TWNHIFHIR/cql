@@ -1,41 +1,41 @@
 {% for population in include.group.population %}
   {% if population.code.exists() and population.code.coding.exists() %}
-    {%assign populationLinkId = population.extension.where(url.endsWith('linkId')).value %}
-    {%assign populationKey = iif(populationLinkId.exists(), populationLinkId, iif(population.id.exists(), population.id, population.code.coding.first().code)) %}
+    {% assign populationLinkId = population.extension.where(url.endsWith('linkId')).value %}
+    {% assign populationKey = iif(populationLinkId.exists(), populationLinkId, iif(population.id.exists(), population.id, population.code.coding.first().code)) %}
     <tr>
       {% if population.code.coding.first().display.exists() %}
-        {%include row-header.html header=population.code.coding.first().display %}
+        {% include row-header.html header=population.code.coding.first().display %}
       {% else %}
         {% if population.code.coding.where(code = 'initial-population') or population.code.coding.where(code = 'numerator') or population.code.coding.where(code = 'numerator-exclusion') or population.code.coding.where(code = 'denominator') or population.code.coding.where(code = 'denominator-exclusion') or population.code.coding.where(code = 'denominator-exception') or population.code.coding.where(code = 'measure-population') or population.code.coding.where(code = 'measure-population-exclusion') or population.code.coding.where(code = 'measure-observation') %}
           {% if population.code.coding.where(code = 'initial-population') %}
-            {%include row-header.html header='Initial Population' %}
+            {% include row-header.html header='Initial Population' %}
           {% endif %}
           {% if population.code.coding.where(code = 'numerator') %}
-            {%include row-header.html header='Numerator' %}
+            {% include row-header.html header='Numerator' %}
           {% endif %}
           {% if population.code.coding.where(code = 'numerator-exclusion') %}
-            {%include row-header.html header='Numerator Exclusion' %}
+            {% include row-header.html header='Numerator Exclusion' %}
           {% endif %}
           {% if population.code.coding.where(code = 'denominator') %}
-            {%include row-header.html header='Denominator' %}
+            {% include row-header.html header='Denominator' %}
           {% endif %}
           {% if population.code.coding.where(code = 'denominator-exclusion') %}
-            {%include row-header.html header='Denominator Exclusion' %}
+            {% include row-header.html header='Denominator Exclusion' %}
           {% endif %}
           {% if population.code.coding.where(code = 'denominator-exception') %}
-            {%include row-header.html header='Denominator Exception' %}
+            {% include row-header.html header='Denominator Exception' %}
           {% endif %}
           {% if population.code.coding.where(code = 'measure-population') %}
-            {%include row-header.html header='Measure Population' %}
+            {% include row-header.html header='Measure Population' %}
           {% endif %}
           {% if population.code.coding.where(code = 'measure-population-exclusion') %}
-            {%include row-header.html header='Measure Population Exclusion' %}
+            {% include row-header.html header='Measure Population Exclusion' %}
           {% endif %}
           {% if population.code.coding.where(code = 'measure-observation') %}
-            {%include row-header.html header='Measure Observation' %}
+            {% include row-header.html header='Measure Observation' %}
           {% endif %}
         {% else %}
-          {%include row-header.html header='Unknown Population Type' %}
+          {% include row-header.html header='Unknown Population Type' %}
         {% endif %}
       {% endif %}
       <td class="content-container">

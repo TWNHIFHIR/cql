@@ -1,5 +1,5 @@
 {% if include.library.content.exists() %}
-  {%include section-header.html header='Library Content' %}
+  {% include section-header.html header='Library Content' %}
   {% for content in Library.content %}
     {% if content.contentType = 'text/cql' %}
     <tr>

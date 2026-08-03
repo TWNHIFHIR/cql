@@ -6,15 +6,15 @@
     {% else %}
     {% assign gheader = 'Supplemental Data Guidance' %}
     {% endif %}
-    {%include default.html header=gheader content=supplementalDataGuidance.extension.where(url = 'guidance').value %}
+    {% include default.html header=gheader content=supplementalDataGuidance.extension.where(url = 'guidance').value %}
   {% endif %}
 {% endfor %}
 {% if include.measure.supplementalData.exists() %}
-  {%include section-header.html header='Supplemental Data Elements' %}
+  {% include section-header.html header='Supplemental Data Elements' %}
 {% endif %}
 {% for sde in include.measure.supplementalData %}
 <tr>
-  {%include row-header.html header='Supplemental Data Element' %}
+  {% include row-header.html header='Supplemental Data Element' %}
   <td class="content-container">
     {% if sde.id.exists() %}
       <em>ID</em>: {{sde.id}}
