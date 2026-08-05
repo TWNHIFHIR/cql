@@ -4,6 +4,7 @@
   "status": "active",
   "date": "2025-11-20",
   "experimental": false,
+  "description": "FHIRHelpers provides CQL helper functions for converting between FHIR R4 data types and CQL system-defined types.",
   "type": {
     "coding": [ {
       "system": "http://terminology.hl7.org/CodeSystem/library-type",

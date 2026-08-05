@@ -53,6 +53,10 @@
     <em>Resource</em>: <a href="Library-CRCCodeConcept.html">{{resourceUrl}}</a>
     {% elsif relatedArtifact.resource.lower().contains('crcreusable') %}
     <em>Resource</em>: <a href="Library-CRCReusable.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('lccodeconcept') %}
+    <em>Resource</em>: <a href="Library-LCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('lcreusable') %}
+    <em>Resource</em>: <a href="Library-LCReusable.html">{{resourceUrl}}</a>
     {% else %}
     <em>Resource</em>: <a href="{{resourceUrl}}">{{resourceUrl}}</a>
     {% endif %}
