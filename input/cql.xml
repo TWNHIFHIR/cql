@@ -203,6 +203,51 @@
     </resource>
     <resource>
       <reference>
+        <reference value="Library/HCCAtezoDurvaRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCCodeConcept"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCLarotrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCLenvatinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCPemigatinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCRamucirumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCRegorafenibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCReusable"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCSorafenibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
         <reference value="Library/LCAlectinibRule1"/>
       </reference>
     </resource>
@@ -304,6 +349,71 @@
     <resource>
       <reference>
         <reference value="Library/LCTepotinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCAbirateroneRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCApalutamideRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCCodeConcept"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCDarolutamideRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCDarolutamideRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCEnzalutamideRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCEnzalutamideRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCEnzalutamideRule3"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCEnzalutamideRule4"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCLarotrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCOlaparibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCRadium223Rule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCReusable"/>
       </reference>
     </resource>
 

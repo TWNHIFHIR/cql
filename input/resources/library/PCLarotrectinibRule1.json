@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "PCLarotrectinibRule1",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/PCLarotrectinibRule1",
+  "version": "1.0.0",
+  "name": "PCLarotrectinibRule1",
+  "title": "Larotrectinib給付規定",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-08-21",
+  "description": "此 Library 為攝護腺癌_Larotrectinib給付規定之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-PCLarotrectinibRule1.cql"
+    }
+  ]
+}

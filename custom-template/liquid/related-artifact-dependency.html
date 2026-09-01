@@ -40,6 +40,14 @@
     <em>Resource</em>: <a href="Library-LCCodeConcept.html">{{resourceUrl}}</a>
     {% elsif relatedArtifact.resource.lower().contains('lcreusable') %}
     <em>Resource</em>: <a href="Library-LCReusable.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('hcccodeconcept') %}
+    <em>Resource</em>: <a href="Library-HCCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('hccreusable') %}
+    <em>Resource</em>: <a href="Library-HCCReusable.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('pccodeconcept') %}
+    <em>Resource</em>: <a href="Library-PCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('pcreusable') %}
+    <em>Resource</em>: <a href="Library-PCReusable.html">{{resourceUrl}}</a>
     {% else %}
     <em>Resource</em>: <a href="{{resourceUrl}}">{{resourceUrl}}</a>
     {% endif %}
