@@ -234,21 +234,6 @@ define "劑量資料存在":
       )
   )
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Pemigatinib申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "癌症分期資料存在"
-      or not "FGFR2檢測資料存在"
-      or not "FGFR2基因報告資料存在"
-      or not "手術不可切除資料存在"
-    ))
-    or (Reusable."續用申請" and not "Pemigatinib申請資料存在")
-    or not "療程期間資料存在"
-    or not "劑量資料存在"
-  )
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================

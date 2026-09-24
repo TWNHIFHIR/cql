@@ -35,7 +35,7 @@ define "是否滿18歲":
 
 /*規則1*/
 
-//1條件1:適用於治療先前已接受兩次以上全身性治療無效(其中一次需為治療晚期疾病)
+//1規則1:適用於治療先前已接受兩次以上全身性治療無效(其中一次需為治療晚期疾病)
 define "1規則1=適用於治療先前已接受兩次以上全身性治療無效":
     exists (
         [Claim] C
@@ -49,19 +49,19 @@ define "1規則1=適用於治療先前已接受兩次以上全身性治療無效
     )
 
 
-//1條件2:無法切除的局部晚期或轉移性的三陰性乳癌成年病人
+//1規則2:無法切除的局部晚期或轉移性的三陰性乳癌成年病人
 
 define "ICD代碼檢核_布林值": Reusable."ICD-10使用C50"
 
 define "醫令類別為1_布林值":Reusable."醫令類別為1"
 
-//1條件2-1
-define "1條件2-1=無法切除的局部晚期或轉移性的乳癌成年病人":
+//1規則2-1
+define "1規則2-1=無法切除的局部晚期或轉移性的乳癌成年病人":
   Patient.birthDate is not null
   and "是否滿18歲"
 
-//1條件2-2
-define "1條件2-2=病摘應敘明無法切除":
+//1規則2-2
+define "1規則2-2=病摘應敘明無法切除":
     exists (
         [Claim] C
         where exists (
@@ -74,45 +74,57 @@ define "1條件2-2=病摘應敘明無法切除":
     )
 
 
-//1條件2-3
-define "1條件2-3=癌症分期分數或結果為M>=1":
+//1規則2-3
+define "1規則2-3=癌症分期分數或結果為M>=1":
   Reusable."癌症分期分數或結果為M>=1"
 
 
-//1條件2-4
-define "1條件2-4/2條件1=ER陰性":
-  Reusable."HasRecentTestObservationResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*', "本次申請起始日期", 90)
-  or Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*', "本次申請起始日期", 90)
+//1規則2-4
+define "檢查報告-1規則2-4/2規則1=ER陰性":
+  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
 
-//1條件2-5
-define "1條件2-5/2條件1=PR陰性":
-  Reusable."HasRecentTestObservationResult"(CodeConcept.MolecularPR, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*', "本次申請起始日期", 90)
-  or Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularPR, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
+define "1規則2-4/2規則1=ER陰性":
+  Reusable."HasRecentTestObservationResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
+  or Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
+  or "檢查報告-1規則2-4/2規則1=ER陰性"
 
+//1規則2-5
+define "檢查報告-1規則2-5/2規則1=PR陰性":
+  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
 
-//1條件2-6
-define "1條件2-6/2條件1=檢驗檢查-HER2陰性":
-  Reusable."HasRecentTestObservationResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*', "本次申請起始日期", 90)
-
-define "1條件2-6/2條件1=基因檢測-HER2陰性":
-  Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*', "本次申請起始日期", 90)
-
-define "1條件2-6/2條件1=HER2陰性":
-  "1條件2-6/2條件1=檢驗檢查-HER2陰性" or "1條件2-6/2條件1=基因檢測-HER2陰性"
+define "1規則2-5/2規則1=PR陰性":
+  Reusable."HasRecentTestObservationResult"(CodeConcept.MolecularPR, { 'NEG' }, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
+  or Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.MolecularPR, { 'NEG' }, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
+  or "檢查報告-1規則2-5/2規則1=PR陰性"
 
 
-define "1條件2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人":
+//1規則2-6
+define "1規則2-6/2規則1=檢驗檢查-HER2陰性":
+  Reusable."HasRecentTestObservationResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
+
+define "1規則2-6/2規則1=基因檢測-HER2陰性":
+  Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
+
+define "檢查報告-1規則2-6/2規則1=HER2陰性":
+  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative).*', "本次申請起始日期", 90)
+
+define "1規則2-6/2規則1=HER2陰性":
+  "1規則2-6/2規則1=檢驗檢查-HER2陰性" or "1規則2-6/2規則1=基因檢測-HER2陰性"
+  or "檢查報告-1規則2-6/2規則1=HER2陰性"
+
+
+define "1規則2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人":
 "ICD代碼檢核_布林值" and "醫令類別為1_布林值"
-and "1條件2-1=無法切除的局部晚期或轉移性的乳癌成年病人"
-and "1條件2-2=病摘應敘明無法切除"
-and "1條件2-3=癌症分期分數或結果為M>=1"
-and "1條件2-4/2條件1=ER陰性"
-and "1條件2-5/2條件1=PR陰性"
-and "1條件2-6/2條件1=HER2陰性"
+and "1規則2-1=無法切除的局部晚期或轉移性的乳癌成年病人"
+and "1規則2-2=病摘應敘明無法切除"
+and "1規則2-3=癌症分期分數或結果為M>=1"
+and "1規則2-4/2規則1=ER陰性"
+and "1規則2-5/2規則1=PR陰性"
+and "1規則2-6/2規則1=HER2陰性"
 
 
-//1條件3:病人身體狀況良好（ECOG <= 1）
-define "1條件3=病人身體狀況良好(ECOG≦1)":
+//1規則3:病人身體狀況良好（ECOG <= 1）
+define "1規則3=病人身體狀況良好(ECOG≦1)":
   exists (
     [Observation] OBs
     where exists (
@@ -128,13 +140,13 @@ define "1條件3=病人身體狀況良好(ECOG≦1)":
       where Cdg in CodeConcept.LOINC
       and Cdg.code = '89247-1'
     )
-    and OBs.value is FHIR.integer
-    and (OBs.value as FHIR.integer) <= 1
+    and Reusable."GetNumericValue"(OBs.value) is not null
+    and Reusable."GetNumericValue"(OBs.value) <= 1
   )
 
 
-//1條件4:須使用過taxane類藥物至少1個療程
-define "1條件4=須使用過taxane類藥物至少1個療程":
+//1規則4:須使用過taxane類藥物至少1個療程
+define "1規則4=須使用過taxane類藥物至少1個療程":
   // 先前使用過 taxane (L01CD01 或 L01CD02)，須在申請之前使用
   (
     Reusable."HasPriorMedicationUse"(CodeConcept.L01FX17, CodeConcept.L01CD02)
@@ -143,8 +155,8 @@ define "1條件4=須使用過taxane類藥物至少1個療程":
   and Reusable."醫令類別為1"
 
 
-//1條件5:先前未接受過trastuzumab deruxtecan治療
-define "1條件2-2=先前未接受過trastuzumab deruxtecan治療":
+//1規則5:先前未接受過trastuzumab deruxtecan治療
+define "1規則2-2=先前未接受過trastuzumab deruxtecan治療":
   not exists (
     [MedicationRequest] MR
     where (MR.intent = 'plan' or MR.intent = 'order')
@@ -156,10 +168,10 @@ define "1條件2-2=先前未接受過trastuzumab deruxtecan治療":
 //主要規定一
 define "主要規定一":
 "1規則1=適用於治療先前已接受兩次以上全身性治療無效"
-and "1條件2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人"
-and "1條件3=病人身體狀況良好(ECOG≦1)"
-and "1條件4=須使用過taxane類藥物至少1個療程"
-and "1條件2-2=先前未接受過trastuzumab deruxtecan治療"
+and "1規則2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人"
+and "1規則3=病人身體狀況良好(ECOG≦1)"
+and "1規則4=須使用過taxane類藥物至少1個療程"
+and "1規則2-2=先前未接受過trastuzumab deruxtecan治療"
 
 
 
@@ -219,23 +231,6 @@ define "主要規定三":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-          not "1規則1=適用於治療先前已接受兩次以上全身性治療無效" or
-          not "1條件2-2=病摘應敘明無法切除" or
-          not Reusable."ER檢測資料存在" or
-          not Reusable."PR檢測資料存在" or
-          not Reusable."HER2檢測資料存在" or
-          not "1條件3=病人身體狀況良好(ECOG≦1)" or
-          not "1條件4=須使用過taxane類藥物至少1個療程"
-        )
-    )
-    or (Reusable."續用申請" and not "2規則1=再次申請必須提出客觀證據（如：影像學）證實無惡化，才可繼續使用")
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -244,33 +239,33 @@ define function "符合項目"():
   // 主要規定一：初次使用條件
   (if Reusable."初次申請" and (
     "1規則1=適用於治療先前已接受兩次以上全身性治療無效" or 
-    "1條件2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人" or 
-    "1條件3=病人身體狀況良好(ECOG≦1)" or 
-    "1條件4=須使用過taxane類藥物至少1個療程" or 
-    "1條件2-2=先前未接受過trastuzumab deruxtecan治療"
+    "1規則2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人" or 
+    "1規則3=病人身體狀況良好(ECOG≦1)" or 
+    "1規則4=須使用過taxane類藥物至少1個療程" or 
+    "1規則2-2=先前未接受過trastuzumab deruxtecan治療"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "1規則1=適用於治療先前已接受兩次以上全身性治療無效" 
            then '● 1規則1-條件1：先前已接受兩次以上全身性治療無效（其中一次需為治療晚期疾病）\n' else '') +
          (if "ICD代碼檢核_布林值" 
            then '● 1規則1-條件2-0：ICD代碼為C50\n' else '') +
-         (if "1條件2-1=無法切除的局部晚期或轉移性的乳癌成年病人" 
+         (if "1規則2-1=無法切除的局部晚期或轉移性的乳癌成年病人" 
            then '● 1規則1-條件2-1：成年患者（≥18歲）\n' else '') +
-         (if "1條件2-2=病摘應敘明無法切除" 
+         (if "1規則2-2=病摘應敘明無法切除" 
            then '● 1規則1-條件2-2：病摘敘明無法切除\n' else '') +
-         (if "1條件2-3=癌症分期分數或結果為M>=1" 
+         (if "1規則2-3=癌症分期分數或結果為M>=1" 
            then '● 1規則1-條件2-3：癌症分期分數或結果為M≥1（轉移性）\n' else '') +
-         (if "1條件2-4/2條件1=ER陰性" 
+         (if "1規則2-4/2規則1=ER陰性" 
            then '● 1規則1-條件2-4：ER陰性（3個月內檢測）\n' else '') +
-         (if "1條件2-5/2條件1=PR陰性" 
+         (if "1規則2-5/2規則1=PR陰性" 
            then '● 1規則1-條件2-5：PR陰性（3個月內檢測）\n' else '') +
-         (if "1條件2-6/2條件1=HER2陰性" 
+         (if "1規則2-6/2規則1=HER2陰性" 
            then '● 1規則1-條件2-6：HER2陰性（3個月內檢測）\n' else '') +
-         (if "1條件3=病人身體狀況良好(ECOG≦1)" 
+         (if "1規則3=病人身體狀況良好(ECOG≦1)" 
            then '● 1規則1-條件3：病人身體狀況良好（ECOG≤1）\n' else '') +
-         (if "1條件4=須使用過taxane類藥物至少1個療程" 
+         (if "1規則4=須使用過taxane類藥物至少1個療程" 
            then '● 1規則1-條件4：已使用過taxane類藥物至少1個療程\n' else '') +
-         (if "1條件2-2=先前未接受過trastuzumab deruxtecan治療" 
+         (if "1規則2-2=先前未接受過trastuzumab deruxtecan治療" 
            then '● 1規則1-條件5：先前未接受過trastuzumab deruxtecan治療\n' else '') +
          '\n'
     else '') +
@@ -285,10 +280,10 @@ define function "符合項目"():
   // 主要規定三：藥品使用規則
   (if "藥品規則1=每次申請之療程以3個月為限" or "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付"
     then '<主要規定三：藥品使用規則>\n' +
-         (if "藥品規則1=每次申請之療程以3個月為限" 
-           then '● 3規則1：每次申請之療程≤3個月（84天）\n' else '') +
-         (if "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付" 
-           then '● 3規則2：Sacituzumab govitecan和trastuzumab deruxtecan僅得擇一給付\n' else '')
+         (if "藥品規則1=每次申請之療程以3個月為限"
+           then '● 3規則1：每次申請之療程≤3個月（84天）（參考資訊）\n' else '') +
+         (if "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付"
+           then '● 3規則2：Sacituzumab govitecan和trastuzumab deruxtecan僅得擇一給付（參考資訊）\n' else '')
     else '')
 
 //============================================
@@ -299,18 +294,18 @@ define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
     Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
-    not "1條件2-1=無法切除的局部晚期或轉移性的乳癌成年病人" or 
-    Reusable."癌症分期資料存在" and not "1條件2-3=癌症分期分數或結果為M>=1" or
-    not "1條件2-2=先前未接受過trastuzumab deruxtecan治療"
+    not "1規則2-1=無法切除的局部晚期或轉移性的乳癌成年病人" or 
+    Reusable."癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1" or
+    not "1規則2-2=先前未接受過trastuzumab deruxtecan治療"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
            then '▲ 1規則1-條件2-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if not "1條件2-1=無法切除的局部晚期或轉移性的乳癌成年病人" 
+         (if not "1規則2-1=無法切除的局部晚期或轉移性的乳癌成年病人" 
            then '▲ 1規則1-條件2-1：非成年患者（<18歲）\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "1條件2-3=癌症分期分數或結果為M>=1" 
+         (if Reusable."癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1" 
            then '▲ 1規則1-條件2-3：癌症分期分數或結果不為M≥1（非轉移性）\n' else '') +
-         (if not "1條件2-2=先前未接受過trastuzumab deruxtecan治療" 
+         (if not "1規則2-2=先前未接受過trastuzumab deruxtecan治療" 
            then '▲ 1規則1-條件5：先前已接受過trastuzumab deruxtecan治療\n' else '') +
          '\n'
     else '') +
@@ -318,10 +313,10 @@ define function "不符合項目_條件或代碼不符合"():
   // 主要規定三：藥品使用規則 - 條件或代碼不符合
   (if not "藥品規則1=每次申請之療程以3個月為限" or not "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付"
     then '<主要規定三：藥品使用規則>\n' +
-         (if not "藥品規則1=每次申請之療程以3個月為限" 
-           then '▲ 3規則1：每次申請之療程超過3個月（84天）\n' else '') +
-         (if not "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付" 
-           then '▲ 3規則2：同時使用Sacituzumab govitecan和trastuzumab deruxtecan\n' else '')
+         (if not "藥品規則1=每次申請之療程以3個月為限"
+           then '▲ 3規則1：每次申請之療程超過3個月（84天）（參考資訊）\n' else '') +
+         (if not "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付"
+           then '▲ 3規則2：同時使用Sacituzumab govitecan和trastuzumab deruxtecan（參考資訊）\n' else '')
     else '')
 
 //============================================
@@ -329,22 +324,25 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "1規則1=適用於治療先前已接受兩次以上全身性治療無效" or 
-    not "1條件2-2=病摘應敘明無法切除" or 
+    not "1規則2-2=病摘應敘明無法切除" or 
     not Reusable."ER檢測資料存在" or 
     not Reusable."PR檢測資料存在" or 
     not Reusable."HER2檢測資料存在" or 
-    not "1條件3=病人身體狀況良好(ECOG≦1)" or 
-    not "1條件4=須使用過taxane類藥物至少1個療程"
+    not "1規則3=病人身體狀況良好(ECOG≦1)" or 
+    not "1規則4=須使用過taxane類藥物至少1個療程"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "1規則1=適用於治療先前已接受兩次以上全身性治療無效" 
            then '▲ 1規則1-條件1：未提供先前已接受兩次以上全身性治療無效之證明\n' else '') +
-         (if not "1條件2-2=病摘應敘明無法切除" 
+         (if not "1規則2-2=病摘應敘明無法切除" 
            then '▲ 1規則1-條件2-2：病摘未敘明無法切除\n' else '') +
-         (if not ("1條件2-4/2條件1=ER陰性" and "1條件2-5/2條件1=PR陰性" and "1條件2-6/2條件1=HER2陰性") 
+         (if not ("1規則2-4/2規則1=ER陰性" and "1規則2-5/2規則1=PR陰性" and "1規則2-6/2規則1=HER2陰性") 
            then '▲ 1規則1-條件2-4/2-5/2-6：未符合三陰性乳癌條件或檢測資料非3個月內\n' +
                 (if not Reusable."ER檢測資料存在"
                   then '  - ER非陰性或未提供3個月內ER檢測資料\n' else '') +
@@ -353,9 +351,9 @@ define function "不符合項目_必要資料未填寫"():
                 (if not Reusable."HER2檢測資料存在"
                   then '  - HER2非陰性或未提供3個月內HER2檢測資料\n' else '')
            else '') +
-         (if not "1條件3=病人身體狀況良好(ECOG≦1)" 
+         (if not "1規則3=病人身體狀況良好(ECOG≦1)" 
            then '▲ 1規則1-條件3：未提供ECOG評估資料\n' else '') +
-         (if not "1條件4=須使用過taxane類藥物至少1個療程" 
+         (if not "1規則4=須使用過taxane類藥物至少1個療程" 
            then '▲ 1規則1-條件4：未提供使用過taxane類藥物之紀錄\n' else '') +
          '\n'
     else '') +
@@ -375,40 +373,22 @@ define "乳癌Sacituzumab_govitecan申請結果_布林":
   case
     when Reusable."初次申請" then (
       "1規則1=適用於治療先前已接受兩次以上全身性治療無效" and
-      "1條件2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人" and
-      "1條件3=病人身體狀況良好(ECOG≦1)" and
-      "1條件4=須使用過taxane類藥物至少1個療程" and
-      "1條件2-2=先前未接受過trastuzumab deruxtecan治療" and
-      "藥品規則1=每次申請之療程以3個月為限" and
-      "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付"
+      "1規則2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人" and
+      "1規則3=病人身體狀況良好(ECOG≦1)" and
+      "1規則4=須使用過taxane類藥物至少1個療程" and
+      "1規則2-2=先前未接受過trastuzumab deruxtecan治療"
     )
     when Reusable."續用申請" then (
-      "2規則1=再次申請必須提出客觀證據（如：影像學）證實無惡化，才可繼續使用" and
-      "藥品規則1=每次申請之療程以3個月為限" and
-      "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付"
+      "2規則1=再次申請必須提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
     )
     else false
   end
 
 define "乳癌Sacituzumab_govitecan申請之CQL檢核結果":
-  if (
-    Reusable."初次申請" and 
-    "1規則1=適用於治療先前已接受兩次以上全身性治療無效" and
-    "1條件2=無法切除的局部晚期或轉移性的三陰性乳癌成年病人" and
-    "1條件3=病人身體狀況良好(ECOG≦1)" and
-    "1條件4=須使用過taxane類藥物至少1個療程" and
-    "1條件2-2=先前未接受過trastuzumab deruxtecan治療" and
-    "藥品規則1=每次申請之療程以3個月為限" and
-    "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付"
-  )
+  if Reusable."初次申請" and "乳癌Sacituzumab_govitecan申請結果_布林"
   then '✓通過：初次使用－乳癌 Sacituzumab govitecan 用藥申請'
 
-  else if (
-    Reusable."續用申請" and
-    "2規則1=再次申請必須提出客觀證據（如：影像學）證實無惡化，才可繼續使用" and
-    "藥品規則1=每次申請之療程以3個月為限" and
-    "藥品規則2=Sacituzumab govitecan和trastuzumab deruxtecan僅能擇一給付"
-  )
+  else if Reusable."續用申請" and "乳癌Sacituzumab_govitecan申請結果_布林"
   then '✓通過：續用－乳癌 Sacituzumab govitecan 用藥申請'
   
   else if Reusable."初次申請"

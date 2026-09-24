@@ -183,7 +183,7 @@ define "主要規定一":
 // 主要規定二：續用條件
 //============================================
 
-define "2規則1=需檢附療效評估資料證實無疾病進展":
+define "2規則1-1=前次申請後至本次申請前有療效評估影像學報告":
   "前次申請紀錄" is not null
   and exists (
     [DiagnosticReport] Report
@@ -192,7 +192,13 @@ define "2規則1=需檢附療效評估資料證實無疾病進展":
         and FHIRHelpers.ToDateTime(Report.effective) >= "前次申請起始日期"
         and FHIRHelpers.ToDateTime(Report.effective) <= "本次申請起始日期"
   )
-  and not Reusable."HasClaimDiagnosisText"('(?i).*(疾病進展|病情惡化|progression).*')
+
+define "2規則1-2=病摘未記載疾病進展或惡化":
+  not Reusable."HasClaimDiagnosisText"('(?i).*(疾病進展|病情惡化|progression).*')
+
+define "2規則1=需檢附療效評估資料證實無疾病進展":
+  "2規則1-1=前次申請後至本次申請前有療效評估影像學報告"
+  and "2規則1-2=病摘未記載疾病進展或惡化"
 
 define "主要規定二":
   "本次申請紀錄" is not null
@@ -258,26 +264,16 @@ define "療程期間資料存在":
       where Reusable."IsMedicationPlan"(MR, CodeConcept.L01EX12)
   )
 
-//============================================
-// 列出檢核項目
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-          "本次申請紀錄" is null
-          or not "NTRK檢測資料存在"
-          or not "主要疾病ICD資料存在"
-        )
-    )
-    or (
-      (
-          "本次申請紀錄" is null
-          or not "療程期間資料存在"
-        )
-    )
+define "2規則1-1=療效評估影像資料存在":
+  "前次申請紀錄" is not null
+  and exists (
+    [DiagnosticReport] Report
+      where Reusable."IsImageReport"(Report)
+        and Report.effective is not null
   )
 
-
+//============================================
+// 列出檢核項目
 //============================================
 
 define function "符合項目"():
@@ -287,9 +283,11 @@ define function "符合項目"():
          '● 1規則2：已檢附NTRK基因融合檢測報告\n' +
          '● 1規則3：兒童或成人使用條件\n\n'
     else '') +
-  (if Reusable."續用申請" and "主要規定二"
+  (if Reusable."續用申請" and ("2規則1-1=前次申請後至本次申請前有療效評估影像學報告" or "2規則1-2=病摘未記載疾病進展或惡化")
     then '<主要規定二：續用條件>\n' +
-         '● 2規則1：療效評估資料證實無疾病進展\n\n'
+         (if "2規則1-1=前次申請後至本次申請前有療效評估影像學報告" then '● 2規則1-1：前次申請後至本次申請前已提供療效評估影像學報告\n' else '') +
+         (if "2規則1-2=病摘未記載疾病進展或惡化" then '● 2規則1-2：病摘未記載疾病進展或惡化\n' else '') +
+         '\n'
     else '') +
   (if "主要規定三"
     then '<主要規定三：藥品使用規則>\n' +
@@ -306,9 +304,14 @@ define function "不符合項目_條件或代碼不符合"():
          (if not "1規則3=兒童或成人使用條件" then '▲ 1規則3：未符合兒童或成人使用條件\n' else '') +
          '\n'
     else '') +
-  (if Reusable."續用申請" and not "主要規定二"
+  (if Reusable."續用申請" and (
+    ("2規則1-1=療效評估影像資料存在" and not "2規則1-1=前次申請後至本次申請前有療效評估影像學報告")
+    or not "2規則1-2=病摘未記載疾病進展或惡化"
+  )
     then '<主要規定二：續用條件>\n' +
-         '▲ 2規則1：未符合療效評估資料證實無疾病進展條件\n\n'
+         (if "2規則1-1=療效評估影像資料存在" and not "2規則1-1=前次申請後至本次申請前有療效評估影像學報告" then '▲ 2規則1-1：療效評估影像學報告未落在前次申請後至本次申請前之區間\n' else '') +
+         (if not "2規則1-2=病摘未記載疾病進展或惡化" then '▲ 2規則1-2：病摘記載疾病進展或惡化\n' else '') +
+         '\n'
     else '') +
   (if "療程期間資料存在" and not "主要規定三"
     then '<主要規定三：藥品使用規則>\n' +
@@ -316,6 +319,9 @@ define function "不符合項目_條件或代碼不符合"():
     else '')
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   (if Reusable."初次申請" and (
     "本次申請紀錄" is null
     or not "NTRK檢測資料存在"
@@ -325,6 +331,15 @@ define function "不符合項目_必要資料未填寫"():
          (if "本次申請紀錄" is null then '▲ 1條件申請醫令：未提供Larotrectinib申請醫令資料\n' else '') +
          (if not "NTRK檢測資料存在" then '▲ 1規則1/2：未提供NTRK檢測資料\n' else '') +
          (if not "主要疾病ICD資料存在" then '▲ 1規則1：未提供主要疾病ICD診斷資料\n' else '') +
+         '\n'
+    else '') +
+  (if Reusable."續用申請" and (
+    "本次申請紀錄" is null
+    or not "2規則1-1=療效評估影像資料存在"
+  )
+    then '<主要規定二：續用條件>\n' +
+         (if "本次申請紀錄" is null then '▲ 2條件申請醫令：未提供Larotrectinib申請醫令資料\n' else '') +
+         (if not "2規則1-1=療效評估影像資料存在" then '▲ 2規則1-1：未提供療效評估影像資料\n' else '') +
          '\n'
     else '') +
   (if (

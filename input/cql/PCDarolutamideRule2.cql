@@ -40,26 +40,7 @@ define "3個月內有檢查報告":
 /*規則1*/
 //條件1
 define "1規則1-2-2":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '385377005'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and (
-          (O.value is FHIR.integer and (O.value as FHIR.integer).value >= 8)
-          or (O.value is FHIR.Quantity and (O.value as FHIR.Quantity).value >= 8)
-          or (
-            O.value is FHIR.string
-            and (
-              (ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) is not null
-                and ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) >= 8)
-              or Matches((O.value as FHIR.string).value, '(?i).*(>=|≧)\s*[89]\d*(?!\d).*')
-            )
-          )
-        )
-  )
+  Reusable."HasGleasonScoreAtLeast8"
 
 define "1規則1-2-3":
   exists (
@@ -175,20 +156,7 @@ define "有去勢用藥處方":
   )
 
 define "手術去勢處置項目":
-  "本次申請起始日期" is not null
-  and exists (
-    [Procedure] P
-      where P.status = 'completed'
-        and exists (
-          P.code.coding Cdg
-            where (
-              Cdg in CodeConcept.ICD10PCS2023Image
-              or Cdg in CodeConcept.ICD10PCS2014Image
-            )
-            and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-        )
-        and P.performed is FHIR.dateTime
-  )
+  Reusable."HasRecentSurgicalCastrationProcedure"("本次申請起始日期", 90)
 
 define "檢查報告66117-3":
   [DiagnosticReport] Report
@@ -367,34 +335,7 @@ and "2規則1-1" and "2規則2"
 /*規則1*/
 //條件1
 define "3規則1":
-exists (
-    [Observation] OBs
-      where exists (
-          OBs.category C
-            where exists (
-              C.coding Cdg
-                where Cdg in CodeConcept.NHIPASSupportingInfoType
-                  and Cdg.code = 'patientAssessment'
-            )
-        )
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.ECOG
-        )
-        and (
-          (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= 1)
-          or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= 1)
-          or (
-            OBs.value is FHIR.string
-            and (
-              (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
-                and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) <= 1)
-              or Matches((OBs.value as FHIR.string).value, '(?i).*(<=|≦)\s*1(?!\d).*')
-            )
-          )
-        )
-  )
+  Reusable."HasECOGAtMost"(1)
 
 /*規則2*/
 //條件2
@@ -619,18 +560,7 @@ define "睪固酮檢驗資料存在":
   )
 
 define "手術去勢處置資料存在":
-  exists (
-    [Procedure] P
-      where P.status = 'completed'
-        and exists (
-          P.code.coding Cdg
-            where (
-              Cdg in CodeConcept.ICD10PCS2023Image
-              or Cdg in CodeConcept.ICD10PCS2014Image
-            )
-            and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-        )
-  )
+  Reusable."HasSurgicalCastrationProcedure"
 
 define "ECOG資料存在":
   exists (
@@ -648,30 +578,6 @@ define "ECOG資料存在":
             where Cdg in CodeConcept.LOINC
               and Cdg.code in CodeConcept.ECOG
         )
-  )
-
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-        not "Darolutamide申請資料存在"
-        or not "醫令類別資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or (not "Gleason score資料存在" and not "26029B影像報告資料存在" and not "內臟轉移影像報告資料存在")
-        or not "PSA檢驗資料存在"
-        or not "睪固酮檢驗資料存在"
-        or (not "有去勢用藥處方" and not "手術去勢處置資料存在")
-        or not "檢查報告資料存在"
-      )
-    )
-    or (
-      Reusable."續用申請" and (
-        not "Darolutamide申請資料存在"
-        or not "醫令類別資料存在"
-        or not "PSA檢驗資料存在"
-      )
-    )
-    or not "療程期間資料存在"
   )
 
 //============================================

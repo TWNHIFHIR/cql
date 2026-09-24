@@ -68,21 +68,7 @@ define "併用mCRPC治療藥物期間落於本次申請期間內":
   )
 
 define "手術項目<useEdate":
-  "本次申請起始日期" is not null
-  and exists (
-    [Procedure] P
-    where P.status = 'completed'
-      and exists (
-        P.code.coding Cdg
-        where (
-          Cdg in CodeConcept.ICD10PCS2023Image
-          or Cdg in CodeConcept.ICD10PCS2014Image
-        )
-        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-      )
-        and P.performed is FHIR.dateTime
-        and FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) < "本次申請終止日期"  
-  )
+  Reusable."HasSurgicalCastrationProcedureBefore"("本次申請終止日期")
 
 define "1規則2-2":
 "併用mCRPC治療藥物期間落於本次申請期間內"
@@ -91,26 +77,7 @@ define "1規則2-2":
 /*規則3*/
 //條件3
 define "1規則3-3-1":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '385377005'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and (
-          (O.value is FHIR.integer and (O.value as FHIR.integer).value >= 8)
-          or (O.value is FHIR.Quantity and (O.value as FHIR.Quantity).value >= 8)
-          or (
-            O.value is FHIR.string
-            and (
-              (ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) is not null
-                and ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) >= 8)
-              or Matches((O.value as FHIR.string).value, '(?i).*(>=|≧)\s*[89]\d*(?!\d).*')
-            )
-          )
-        )
-  )
+  Reusable."HasGleasonScoreAtLeast8"
 
 define "1規則3-3-2":
   exists (
@@ -164,21 +131,7 @@ and Reusable."續用註記為2"
 
 //條件2
 define "2規則1-2-1":
-  "本次申請起始日期" is not null
-  and exists (
-    [Procedure] P
-    where P.status = 'completed'
-      and exists (
-        P.code.coding Cdg
-        where (
-          Cdg in CodeConcept.ICD10PCS2023Image
-          or Cdg in CodeConcept.ICD10PCS2014Image
-        )
-        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-      )
-        and P.performed is FHIR.dateTime
-        and FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) < "本次申請起始日期"  
-  )
+  Reusable."HasSurgicalCastrationProcedureBefore"("本次申請起始日期")
 
 define "指定停用藥物代碼":
   CodeConcept."L02AE" union CodeConcept."L02BX02" union CodeConcept."L02BB"
@@ -326,18 +279,7 @@ define "mCRPC治療藥物處方資料存在":
   )
 
 define "手術去勢處置資料存在":
-  exists (
-    [Procedure] P
-      where P.status = 'completed'
-        and exists (
-          P.code.coding Cdg
-            where (
-              Cdg in CodeConcept.ICD10PCS2023Image
-              or Cdg in CodeConcept.ICD10PCS2014Image
-            )
-            and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-        )
-  )
+  Reusable."HasSurgicalCastrationProcedure"
 
 define "Gleason score資料存在":
   exists (
@@ -413,31 +355,6 @@ define "V10XX03處方資料存在":
   exists (
     [MedicationRequest] MR
       where Reusable."HasMedicationCode"(MR, CodeConcept."V10XX03")
-  )
-
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-        not "Enzalutamide申請資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or not "簡要病摘資料存在"
-        or not "癌症分期資料存在"
-        or not "PSA檢驗資料存在"
-        or (not "mCRPC治療藥物處方資料存在" and not "手術去勢處置資料存在")
-        or (not "Gleason score資料存在" and not "26029B影像報告資料存在" and not "Radium223無內臟轉移影像報告資料存在")
-      )
-    )
-    or (
-      Reusable."續用申請" and (
-        not "Enzalutamide申請資料存在"
-        or not "分子檢查報告資料存在"
-        or not "PSA檢驗資料存在"
-        or not "睪固酮檢驗資料存在"
-        or not "影像檢查報告資料存在"
-      )
-    )
-    or not "療程期間資料存在"
   )
 
 //============================================

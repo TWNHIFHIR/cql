@@ -131,85 +131,18 @@ define "1規則1":
 /*規則2*/
 //條件1:病人身體狀況良好(ECOG≦1)。
 define "1規則2-1=病人身體狀況良好(ECOG≦1)":
-  exists (
-    [Observation] OBs
-    where exists (
-      OBs.category C
-      where exists (
-        C.coding Cdg
-        where Cdg in CodeConcept.NHIPASSupportingInfoType
-        and Cdg.code = 'patientAssessment'
-      )
-    )
-    and exists (
-      OBs.code.coding Cdg
-      where Cdg in CodeConcept.LOINC
-      and Cdg.code = '89247-1'
-    )
-    and (
-      (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= 1)
-      or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= 1)
-    )
-  )
+  Reusable."HasECOGAtMost1"
 
 //條件2:NYHA(the New York Heart Association) Functional Class I或II
 define "1規則2-2=NYHA(the New York Heart Association) Functional Class I或II":
-  exists (
-    [Observation] OBs
-    where exists (
-      OBs.category C
-      where exists (
-        C.coding Cdg
-        where Cdg in CodeConcept.NHIPASSupportingInfoType
-          and Cdg.code = 'patientAssessment'
-      )
-    )
-    and exists (
-      OBs.code.coding Cdg
-      where Cdg in CodeConcept.LOINC
-        and Cdg.code = '88020-3'
-    )
-    and OBs.value is FHIR.string
-    and ((OBs.value as FHIR.string).value = 'Class I' or (OBs.value as FHIR.string).value = 'Class II' or (OBs.value as FHIR.string).value = 'class1' or (OBs.value as FHIR.string).value = 'class2')
-  )
+  Reusable."HasNYHAClassIOrII"
 
 //條件3:GOT<60U/L及GPT<60U/L、T-bilirubin<1.5mg/dL
 define "GOT<60U/L及GPT<60U/L":
-  exists (
-    [Observation] OBs
-      where Reusable."IsTestObservation"(OBs)
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.GOT
-        )
-        and OBs.value is FHIR.Quantity
-        and (OBs.value as FHIR.Quantity).value < 60
-  )
-  and exists (
-    [Observation] OBs
-      where Reusable."IsTestObservation"(OBs)
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.GPT
-        )
-        and OBs.value is FHIR.Quantity
-        and (OBs.value as FHIR.Quantity).value < 60
-  )
+  Reusable."HasGOTAndGPTBelow60"
 
 define "T-bilirubin<1.5mg/dL":
-  exists (
-    [Observation] OBs
-      where Reusable."IsTestObservation"(OBs)
-    and exists (
-      OBs.code.coding Cdg
-      where Cdg in CodeConcept.LOINC
-        and Cdg.code in CodeConcept.Tbilirubin
-    )
-     and OBs.value is FHIR.Quantity
-    and (OBs.value as FHIR.Quantity).value < 1.5
-  )
+  Reusable."HasTbilirubinBelow1_5"
 
 define "1規則2-3":
   "GOT<60U/L及GPT<60U/L"
@@ -349,18 +282,7 @@ define "2規則1":
 /*規則2*/
 //條件1
 define "2規則2-1=以i-RECIST標準(HCC患者以mRECIST標準)評定藥物療效反應，依下列原則申請續用：有療效反應(PR及CR)者得繼續用藥":
-  exists (
-    [Observation] RasObservation
-      where exists (
-        RasObservation.code.coding ObsCodeCoding
-          where ObsCodeCoding.code in CodeConcept."IREC疾病狀態評估"
-            and ObsCodeCoding in CodeConcept.NHITreatmentAst
-      )
-      and Reusable."IsObservationDateTimeWithinDaysBefore"(RasObservation, "本次申請起始日期", 84)
-      and RasObservation.value is not null
-      and RasObservation.value is FHIR.string
-      and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iPR|iCR).*')
-  )
+  Reusable."HasRecentIRECISTResponse"("本次申請起始日期", 84)
 
 //條件2
 define "2規則2-2=未出現疾病惡化(PD)或未出現中、重度或危及生命之藥物不良反應者，應停止用藥":
@@ -579,14 +501,7 @@ define "PD-L1檢測資料存在":
   or Reusable."HasTestObservationCode"(CodeConcept."Ventana SP263 TPS")
 
 define "iRECIST評估資料存在":
-  exists (
-    [Observation] RasObservation
-      where exists (
-        RasObservation.code.coding ObsCodeCoding
-          where ObsCodeCoding.code in CodeConcept."IREC疾病狀態評估"
-            and ObsCodeCoding in CodeConcept.NHITreatmentAst
-      )
-  )
+  Reusable."HasIRECISTResponseAssessment"
 
 define "療程期間資料存在":
   exists (
@@ -594,50 +509,6 @@ define "療程期間資料存在":
       where Reusable."IsMedicationPlan"(MR, "申請藥品")
         and Reusable."HasValidTiming"(MR)
   )
-
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-          "本次申請紀錄" is null
-          or not "主要疾病ICD資料存在"
-          or not "癌症分期資料存在"
-          or not "NSCLC註記資料存在"
-          or not "用藥線別資料存在"
-          or not "有檢查報告"
-          or not "給付適應症資料存在"
-          or not "組織型態資料存在"
-          or not "併用化療資料存在"
-          or not "ECOG資料存在"
-          or not "NYHA資料存在"
-          or not "GOT資料存在"
-          or not "GPT資料存在"
-          or not "T-bilirubin資料存在"
-          or not "Creatinine資料存在"
-          or not "eGFR資料存在"
-          or not "PD-L1檢測資料存在"
-          or not "1規則4-1=12週內有影像檢查報告"
-          or not "1規則4-3=使用免疫檢查點抑制劑之治療計畫"
-        )
-    )
-    or (
-      Reusable."續用申請" and (
-          "本次申請紀錄" is null
-          or "前次申請紀錄" is null
-          or not "iRECIST評估資料存在"
-          or not "ECOG資料存在"
-          or not "NYHA資料存在"
-          or not "GOT資料存在"
-          or not "GPT資料存在"
-          or not "T-bilirubin資料存在"
-          or not "Creatinine資料存在"
-          or not "eGFR資料存在"
-          or not "1規則4-1=12週內有影像檢查報告"
-        )
-    )
-    or (not "療程期間資料存在")
-  )
-
 
 //============================================
 // 列出「符合」項目判斷式
@@ -781,6 +652,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   (if Reusable."初次申請" and (
     "本次申請紀錄" is null
     or not "主要疾病ICD資料存在"

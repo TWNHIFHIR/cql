@@ -1030,6 +1030,115 @@ define function "HasReportResultString"(Pattern String):
         and Matches(DR.conclusion, Pattern)
   )
 
+// 是否有GOT<60U/L及GPT<60U/L之檢驗結果
+define "HasGOTAndGPTBelow60":
+  exists (
+    [Observation] OBs
+      where "IsTestObservation"(OBs)
+        and exists (
+          OBs.code.coding Cdg
+            where Cdg in CodeConcept.LOINC
+              and Cdg.code in CodeConcept.GOT
+        )
+        and OBs.value is FHIR.Quantity
+        and (OBs.value as FHIR.Quantity).value < 60
+  )
+  and exists (
+    [Observation] OBs
+      where "IsTestObservation"(OBs)
+        and exists (
+          OBs.code.coding Cdg
+            where Cdg in CodeConcept.LOINC
+              and Cdg.code in CodeConcept.GPT
+        )
+        and OBs.value is FHIR.Quantity
+        and (OBs.value as FHIR.Quantity).value < 60
+  )
+
+// 是否有T-bilirubin<1.5mg/dL之檢驗結果
+define "HasTbilirubinBelow1_5":
+  exists (
+    [Observation] OBs
+      where "IsTestObservation"(OBs)
+    and exists (
+      OBs.code.coding Cdg
+      where Cdg in CodeConcept.LOINC
+        and Cdg.code in CodeConcept.Tbilirubin
+    )
+     and OBs.value is FHIR.Quantity
+    and (OBs.value as FHIR.Quantity).value < 1.5
+  )
+
+// 是否病人身體狀況良好(ECOG≦1)，同時支援純數字與Quantity兩種資料格式
+define "HasECOGAtMost1":
+  exists (
+    [Observation] OBs
+    where exists (
+      OBs.category C
+      where exists (
+        C.coding Cdg
+        where Cdg in CodeConcept.NHIPASSupportingInfoType
+        and Cdg.code = 'patientAssessment'
+      )
+    )
+    and exists (
+      OBs.code.coding Cdg
+      where Cdg in CodeConcept.LOINC
+      and Cdg.code = '89247-1'
+    )
+    and (
+      (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= 1)
+      or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= 1)
+    )
+  )
+
+// 是否NYHA Functional Class I或II，同時支援「Class I/II」與「class1/2」兩種文字寫法
+define "HasNYHAClassIOrII":
+  exists (
+    [Observation] OBs
+    where exists (
+      OBs.category C
+      where exists (
+        C.coding Cdg
+        where Cdg in CodeConcept.NHIPASSupportingInfoType
+          and Cdg.code = 'patientAssessment'
+      )
+    )
+    and exists (
+      OBs.code.coding Cdg
+      where Cdg in CodeConcept.LOINC
+        and Cdg.code = '88020-3'
+    )
+    and OBs.value is FHIR.string
+    and ((OBs.value as FHIR.string).value = 'Class I' or (OBs.value as FHIR.string).value = 'Class II' or (OBs.value as FHIR.string).value = 'class1' or (OBs.value as FHIR.string).value = 'class2')
+  )
+
+// 是否有i-RECIST/mRECIST療效評估紀錄（不限結果）
+define "HasIRECISTResponseAssessment":
+  exists (
+    [Observation] RasObservation
+      where exists (
+        RasObservation.code.coding ObsCodeCoding
+          where ObsCodeCoding.code in CodeConcept."IREC疾病狀態評估"
+            and ObsCodeCoding in CodeConcept.NHITreatmentAst
+      )
+  )
+
+// 是否於參考日期前指定天數內，有i-RECIST/mRECIST標準評定為療效反應(iPR/iCR)之紀錄
+define function "HasRecentIRECISTResponse"(ReferenceDate DateTime, LookbackDays Integer):
+  exists (
+    [Observation] RasObservation
+      where exists (
+        RasObservation.code.coding ObsCodeCoding
+          where ObsCodeCoding.code in CodeConcept."IREC疾病狀態評估"
+            and ObsCodeCoding in CodeConcept.NHITreatmentAst
+      )
+      and "IsObservationDateTimeWithinDaysBefore"(RasObservation, ReferenceDate, LookbackDays)
+      and RasObservation.value is not null
+      and RasObservation.value is FHIR.string
+      and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iPR|iCR).*')
+  )
+
 
 
 

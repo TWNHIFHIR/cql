@@ -282,29 +282,6 @@ define "出生日期資料存在":
 define "前次申請紀錄資料存在":
   "前次申請紀錄" is not null
 
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-        not "Larotrectinib申請資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or not "簡要病摘資料存在"
-        or not "癌症分期資料存在"
-        or not "NTRK基因檢測資料存在"
-        or not "NTRK基因檢測報告資料存在"
-        or not "出生日期資料存在"
-      )
-    )
-    or (
-      Reusable."續用申請" and (
-        not "Larotrectinib申請資料存在"
-        or not "前次申請紀錄資料存在"
-        or not "影像檢查報告資料存在"
-      )
-    )
-    or not "療程期間資料存在"
-  )
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================

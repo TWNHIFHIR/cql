@@ -21,6 +21,11 @@ define "本次申請紀錄":
   Last(
     [MedicationRequest] MR
       where MR.intent = 'plan'
+        and exists (
+          MR.medication.coding Cdg
+            where Cdg in CodeConcept.NHIMedication
+              and Cdg.code in CodeConcept.L01EX05
+        )
         and MR.dosageInstruction[0].timing.repeat.bounds is Period
       sort by FHIRHelpers.ToDateTime((dosageInstruction[0].timing.repeat.bounds as Period).start)
   )
@@ -156,8 +161,12 @@ define "主要規定二":
 // 主要規定三：藥品使用規則
 //============================================
 
+/*規則1*/
+define "3規則1=每次申請事前審查之療程以8週為限":
+  Reusable."HasMedicationPlanDurationWithin"(CodeConcept.L01EX05, 56)
+
 define "主要規定三":
-  "2規則1-1=每次申請事前審查之療程以8週為限"
+  "3規則1=每次申請事前審查之療程以8週為限"
 
 
 //============================================
@@ -192,25 +201,6 @@ define "續用客觀證據資料存在":
 
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01EX05)
-
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Regorafenib申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "癌症分期資料存在"
-      or not "影像報告資料存在"
-      or not "先前化療資料存在"
-      or not "AntiVEGF療法資料存在"
-      or ("KRAS檢測資料存在" and "1規則3-1=K-ras為原生型(wild type)" and not "AntiEGFR療法資料存在")
-    ))
-    or (Reusable."續用申請" and (
-      not "Regorafenib申請資料存在"
-      or not "續用客觀證據資料存在"
-    ))
-    or not "療程期間資料存在"
-  )
-
 
 //============================================
 // 列出「符合」項目判斷式
@@ -253,10 +243,14 @@ define function "符合項目"():
     else '') +
   
   // 主要規定三：藥品使用規則
-  (if "2規則1-1=每次申請事前審查之療程以8週為限"
+  (if "3規則1=每次申請事前審查之療程以8週為限"
     then '<主要規定三：藥品使用規則>\n' +
          '● 規則3-1：每次申請事前審查之療程以8週為限（參考資訊）\n'
     else '')
+
+//============================================
+// 列出「不符合」項目判斷式 - 條件或代碼不符合
+//============================================
 
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 代碼條件不符
@@ -281,16 +275,30 @@ define function "不符合項目_條件或代碼不符合"():
           then '▲ 規則2-2：先前用藥資料不符合anti-VEGF療法條件\n' else '') +
          (if "KRAS檢測資料存在" and "1規則3-1=K-ras為原生型(wild type)" and "AntiEGFR療法資料存在" and not "1規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法"
           then '▲ 規則3-2：未接受抗表皮生長因子受體（anti-EGFR）療法\n' else '') +
-         '\n'  
+         '\n'
     else '') +
-  
+
+  // 主要規定二：續用條件 - 已提供資料但條件不符
+  (if Reusable."續用申請" and "續用客觀證據資料存在" and not "2規則1-2=再次申請必須提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
+    then '<主要規定二：續用條件－治療持續給付>\n' +
+         '▲ 續用規則1-2：再次申請必須提出客觀證據（如：影像學）證實無惡化，才可繼續使用\n' +
+         '\n'
+    else '') +
+
   // 主要規定三：藥品使用規則 - 代碼條件不符
-  (if "療程期間資料存在" and not "2規則1-1=每次申請事前審查之療程以8週為限"
+  (if "療程期間資料存在" and not "3規則1=每次申請事前審查之療程以8週為限"
     then '<主要規定三：藥品使用規則>\n' +
          '▲ 規則3-1：每次申請事前審查之療程超過8週上限（參考資訊）\n'
     else '')
 
+//============================================
+// 列出「不符合」項目判斷式 - 必要資料未填寫
+//============================================
+
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
       not "Regorafenib申請資料存在"
@@ -363,17 +371,9 @@ define "大腸直腸癌Regorafenib申請結果_布林":
 
 
 define "大腸直腸癌Regorafenib申請結果":
-  if (
-    Reusable."初次申請" and 
-    "1規則1=轉移性大腸直腸癌（mCRC）" and
-    "1規則2=用於治療先前曾接受下列療法的轉移性大腸直腸癌（mCRC）患者，療法包括fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療，和抗血管內皮生長因子(anti-VEGF)等療法；" and
-    "1規則3=若K-ras為原生型(wild type)，需再加上接受過抗表皮生長因子受體（anti-EGFR）療法。"
-  )
+  if Reusable."初次申請" and "大腸直腸癌Regorafenib申請結果_布林"
   then '✓通過：初次使用－大腸直腸癌 Regorafenib 用藥申請'
-  else if (
-    Reusable."續用申請" and
-    "2規則1-2=再次申請必須提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
-  )
+  else if Reusable."續用申請" and "大腸直腸癌Regorafenib申請結果_布林"
   then '✓通過：續用－大腸直腸癌 Regorafenib 用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－大腸直腸癌 Regorafenib 用藥申請'

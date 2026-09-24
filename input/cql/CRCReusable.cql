@@ -573,6 +573,16 @@ define function "HasMedicationTotalDurationWithin"(TotalDurationMedicationCodes 
     )
   ) <= MaxDays
 
+// 取得檢驗數值，相容 valueInteger、valueDecimal、valueQuantity、valueString（可解析為數字）四種型態；皆不符合則回傳 null
+define function "GetNumericValue"(V Choice<FHIR.integer, FHIR.decimal, Quantity, FHIR.string>):
+  case
+    when V is FHIR.integer then (V as FHIR.integer).value
+    when V is FHIR.decimal then (V as FHIR.decimal).value
+    when V is Quantity then (V as Quantity).value
+    when V is FHIR.string then ToDecimal((V as FHIR.string).value)
+    else null
+  end
+
 // 是否有同藥物先前療程與本次療程間隔超過指定天數
 define function "HasPriorMedicationGapLongerThan"(CurrentDrugCodes List<String>, GapDays Integer):
   exists (

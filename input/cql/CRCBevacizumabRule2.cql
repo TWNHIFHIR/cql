@@ -23,6 +23,11 @@ define "本次申請紀錄":
   Last(
     [MedicationRequest] MR
       where MR.intent = 'plan'
+        and exists (
+          MR.medication.coding Cdg
+            where Cdg in CodeConcept.NHIMedication
+              and Cdg.code in CodeConcept.L01FG01exceptKC01146219
+        )
         and MR.dosageInstruction[0].timing.repeat.bounds is Period
       sort by FHIRHelpers.ToDateTime((dosageInstruction[0].timing.repeat.bounds as Period).start)
   )
@@ -275,27 +280,6 @@ define "劑量資料存在":
       and M.dosageInstruction is not null
   )
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Bevacizumab第二線申請資料存在"
-      or not "化學療法併用資料存在"
-      or not "RAS基因檢測資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "影像或檢查報告資料存在"
-      or not "癌症分期資料存在"
-      or not "用藥線別資料存在"
-      or not "劑量資料存在"
-    ))
-    or (Reusable."續用申請" and (
-      not "Bevacizumab第二線申請資料存在"
-      or not "續用客觀證據資料存在"
-      or not "劑量資料存在"
-    ))
-    or not "療程期間資料存在"
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -341,8 +325,8 @@ define function "符合項目"():
            then '● 規則3-1：每次申請事前審查之療程以12週為限（參考資訊）\n' else '') +
          (if "3規則2=使用總療程以24週為上限" 
            then '● 規則3-2：使用總療程以24週為上限（參考資訊）\n' else '') +
-         (if "3規則3-3=限5mg/kg每兩週一次(weight*5mg)" 
-           then '● 規則3-3：限5mg/kg每兩週一次(weight*5mg)\n' else '')
+         (if "3規則3-3=限5mg/kg每兩週一次(weight*5mg)"
+           then '● 規則3-3：限5mg/kg每兩週一次(weight*5mg)（必要條件，影響最終結果）\n' else '')
     else '')
 
 //============================================
@@ -352,7 +336,8 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 代碼條件不符
   (if Reusable."初次申請" and (
-    "1規則2=曾接受過Bevacizumab治療"
+    ("化學療法併用資料存在" and not "1規則1=化學療法合併使用")
+    or "1規則2=曾接受過Bevacizumab治療"
     or ("RAS基因檢測資料存在" and not "1規則3=RAS基因沒有突變")
     or (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
     or ("影像或檢查報告資料存在" and not ("1規則4-2=三個月內有影像檢查報告" or "1規則4-3=三個月內有檢查報告"))
@@ -360,7 +345,9 @@ define function "不符合項目_條件或代碼不符合"():
     or ("用藥線別資料存在" and not "1規則4-5=用藥線別為第二線")
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if "1規則2=曾接受過Bevacizumab治療" 
+         (if "化學療法併用資料存在" and not "1規則1=化學療法合併使用"
+           then '▲ 規則1：未符合Bevacizumab與指定化學療法併用，或先前cetuximab/panitumumab治療失敗條件（參考資訊）\n' else '') +
+         (if "1規則2=曾接受過Bevacizumab治療"
            then '▲ 規則2：曾接受過Bevacizumab治療\n' else '') +
          (if "RAS基因檢測資料存在" and not "1規則3=RAS基因沒有突變" 
            then '▲ 規則3：RAS基因檢測結果不符合（需無突變）\n' else '') +
@@ -372,9 +359,16 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 規則4-4：癌症分期分數或結果不為M>=1\n' else '') +
          (if "用藥線別資料存在" and not "1規則4-5=用藥線別為第二線" 
            then '▲ 規則4-5：用藥線別不為第二線\n' else '') +
-         '\n'  
+         '\n'
     else '') +
-  
+
+  // 主要規定二：續用條件 - 已提供資料但條件不符
+  (if Reusable."續用申請" and "續用客觀證據資料存在" and not "2規則1=再次申請必須提出客觀證據（如：RECIST criteria）證實無惡化"
+    then '<主要規定二：續用條件－治療持續給付>\n' +
+         '▲ 續用規則1：再次申請必須提出客觀證據（如：RECIST criteria）證實無惡化\n' +
+         '\n'
+    else '') +
+
   // 主要規定三：藥品使用規則 - 代碼條件不符
   (if ("療程期間資料存在" and not "3規則1=每次申請事前審查之療程以12週為限") or ("療程期間資料存在" and not "3規則2=使用總療程以24週為上限") or ("劑量資料存在" and not "3規則3-3=限5mg/kg每兩週一次(weight*5mg)")
     then '<主要規定三：藥品使用規則>\n' +
@@ -387,10 +381,13 @@ define function "不符合項目_條件或代碼不符合"():
     else '')
 
 //============================================
-// 不符合項目列表 - 必要資料未填寫
+// 列出「不符合」項目判斷式 - 必要資料未填寫
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "Bevacizumab第二線申請資料存在"
@@ -458,19 +455,9 @@ define "大腸直腸癌Bevacizumab第二線治療申請結果_布林":
 
 
 define "大腸直腸癌Bevacizumab第二線治療申請結果":
-  if (
-    Reusable."初次申請" and 
-    not "1規則2=曾接受過Bevacizumab治療" and
-    "1規則3=RAS基因沒有突變" and
-    "1規則4=轉移性大腸或直腸癌病人的第二線治療" and
-    "3規則3-3=限5mg/kg每兩週一次(weight*5mg)"
-  )
+  if Reusable."初次申請" and "大腸直腸癌Bevacizumab第二線治療申請結果_布林"
   then '✓通過：初次使用－大腸直腸癌 Bevacizumab 第二線用藥申請'
-  else if (
-    Reusable."續用申請" and
-    "2規則1=再次申請必須提出客觀證據（如：RECIST criteria）證實無惡化" and
-    "3規則3-3=限5mg/kg每兩週一次(weight*5mg)"
-  )
+  else if Reusable."續用申請" and "大腸直腸癌Bevacizumab第二線治療申請結果_布林"
   then '✓通過：續用－大腸直腸癌 Bevacizumab 第二線用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－大腸直腸癌 Bevacizumab 第二線用藥申請'

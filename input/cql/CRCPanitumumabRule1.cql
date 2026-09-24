@@ -22,6 +22,11 @@ define "本次申請紀錄":
   Last(
     [MedicationRequest] MR
       where MR.intent = 'plan'
+        and exists (
+          MR.medication.coding Cdg
+            where Cdg in CodeConcept.NHIMedication
+              and Cdg.code in CodeConcept.L01FE02
+        )
         and MR.dosageInstruction[0].timing.repeat.bounds is Period
       sort by FHIRHelpers.ToDateTime((dosageInstruction[0].timing.repeat.bounds as Period).start)
   )
@@ -236,25 +241,6 @@ define "Bevacizumab併用資料存在":
   Reusable."HasMedicationRecord"(CodeConcept.L01FE02)
   or Reusable."HasMedicationRecord"(CodeConcept.L01FG01)
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Panitumumab申請資料存在"
-      or not "化學療法併用資料存在"
-      or not "RAS基因檢測資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "影像或檢查報告資料存在"
-      or not "癌症分期資料存在"
-      or not "用藥線別資料存在"
-    ))
-    or (Reusable."續用申請" and (
-      not "Panitumumab申請資料存在"
-      or not "續用客觀證據資料存在"
-    ))
-    or not "療程期間資料存在"
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -314,14 +300,17 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 代碼條件不符
   (if Reusable."初次申請" and (
-    ("RAS基因檢測資料存在" and not "1規則2=K-RAS基因及N-RAS基因沒有突變")
+    ("化學療法併用資料存在" and not "1規則1")
+    or ("RAS基因檢測資料存在" and not "1規則2=K-RAS基因及N-RAS基因沒有突變")
     or (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
     or ("影像或檢查報告資料存在" and not ("1規則3-2=三個月內有影像檢查報告" or "1規則3-4=三個月內有檢查報告"))
     or ("癌症分期資料存在" and not "1規則3-3=癌症分期分數或結果為M>=1")
     or ("用藥線別資料存在" and not "1規則3-5=用藥線別為第一線")
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if "RAS基因檢測資料存在" and not "1規則2=K-RAS基因及N-RAS基因沒有突變" 
+         (if "化學療法併用資料存在" and not "1規則1"
+           then '▲ 規則1：未符合Panitumumab與FOLFOX或FOLFIRI併用條件（參考資訊）\n' else '') +
+         (if "RAS基因檢測資料存在" and not "1規則2=K-RAS基因及N-RAS基因沒有突變"
            then '▲ 規則2：K-RAS基因或N-RAS基因檢測結果不符合無突變條件\n' else '') +
          (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '▲ 規則3-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
@@ -331,9 +320,16 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 規則3-3：癌症分期分數或結果不為M≥1\n' else '') +
          (if "用藥線別資料存在" and not "1規則3-5=用藥線別為第一線" 
            then '▲ 規則3-5：用藥線別不為第一線\n' else '') +
-         '\n'  
+         '\n'
     else '') +
-  
+
+  // 主要規定二：續用條件 - 已提供資料但條件不符
+  (if Reusable."續用申請" and "續用客觀證據資料存在" and not "2規則1=再次申請必須提出客觀證據(如：影像學)證實無惡化，才可繼續使用"
+    then '<主要規定二：續用條件－治療持續給付>\n' +
+         '▲ 續用規則1：再次申請必須提出客觀證據（如：影像學）證實無惡化，才可繼續使用\n' +
+         '\n'
+    else '') +
+
   // 主要規定三：藥品使用規則 - 代碼條件不符
   (if ("Cetuximab併用資料存在" and not "3規則1") or ("Bevacizumab併用資料存在" and not "3規則2") or ("療程期間資料存在" and (not "3規則1-4=每次申請事前審查之療程以18週為限" or not "3規則1-5=Panitumumab與Cetuximab使用總療程併計算以36週為上限"))
     then '<主要規定三：藥品使用規則>\n' +
@@ -358,6 +354,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "Panitumumab申請資料存在"
@@ -417,16 +416,9 @@ define "大腸直腸癌Panitumumab申請結果_布林":
   end
 
 define "大腸直腸癌Panitumumab申請結果":
-  if (
-    Reusable."初次申請" and 
-    "1規則2=K-RAS基因及N-RAS基因沒有突變" and
-    "1規則3"
-  )
+  if Reusable."初次申請" and "大腸直腸癌Panitumumab申請結果_布林"
   then '✓通過：初次使用－大腸直腸癌 Panitumumab 用藥申請'
-  else if (
-    Reusable."續用申請" and
-    "2規則1=再次申請必須提出客觀證據(如：影像學)證實無惡化，才可繼續使用"
-  )
+  else if Reusable."續用申請" and "大腸直腸癌Panitumumab申請結果_布林"
   then '✓通過：續用－大腸直腸癌 Panitumumab 用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－大腸直腸癌 Panitumumab 用藥申請'

@@ -192,23 +192,7 @@ define "3個月內有評估報告":
   )
 
 define "評估結果":
-exists (
-    [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'patientAssessment'
-          )
-      )
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.ChildPugh
-        )
-        and Matches(OBs.value, '(?i).*(A|a).*')
-  )
+  Reusable."HasChildPughA"
 
 define "1規則1-2-6":
 "3個月內有檢查報告" and "3個月內有評估報告" and "評估結果"
@@ -895,29 +879,6 @@ define "照護計畫文件資料存在":
                 and coding.code = 'carePlanDocument'
           )
       )
-  )
-
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "AtezoDurva申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "影像或檢查報告資料存在"
-      or not "ECOG評估資料存在"
-      or not "NYHA評估資料存在"
-      or not "腎功能檢驗資料存在"
-      or not "影像報告V2資料存在"
-      or not "照護計畫文件資料存在"
-    ))
-    or (Reusable."續用申請" and (
-      not "AtezoDurva申請資料存在"
-      or not "MREC疾病狀態評估資料存在"
-      or not "ECOG評估資料存在"
-      or not "NYHA評估資料存在"
-      or not "腎功能檢驗資料存在"
-      or not "影像報告V2資料存在"
-    ))
-    or not "療程期間資料存在"
   )
 
 //============================================

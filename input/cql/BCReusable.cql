@@ -322,6 +322,20 @@ define function "IsTestObservation"(OBs Observation):
       )
   )
 
+// 取得檢驗數值，相容 valueInteger、valueDecimal、valueQuantity、valueString（可解析為數字）四種型態；皆不符合則回傳 null
+define function "GetNumericValue"(V Choice<FHIR.integer, FHIR.decimal, Quantity, FHIR.string>):
+  case
+    when V is FHIR.integer then (V as FHIR.integer).value
+    when V is FHIR.decimal then (V as FHIR.decimal).value
+    when V is Quantity then (V as Quantity).value
+    when V is FHIR.string then ToDecimal((V as FHIR.string).value)
+    else null
+  end
+
+// 若數值為 Quantity 型態則回傳其 comparator（如 '>'、'<'），否則回傳 null
+define function "GetQuantityComparator"(V Choice<FHIR.integer, FHIR.decimal, Quantity, FHIR.string>):
+  if V is Quantity then (V as Quantity).comparator else null
+
 define function "IsGeneInfoObservation"(OBs Observation):
   exists (
     OBs.category C
@@ -387,9 +401,50 @@ define function "HasGeneInfoComponentData"(MarkerCodes List<String>):
         )
   )
 
+// 指標代碼與同一筆 DiagnosticReport 的結論文字符合指定結果。
+define function "HasDiagnosticReportResult"(MarkerCodes List<String>, ResultPattern String):
+  exists (
+    [DiagnosticReport] Report
+      where exists (
+        Report.code.coding Cdg
+          where Cdg in CodeConcept.LOINC
+            and Cdg.code in MarkerCodes
+      )
+      and Report.conclusion is not null
+      and Matches(Report.conclusion.value, ResultPattern)
+  )
+
+// 僅用於原本有檢測日期限制的結果條件。
+define function "HasRecentDiagnosticReportResult"(MarkerCodes List<String>, ResultPattern String, ReferenceDate DateTime, LookbackDays Integer):
+  exists (
+    [DiagnosticReport] Report
+      where exists (
+        Report.code.coding Cdg
+          where Cdg in CodeConcept.LOINC
+            and Cdg.code in MarkerCodes
+      )
+      and "IsReportWithinDaysBefore"(Report, ReferenceDate, LookbackDays)
+      and Report.conclusion is not null
+      and Matches(Report.conclusion.value, ResultPattern)
+  )
+
+// 有填報告結果與結果符合分開判定。
+define function "HasDiagnosticReportData"(MarkerCodes List<String>):
+  exists (
+    [DiagnosticReport] Report
+      where exists (
+        Report.code.coding Cdg
+          where Cdg in CodeConcept.LOINC
+            and Cdg.code in MarkerCodes
+      )
+      and Report.conclusion is not null
+      and Matches(Report.conclusion.value, '(?s).*\\S.*')
+  )
+
 define function "HasMarkerData"(MarkerCodes List<String>):
   "HasTestObservationData"(MarkerCodes)
   or "HasGeneInfoComponentData"(MarkerCodes)
+  or "HasDiagnosticReportData"(MarkerCodes)
 
 define "HER2檢測資料存在":
   "HasMarkerData"(CodeConcept.HER2)
@@ -598,24 +653,14 @@ define function "HasGeneInfoObservationWithTextPattern"(MarkerCodes List<String>
   )
 
 define function "HasMarkerNegative"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerNegativeTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerNegativeGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
-
-define function "HasMarkerNegativeWithGeneLoinc"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
-
-define function "HasMarkerNegativeWithGeneLoincTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
-
-define function "HasMarkerNegativeWithGeneLoincGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
+  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerPositive"(MarkerCodes List<String>):
   "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\+|陽性|positive).*')
@@ -628,13 +673,13 @@ define function "HasMarkerPositiveGene"(MarkerCodes List<String>):
   "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\+|陽性|positive).*')
 
 define "HasHER2NegativeTest":
-  "HasMarkerNegativeWithGeneLoincTest"(CodeConcept.HER2)
+  "HasMarkerNegativeTest"(CodeConcept.HER2)
 
 define "HasHER2NegativeGene":
-  "HasMarkerNegativeWithGeneLoincGene"(CodeConcept.HER2)
+  "HasMarkerNegativeGene"(CodeConcept.HER2)
 
 define "HasHER2Negative":
-  "HasMarkerNegativeWithGeneLoinc"(CodeConcept.HER2)
+  "HasMarkerNegative"(CodeConcept.HER2)
 
 define "HasHER2OverexpressionTest":
   "HasTestObservationWithValuePattern"(CodeConcept.HER2, '(?i).*(IHC3\+|FISH\+).*')

@@ -7,7 +7,7 @@ using FHIR version '4.0.1'
 /*國際標準碼*/
 codesystem "SNOMED": 'http://snomed.info/sct'
 codesystem "LOINC": 'http://loinc.org'
-codesystem "InterpretationCodes": 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation' version '4.0.0'
+codesystem "InterpretationCodes": 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation'
 
 
 /*TWNHI Pas*/
@@ -26,6 +26,7 @@ codesystem "ICD10CM2023": 'https://twcore.mohw.gov.tw/ig/twcore/CodeSystem/icd-1
 codesystem "ICD10CM2014": 'https://twcore.mohw.gov.tw/ig/twcore/CodeSystem/icd-10-cm-2014-tw'
 codesystem "ICD10PCS2023Image": 'https://twcore.mohw.gov.tw/ig/twcore/CodeSystem/icd-10-pcs-2023-tw'
 codesystem "ICD10PCS2014Image": 'https://twcore.mohw.gov.tw/ig/twcore/CodeSystem/icd-10-pcs-2014-tw'
+
 
 //代碼列表定義--------------------
 

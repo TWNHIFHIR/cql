@@ -22,6 +22,11 @@ define "本次申請紀錄":
   Last(
     [MedicationRequest] MR
       where MR.intent = 'plan'
+        and exists (
+          MR.medication.coding Cdg
+            where Cdg in CodeConcept.NHIMedication
+              and Cdg.code in CodeConcept.L01FE01
+        )
         and MR.dosageInstruction[0].timing.repeat.bounds is Period
       sort by FHIRHelpers.ToDateTime((dosageInstruction[0].timing.repeat.bounds as Period).start)
   )
@@ -209,27 +214,6 @@ define "續用客觀證據資料存在":
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01FE01)
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Cetuximab申請資料存在"
-      or not "Irinotecan併用資料存在"
-      or not "先前細胞毒性治療資料存在"
-      or not "EGFR檢測資料存在"
-      or not "KRAS檢測資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "影像檢查報告資料存在"
-      or not "癌症分期資料存在"
-      or not "用藥線別資料存在"
-    ))
-    or (Reusable."續用申請" and (
-      not "Cetuximab申請資料存在"
-      or not "續用客觀證據資料存在"
-    ))
-    or not "療程期間資料存在"
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -306,9 +290,16 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 規則2-4-2：影像檢查報告不在三個月內或代碼不符合\n' else '') +
          (if "癌症分期資料存在" and not "1規則2-4-3=癌症分期分數或結果為M>=1" 
            then '▲ 規則2-4-3：癌症分期分數或結果不為M≥1\n' else '') +
-         '\n'  
+         '\n'
     else '') +
-  
+
+  // 主要規定二：續用條件 - 已提供資料但條件不符
+  (if Reusable."續用申請" and "續用客觀證據資料存在" and not "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
+    then '<主要規定二：續用條件－治療持續給付>\n' +
+         '▲ 續用規則1：提出客觀證據（如：影像學）證實無惡化，才可繼續使用\n' +
+         '\n'
+    else '') +
+
   // 主要規定三：藥品使用規則 - 代碼條件不符
   (if "療程期間資料存在" and (not "3規則1-1=每次申請事前審查之療程以9週為限" or not "3規則1-2=總使用療程以18週為上限")
     then '<主要規定三：藥品使用規則>\n' +
@@ -323,6 +314,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "Cetuximab申請資料存在"
@@ -383,16 +377,9 @@ define "大腸直腸癌Cetuximab二線以上治療申請結果_布林":
   end
 
 define "大腸直腸癌Cetuximab二線以上治療申請結果":
-  if (
-    Reusable."初次申請" and 
-    "1規則1-2=用藥線別>1" and
-    "1規則2"
-  )
+  if Reusable."初次申請" and "大腸直腸癌Cetuximab二線以上治療申請結果_布林"
   then '✓通過：初次使用－大腸直腸癌 Cetuximab 第二線用藥申請'
-  else if (
-    Reusable."續用申請" and
-    "2規則1=提出客觀證據（如：影像學）證實無惡化，才可繼續使用"
-  )
+  else if Reusable."續用申請" and "大腸直腸癌Cetuximab二線以上治療申請結果_布林"
   then '✓通過：續用－大腸直腸癌 Cetuximab 第二線用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－大腸直腸癌 Cetuximab 第二線用藥申請'

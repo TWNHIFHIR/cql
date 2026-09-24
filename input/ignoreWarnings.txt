@@ -5,3 +5,6 @@
 
 # HL7 Publisher 工具提示：建議 canonical resource 可分配 OID
 %could usefully have an OID assigned%
+
+# HL7 Publisher 多版本 canonical 提示：v3-ObservationInterpretation 在多個 hl7.terminology 套件版本中都存在
+%There are multiple different potential matches for the url 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation'%

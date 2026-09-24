@@ -38,21 +38,7 @@ define "1規則1-1-1=主要疾病之ICD代碼為C61":
 
 //條件1-2
 define "1規則1-1-2=手術去勢":
-  "本次申請起始日期" is not null
-  and exists (
-    [Procedure] P
-    where P.status = 'completed'
-      and exists (
-        P.code.coding Cdg
-        where (
-          Cdg in CodeConcept.ICD10PCS2023Image
-          or Cdg in CodeConcept.ICD10PCS2014Image
-        )
-        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-      )
-      and P.performed is FHIR.dateTime
-      and FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) < "本次申請起始日期"
-  )
+  Reusable."HasSurgicalCastrationProcedureBefore"("本次申請起始日期")
 
 //條件1-3
 define "1規則1-1-3=藥物去勢":
@@ -265,30 +251,6 @@ define "影像報告資料存在":
 define "止痛藥用藥資料存在":
   Reusable."HasMedicationRecord"(CodeConcept."Radium223Analgesic")
 
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-        not "Radium223申請資料存在"
-        or not "醫令類別資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or not "去勢治療資料存在"
-        or not "檢查報告資料存在"
-        or not "檢驗檢查資料存在"
-        or not "癌症分期資料存在"
-        or not "影像報告資料存在"
-        or not "止痛藥用藥資料存在"
-      )
-    )
-    or (
-      Reusable."續用申請" and (
-        not "Radium223申請資料存在"
-      )
-    )
-    or not "療程期間資料存在"
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -346,6 +308,13 @@ define function "不符合項目_條件或代碼不符合"():
          (if "影像報告資料存在" and not "1規則1-2-3=影像報告證明遠端轉移只有骨轉移且無臟器轉移" then '▲ 規則1-2-3：影像報告未證明遠端轉移只有骨轉移\n' else '') +
          (if "影像報告資料存在" and not "1規則2-1=三個月內影像報告證明骨轉移≧2處" then '▲ 規則2-1：影像報告未證明骨轉移≧2處\n' else '') +
          (if "止痛藥用藥資料存在" and not "1規則3-1=用藥紀錄證明有症狀骨轉移需常規使用止痛藥物" then '▲ 規則3-1：止痛藥用藥紀錄未涵蓋本次申請療程期間\n' else '') +
+         '\n'
+    else '') +
+
+  // 主要規定二：續用條件 - 本藥品依給付規定僅列初次使用申請條件，無續用類別
+  (if Reusable."續用申請"
+    then '<主要規定二：續用條件>\n' +
+         '▲ 規則2-0：Radium-223 依健保給付規定僅列初次使用申請條件，本藥品無續用類別，請確認申請類型是否正確\n' +
          '\n'
     else '') +
 

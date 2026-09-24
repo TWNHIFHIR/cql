@@ -61,27 +61,7 @@ and Reusable."續用註記為1"
 
 //條件2
 define "1規則1-2":
-exists (
-    [Observation] OBs
-      where exists (
-          OBs.category C
-            where exists (
-              C.coding Cdg
-                where Cdg in CodeConcept.NHIPASSupportingInfoType
-                  and Cdg.code = 'patientAssessment'
-            )
-        )
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.ECOG
-        )
-        and (
-          (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= 2)
-          or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= 2)
-          or (OBs.value is FHIR.string and Matches((OBs.value as FHIR.string).value, '(?i).*(<=2).*'))
-        )
-  )
+  Reusable."HasECOGAtMost"(2)
 
 //條件3
 define "1規則1-3":
@@ -364,31 +344,6 @@ define "V10XX03處方資料存在":
   exists (
     [MedicationRequest] MR
       where Reusable."HasMedicationCode"(MR, CodeConcept."V10XX03")
-  )
-
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-        not "Enzalutamide申請資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or not "簡要病摘資料存在"
-        or not "PSA檢驗資料存在"
-        or not "ECOG資料存在"
-        or not "L01CD02處方資料存在"
-      )
-    )
-    or (
-      Reusable."續用申請" and (
-        not "Enzalutamide申請資料存在"
-        or not "分子檢查報告資料存在"
-        or (not "根治性攝護腺切除術處置資料存在" and not "去勢用藥處方資料存在")
-        or not "PSA檢驗資料存在"
-        or not "睪固酮檢驗資料存在"
-        or not "影像檢查報告資料存在"
-      )
-    )
-    or not "療程期間資料存在"
   )
 
 //============================================

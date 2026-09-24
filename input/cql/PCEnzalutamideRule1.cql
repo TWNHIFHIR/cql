@@ -89,21 +89,7 @@ define "1規則2-3":
 
 //條件4
 define "1規則2-4-1":
-  "本次申請起始日期" is not null
-  and exists (
-    [Procedure] P
-    where P.status = 'completed'
-      and exists (
-        P.code.coding Cdg
-        where (
-          Cdg in CodeConcept.ICD10PCS2023Image
-          or Cdg in CodeConcept.ICD10PCS2014Image
-        )
-        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-      )
-        and P.performed is FHIR.dateTime
-        and FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) < "本次申請起始日期"  
-  )
+  Reusable."HasSurgicalCastrationProcedureBefore"("本次申請起始日期")
 
 define "mCRPC藥物代碼":
   CodeConcept."L02AE" union CodeConcept."L02BX02"
@@ -141,27 +127,7 @@ define "1規則2":
 
 /*規則3*/
 define "1規則3":
-exists (
-    [Observation] OBs
-      where exists (
-          OBs.category C
-            where exists (
-              C.coding Cdg
-                where Cdg in CodeConcept.NHIPASSupportingInfoType
-                  and Cdg.code = 'patientAssessment'
-            )
-        )
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.ECOG
-        )
-        and (
-          (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= 1)
-          or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= 1)
-          or (OBs.value is FHIR.string and Matches((OBs.value as FHIR.string).value, '(?i).*(<=1).*'))
-        )
-  )
+  Reusable."HasECOGAtMost"(1)
 
 /*規則4*/
 define "1規則4":
@@ -336,18 +302,7 @@ define "影像檢查報告資料存在":
   )
 
 define "手術去勢處置資料存在":
-  exists (
-    [Procedure] P
-      where P.status = 'completed'
-        and exists (
-          P.code.coding Cdg
-            where (
-              Cdg in CodeConcept.ICD10PCS2023Image
-              or Cdg in CodeConcept.ICD10PCS2014Image
-            )
-            and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-        )
-  )
+  Reusable."HasSurgicalCastrationProcedure"
 
 define "去勢用藥處方資料存在":
   exists (
@@ -399,33 +354,6 @@ define "V10XX03處方資料存在":
   exists (
     [MedicationRequest] MR
       where Reusable."HasMedicationCode"(MR, CodeConcept."V10XX03")
-  )
-
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-        not "Enzalutamide申請資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or not "簡要病摘資料存在"
-        or not "癌症分期資料存在"
-        or not "睪固酮檢驗資料存在"
-        or not "分子檢查報告資料存在"
-        or (not "手術去勢處置資料存在" and not "去勢用藥處方資料存在")
-        or not "影像檢查報告資料存在"
-        or not "ECOG資料存在"
-        or not "PSA檢驗資料存在"
-        or Patient.birthDate is null
-      )
-    )
-    or (
-      Reusable."續用申請" and (
-        not "Enzalutamide申請資料存在"
-        or not "影像檢查報告資料存在"
-        or not "PSA檢驗資料存在"
-      )
-    )
-    or not "療程期間資料存在"
   )
 
 //============================================

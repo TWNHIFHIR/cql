@@ -88,21 +88,7 @@ define "處方時間":
   )
 
 define "手術項目":
-  "本次申請起始日期" is not null
-  and exists (
-    [Procedure] P
-    where P.status = 'completed'
-      and exists (
-        P.code.coding Cdg
-        where (
-          Cdg in CodeConcept.ICD10PCS2023Image
-          or Cdg in CodeConcept.ICD10PCS2014Image
-        )
-        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-      )
-      and P.performed is FHIR.dateTime
-      and (duration in days between FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) and "本次申請起始日期") <= 90
-  )
+  Reusable."HasRecentSurgicalCastrationProcedure"("本次申請起始日期", 90)
 
 define "1規則1-1":
 "ICD-C61"
@@ -130,29 +116,7 @@ Patient.gender.value = 'male'
 
 //條件4
 define "照護計畫文件資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.supportingInfo Cs
-          where exists (
-            Cs.category.coding coding
-              where coding in CodeConcept.NHIPASSupportingInfoType
-                and coding.code = 'carePlanDocument'
-          )
-          and Cs.value is FHIR.Reference
-          and exists (
-            [DocumentReference] D
-              where (
-                (Cs.value as FHIR.Reference).reference = 'DocumentReference/' + D.id
-                or (Cs.value as FHIR.Reference).reference = D.id
-              )
-              and exists (
-                D.content Ct
-                  where Ct.attachment.url is not null
-              )
-          )
-      )
-  )
+  Reusable."HasCarePlanDocument"
   and (
     Reusable."HasMedicationRecord"("mCRPC藥物代碼")
     or "手術項目"
@@ -171,28 +135,7 @@ define "1規則1-5":
 
 //條件6
 define "1規則1-6":
-exists (
-    [Observation] OBs
-      where exists (
-          OBs.category C
-            where exists (
-              C.coding Cdg
-                where Cdg in CodeConcept.NHIPASSupportingInfoType
-                  and Cdg.code = 'patientAssessment'
-            )
-        )
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.ECOG
-        )
-        and (
-          (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= 1)
-          or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= 1)
-          or (OBs.value is FHIR.string and Matches((OBs.value as FHIR.string).value, '(?i).*(<=1).*'))
-        )
-        and Reusable."IsObservationWithinDaysBefore"(OBs, "本次申請起始日期", 90)
-  )
+  Reusable."HasRecentECOGAtMost"(1, "本次申請起始日期", 90)
 
 //條件7
 define "PSABasic檢驗代碼":
@@ -262,26 +205,7 @@ and Reusable."醫令類別為1"
 
 //條件2
 define "Gleason score≧8":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '385377005'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and (
-          (O.value is FHIR.integer and (O.value as FHIR.integer).value >= 8)
-          or (O.value is FHIR.Quantity and (O.value as FHIR.Quantity).value >= 8)
-          or (
-            O.value is FHIR.string
-            and (
-              (ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) is not null
-                and ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) >= 8)
-              or Matches((O.value as FHIR.string).value, '(?i).*(>=|≧)\s*[89]\d*(?!\d).*')
-            )
-          )
-        )
-  )
+  Reusable."HasGleasonScoreAtLeast8"
 
 define "1規則2-2-2":
 "Gleason score≧8"
@@ -574,18 +498,7 @@ define "去勢用藥處方資料存在":
   )
 
 define "手術去勢處置資料存在":
-  exists (
-    [Procedure] P
-      where P.status = 'completed'
-        and exists (
-          P.code.coding Cdg
-            where (
-              Cdg in CodeConcept.ICD10PCS2023Image
-              or Cdg in CodeConcept.ICD10PCS2014Image
-            )
-            and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-        )
-  )
+  Reusable."HasSurgicalCastrationProcedure"
 
 define "ECOG資料存在":
   exists (
@@ -639,31 +552,6 @@ define "內臟轉移影像報告資料存在":
           )
           and Cdg.code in CodeConcept."VisceralMetastasisImageReportCode"
       )
-  )
-
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-        not "Apalutamide申請資料存在"
-        or not "醫令類別資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or not "簡要病摘資料存在"
-        or not "PSA檢驗資料存在"
-        or (not "去勢用藥處方資料存在" and not "手術去勢處置資料存在")
-      )
-    )
-    or (
-      Reusable."續用申請" and (
-        not "Apalutamide申請資料存在"
-        or not "醫令類別資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or not "簡要病摘資料存在"
-        or not "PSA檢驗資料存在"
-        or (not "去勢用藥處方資料存在" and not "手術去勢處置資料存在")
-      )
-    )
-    or not "療程期間資料存在"
   )
 
 //============================================

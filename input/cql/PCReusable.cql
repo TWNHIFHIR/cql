@@ -157,6 +157,19 @@ define function "IsReportWithinDaysBefore"(Report DiagnosticReport, ReferenceDat
   and "EffectiveDateTime"(Report.effective) <= ReferenceDate
   and (duration in days between "EffectiveDateTime"(Report.effective) and ReferenceDate) <= LookbackDays
 
+//檢驗(查)報告日期是否落在參考日期前指定天數內
+define function "IsObservationWithinDaysBefore"(Obs Observation, ReferenceDate DateTime, LookbackDays Integer):
+  Obs.effective is not null
+  and ReferenceDate is not null
+  and "EffectiveDateTime"(Obs.effective) <= ReferenceDate
+  and (duration in days between "EffectiveDateTime"(Obs.effective) and ReferenceDate) <= LookbackDays
+
+//檢驗(查)報告日期是否晚於（在）參考日期之後
+define function "IsObservationAfter"(Obs Observation, ReferenceDate DateTime):
+  Obs.effective is not null
+  and ReferenceDate is not null
+  and "EffectiveDateTime"(Obs.effective) > ReferenceDate
+
 define function "HasRecentImageReportWithCodes"(ReportCodes List<String>, ReferenceDate DateTime, LookbackDays Integer):
   exists (
     [DiagnosticReport] Report
@@ -256,6 +269,189 @@ define function "HasMedicationRecord"(DrugCodes List<String>):
   exists (
     [MedicationRequest] MR
     where "HasMedicationCode"(MR, DrugCodes)
+  )
+
+// 是否有照護計畫文件（Claim.supportingInfo 標示為 carePlanDocument，且參照到附有附件URL的 DocumentReference）
+define "HasCarePlanDocument":
+  exists (
+    [Claim] C
+      where exists (
+        C.supportingInfo Cs
+          where exists (
+            Cs.category.coding coding
+              where coding in CodeConcept.NHIPASSupportingInfoType
+                and coding.code = 'carePlanDocument'
+          )
+          and Cs.value is FHIR.Reference
+          and exists (
+            [DocumentReference] D
+              where (
+                (Cs.value as FHIR.Reference).reference = 'DocumentReference/' + D.id
+                or (Cs.value as FHIR.Reference).reference = D.id
+              )
+              and exists (
+                D.content Ct
+                  where Ct.attachment.url is not null
+              )
+          )
+      )
+  )
+
+// 是否有完成之手術去勢處置（不限時間）
+define "HasSurgicalCastrationProcedure":
+  exists (
+    [Procedure] P
+    where P.status = 'completed'
+      and exists (
+        P.code.coding Cdg
+        where (
+          Cdg in CodeConcept.ICD10PCS2023Image
+          or Cdg in CodeConcept.ICD10PCS2014Image
+        )
+        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
+      )
+  )
+
+// 是否有完成之手術去勢處置，且處置日期早於參考日期
+define function "HasSurgicalCastrationProcedureBefore"(ReferenceDate DateTime):
+  ReferenceDate is not null
+  and exists (
+    [Procedure] P
+    where P.status = 'completed'
+      and exists (
+        P.code.coding Cdg
+        where (
+          Cdg in CodeConcept.ICD10PCS2023Image
+          or Cdg in CodeConcept.ICD10PCS2014Image
+        )
+        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
+      )
+      and P.performed is FHIR.dateTime
+      and FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) < ReferenceDate
+  )
+
+// 是否有完成之手術去勢處置，且處置日期在參考日期前指定天數內
+define function "HasRecentSurgicalCastrationProcedure"(ReferenceDate DateTime, LookbackDays Integer):
+  ReferenceDate is not null
+  and exists (
+    [Procedure] P
+    where P.status = 'completed'
+      and exists (
+        P.code.coding Cdg
+        where (
+          Cdg in CodeConcept.ICD10PCS2023Image
+          or Cdg in CodeConcept.ICD10PCS2014Image
+        )
+        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
+      )
+      and P.performed is FHIR.dateTime
+      and (duration in days between FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) and ReferenceDate) <= LookbackDays
+  )
+
+// 是否有完成之手術去勢處置，且處置日期落在指定期間內
+define function "HasSurgicalCastrationProcedureWithinPeriod"(StartDate DateTime, EndDate DateTime):
+  StartDate is not null
+  and EndDate is not null
+  and exists (
+    [Procedure] P
+    where P.status = 'completed'
+      and exists (
+        P.code.coding Cdg
+        where (
+          Cdg in CodeConcept.ICD10PCS2023Image
+          or Cdg in CodeConcept.ICD10PCS2014Image
+        )
+        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
+      )
+      and P.performed is FHIR.dateTime
+      and FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) >= StartDate
+      and FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) <= EndDate
+  )
+
+// 是否有ECOG評估分數 <= 指定門檻值（不限時間）
+define function "HasECOGAtMost"(MaxScore Integer):
+  exists (
+    [Observation] OBs
+      where exists (
+          OBs.category C
+            where exists (
+              C.coding Cdg
+                where Cdg in CodeConcept.NHIPASSupportingInfoType
+                  and Cdg.code = 'patientAssessment'
+            )
+        )
+        and exists (
+          OBs.code.coding Cdg
+            where Cdg in CodeConcept.LOINC
+              and Cdg.code in CodeConcept.ECOG
+        )
+        and (
+          (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= MaxScore)
+          or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= MaxScore)
+          or (
+            OBs.value is FHIR.string
+            and (
+              (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
+                and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) <= MaxScore)
+              or Matches((OBs.value as FHIR.string).value, '(?i).*(<=|≦)\s*' + ToString(MaxScore) + '(?!\d).*')
+            )
+          )
+        )
+  )
+
+// 是否有ECOG評估分數 <= 指定門檻值，且評估日期在參考日期前指定天數內
+define function "HasRecentECOGAtMost"(MaxScore Integer, ReferenceDate DateTime, LookbackDays Integer):
+  exists (
+    [Observation] OBs
+      where exists (
+          OBs.category C
+            where exists (
+              C.coding Cdg
+                where Cdg in CodeConcept.NHIPASSupportingInfoType
+                  and Cdg.code = 'patientAssessment'
+            )
+        )
+        and exists (
+          OBs.code.coding Cdg
+            where Cdg in CodeConcept.LOINC
+              and Cdg.code in CodeConcept.ECOG
+        )
+        and (
+          (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= MaxScore)
+          or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= MaxScore)
+          or (
+            OBs.value is FHIR.string
+            and (
+              (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
+                and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) <= MaxScore)
+              or Matches((OBs.value as FHIR.string).value, '(?i).*(<=|≦)\s*' + ToString(MaxScore) + '(?!\d).*')
+            )
+          )
+        )
+        and "IsObservationWithinDaysBefore"(OBs, ReferenceDate, LookbackDays)
+  )
+
+// 是否有Gleason score評估結果 >= 8
+define "HasGleasonScoreAtLeast8":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '385377005'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and (
+          (O.value is FHIR.integer and (O.value as FHIR.integer).value >= 8)
+          or (O.value is FHIR.Quantity and (O.value as FHIR.Quantity).value >= 8)
+          or (
+            O.value is FHIR.string
+            and (
+              (ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) is not null
+                and ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) >= 8)
+              or Matches((O.value as FHIR.string).value, '(?i).*(>=|≧)\s*[89]\d*(?!\d).*')
+            )
+          )
+        )
   )
 
 // 本次藥物申請（plan）
@@ -424,19 +620,6 @@ define function "HasRecentMolecularReport"(ReferenceDate DateTime, LookbackDays 
     where "IsMolecularReport"(Report)
       and "IsReportWithinDaysBefore"(Report, ReferenceDate, LookbackDays)
   )
-
-//檢驗(查)報告日期是否落在參考日期前指定天數內
-define function "IsObservationWithinDaysBefore"(Obs Observation, ReferenceDate DateTime, LookbackDays Integer):
-  Obs.effective is not null
-  and ReferenceDate is not null
-  and "EffectiveDateTime"(Obs.effective) <= ReferenceDate
-  and (duration in days between "EffectiveDateTime"(Obs.effective) and ReferenceDate) <= LookbackDays
-
-//檢驗(查)報告日期是否晚於（在）參考日期之後
-define function "IsObservationAfter"(Obs Observation, ReferenceDate DateTime):
-  Obs.effective is not null
-  and ReferenceDate is not null
-  and "EffectiveDateTime"(Obs.effective) > ReferenceDate
 
 //報告日期是否晚於（在）參考日期之後
 define function "IsReportAfter"(Report DiagnosticReport, ReferenceDate DateTime):

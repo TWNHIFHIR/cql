@@ -96,34 +96,46 @@ define "1規則1-4/1規則2-2=具germline BRCA 1/2突變":
 //條件5
 //條件5-1:ER陰性
 define "1規則5-1=檢驗檢查-ER陰性":
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
+  Reusable."HasMarkerNegativeTest"(CodeConcept.MolecularER)
 
 define "1規則5-1=基因檢測-ER陰性":
-  Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
+  Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularER)
+
+define "檢查報告-1規則5-1=ER陰性":
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*')
 
 define "1規則5-1=ER陰性":
-  Reusable."HasMarkerNegative"(CodeConcept.MolecularER)
+  "1規則5-1=檢驗檢查-ER陰性" or "1規則5-1=基因檢測-ER陰性"
+  or "檢查報告-1規則5-1=ER陰性"
 
 //條件5-2:PR陰性
 define "1規則5-2=檢驗檢查-PR陰性":
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.MolecularPR, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
+  Reusable."HasMarkerNegativeTest"(CodeConcept.MolecularPR)
 
 define "1規則5-2=基因檢測-PR陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularPR)
 
+define "檢查報告-1規則5-2=PR陰性":
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(陰性|negative).*')
+
 define "1規則5-2=PR陰性":
-  Reusable."HasMarkerNegativeWithGeneLoinc"(CodeConcept.MolecularPR)
+  "1規則5-2=檢驗檢查-PR陰性" or "1規則5-2=基因檢測-PR陰性"
+  or "檢查報告-1規則5-2=PR陰性"
 
 
 //條件5-3:HER2陰性
 define "1規則5-3=檢驗檢查-HER2陰性":
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.HER2, { 'NEG' }, '(?i).*([-−]|0|陰性|negative).*')
+  Reusable."HasHER2NegativeTest"
 
 define "1規則5-3=基因檢測-HER2陰性":
   Reusable."HasHER2NegativeGene"
 
+define "檢查報告-1規則5-3=HER2陰性":
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative).*')
+
 define "1規則5-3=HER2陰性":
-  Reusable."HasHER2Negative"
+  "1規則5-3=檢驗檢查-HER2陰性" or "1規則5-3=基因檢測-HER2陰性"
+  or "檢查報告-1規則5-3=HER2陰性"
 
 define "1規則1-5/1規則2-1=ER陰性&PR陰性&HER2陰性":
 "1規則5-1=ER陰性" and "1規則5-2=PR陰性" and "1規則5-3=HER2陰性"
@@ -228,21 +240,6 @@ and "3規則2=Talazoparib與Olaparib僅得擇一使用"
 // 檢核結果用：必要資料存在判斷
 //============================================
 
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-          not "1規則1-4=Talazoparib申請" or
-          not ("1規則1-1=3個月內影像報告" or "1規則1-3=3個月內有檢查報告") or
-          not "1規則1-3" or
-          not Reusable."BRCA1或BRCA2檢測資料存在" or
-          not Reusable."HER2檢測資料存在"
-        )
-    )
-    or (Reusable."續用申請" and not "2規則1=影像證據顯示病情有無惡化")
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -296,12 +293,12 @@ define function "符合項目"():
   // 主要規定三：藥品使用規則
   (if "3規則1=每次申請之療程以3個月為限" or "3規則2=Talazoparib與Olaparib僅得擇一使用"
     then '<主要規定三：藥品使用規則>\n' +
-         (if "3規則1=每次申請之療程以3個月為限" 
-           then '● 3規則1：每次申請之療程≤3個月（84天）\n' else '') +
+         (if "3規則1=每次申請之療程以3個月為限"
+           then '● 3規則1：每次申請之療程≤3個月（84天）（參考資訊）\n' else '') +
          (if "3規則2-1=無法忍受化療(其副作用)時(有註記)" and "3規則2-2=Talazoparib、Olaparib二者可轉換"
-           then '● 3規則2：無法忍受Olaparib副作用，Talazoparib與Olaparib二者可轉換\n' 
+           then '● 3規則2：無法忍受Olaparib副作用，Talazoparib與Olaparib二者可轉換（參考資訊）\n'
            else if "3規則2-3=Talazoparib、Olaparib僅得擇一使用"
-           then '● 3規則2：Talazoparib與Olaparib僅得擇一使用\n' 
+           then '● 3規則2：Talazoparib與Olaparib僅得擇一使用（參考資訊）\n'
            else '')
     else '')
 
@@ -329,12 +326,12 @@ define function "不符合項目_條件或代碼不符合"():
   // 主要規定三：藥品使用規則 - 條件或代碼不符合
   (if not "3規則1=每次申請之療程以3個月為限" or not "3規則2=Talazoparib與Olaparib僅得擇一使用"
     then '<主要規定三：藥品使用規則>\n' +
-         (if not "3規則1=每次申請之療程以3個月為限" 
-           then '▲ 3規則1：每次申請之療程超過3個月（84天）\n' else '') +
+         (if not "3規則1=每次申請之療程以3個月為限"
+           then '▲ 3規則1：每次申請之療程超過3個月（84天）（參考資訊）\n' else '') +
          (if "3規則2-1=無法忍受化療(其副作用)時(有註記)" and not "3規則2-2=Talazoparib、Olaparib二者可轉換"
-           then '▲ 3規則2：標註無法忍受Olaparib副作用但未正確使用Talazoparib或Olaparib\n' 
+           then '▲ 3規則2：標註無法忍受Olaparib副作用但未正確使用Talazoparib或Olaparib（參考資訊）\n'
            else if not "3規則2-1=無法忍受化療(其副作用)時(有註記)" and not "3規則2-3=Talazoparib、Olaparib僅得擇一使用"
-           then '▲ 3規則2：同時使用Talazoparib與Olaparib\n' 
+           then '▲ 3規則2：同時使用Talazoparib與Olaparib（參考資訊）\n'
            else '')
     else '')
 
@@ -343,6 +340,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "1規則1-4=Talazoparib申請" or 
@@ -393,37 +393,19 @@ define "乳癌Talazoparib申請結果_布林":
       "1規則1-2=18歲以上" and
       "1規則1-3" and
       "1規則1-4/1規則2-2=具germline BRCA 1/2突變" and
-      "1規則1-5/1規則2-1=ER陰性&PR陰性&HER2陰性" and
-      "3規則1=每次申請之療程以3個月為限" and
-      "3規則2=Talazoparib與Olaparib僅得擇一使用"
+      "1規則1-5/1規則2-1=ER陰性&PR陰性&HER2陰性"
     )
     when Reusable."續用申請" then (
-      "2規則1=影像證據顯示病情有無惡化" and
-      "3規則1=每次申請之療程以3個月為限" and
-      "3規則2=Talazoparib與Olaparib僅得擇一使用"
+      "2規則1=影像證據顯示病情有無惡化"
     )
     else false
   end
 
 define "乳癌Talazoparib申請之CQL檢核結果":
-  if (
-    Reusable."初次申請" and 
-    "1規則1-1=局部晚期或轉移性三陰性乳癌" and
-    "1規則1-2=18歲以上" and
-    "1規則1-3" and
-    "1規則1-4/1規則2-2=具germline BRCA 1/2突變" and
-    "1規則1-5/1規則2-1=ER陰性&PR陰性&HER2陰性" and
-    "3規則1=每次申請之療程以3個月為限" and
-    "3規則2=Talazoparib與Olaparib僅得擇一使用"
-  )
+  if Reusable."初次申請" and "乳癌Talazoparib申請結果_布林"
   then '✓通過：初次使用－早期乳癌 Talazoparib 用藥申請'
 
-  else if (
-    Reusable."續用申請" and
-    "2規則1=影像證據顯示病情有無惡化" and
-    "3規則1=每次申請之療程以3個月為限" and
-    "3規則2=Talazoparib與Olaparib僅得擇一使用"
-  )
+  else if Reusable."續用申請" and "乳癌Talazoparib申請結果_布林"
   then '✓通過：續用－早期乳癌 Talazoparib 用藥申請'
   
   else if Reusable."初次申請"

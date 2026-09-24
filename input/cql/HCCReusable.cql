@@ -356,6 +356,21 @@ define function "HasRecentOPReport"(ReferenceDate DateTime, LookbackDays Integer
       and "IsReportWithinDaysBefore"(Report, ReferenceDate, LookbackDays)
   )
 
+// 是否有手術處置紀錄，且手術日期早於參考日期
+define function "HasSurgeryBeforeDate"(ReferenceDate DateTime):
+  exists (
+    [Claim] C
+      where exists (
+        C.procedure P
+          where P.procedure is FHIR.CodeableConcept
+            and exists (
+              ((P.procedure as FHIR.CodeableConcept).coding) Cdg
+                where Cdg.code in CodeConcept.opCode
+            )
+            and P.date < ReferenceDate
+      )
+  )
+
 define function "HasRecentOPReportV2"(ReferenceDate DateTime, LookbackDays Integer):
   exists (
     [DiagnosticReport] Report
@@ -1300,3 +1315,44 @@ define "手術報告資料存在":
 
 define "ChildPugh評估資料存在":
   "HasPatientAssessmentObservationCode"(CodeConcept.ChildPugh)
+
+// Child-Pugh 評估結果為 A 級（不限時間）
+define "HasChildPughA":
+  exists (
+    [Observation] OBs
+      where exists (
+        OBs.category C
+          where exists (
+            C.coding Cdg
+              where Cdg in CodeConcept.NHIPASSupportingInfoType
+                and Cdg.code = 'patientAssessment'
+          )
+      )
+        and exists (
+          OBs.code.coding Cdg
+            where Cdg in CodeConcept.LOINC
+              and Cdg.code in CodeConcept.ChildPugh
+        )
+        and Matches(OBs.value, '(?i).*(A|a).*')
+  )
+
+// Child-Pugh 評估結果為 A 級，且評估日期在參考日期前指定天數內
+define function "HasRecentChildPughA"(ReferenceDate DateTime, LookbackDays Integer):
+  exists (
+    [Observation] OBs
+      where exists (
+        OBs.category C
+          where exists (
+            C.coding Cdg
+              where Cdg in CodeConcept.NHIPASSupportingInfoType
+                and Cdg.code = 'patientAssessment'
+          )
+      )
+        and exists (
+          OBs.code.coding Cdg
+            where Cdg in CodeConcept.LOINC
+              and Cdg.code in CodeConcept.ChildPugh
+        )
+        and Matches(OBs.value, '(?i).*(A|a).*')
+        and "IsObservationWithinDaysBefore"(OBs, ReferenceDate, LookbackDays)
+  )

@@ -117,7 +117,7 @@
 - [肺癌規則共通模組-LCReusable](Library-LCReusable.html)
 
 ### 肝癌
-- [Atezolizumab/Durvalumab給付規定-HCC Atezolizumab/Durvalumab Rule1](Library-HCCAtezoDurvaRule1.html)
+- [Atezolizumab/Durvalumab給付規定(晚期肝細胞癌第一線用藥(併用))-HCC Atezolizumab/Durvalumab Rule1](Library-HCCAtezoDurvaRule1.html)
 
 - [Larotrectinib給付規定-HCC Larotrectinib Rule1](Library-HCCLarotrectinibRule1.html)
 
@@ -141,17 +141,17 @@
 
 - [Apalutamide給付規定-PC Apalutamide Rule1](Library-PCApalutamideRule1.html)
 
-- [Darolutamide給付規定（與docetaxel併用於治療高風險轉移性的去勢敏感性前列腺癌(mCSPC)）-PC Darolutamide Rule1](Library-PCDarolutamideRule1.html)
+- [Darolutamide給付規定(與docetaxel併用於治療高風險轉移性的去勢敏感性前列腺癌(mCSPC))-PC Darolutamide Rule1](Library-PCDarolutamideRule1.html)
 
-- [Darolutamide給付規定（治療高風險非轉移性去勢抗性前列腺癌(high risk nmCRPC)的成年男性）-PC Darolutamide Rule2](Library-PCDarolutamideRule2.html)
+- [Darolutamide給付規定(治療高風險非轉移性去勢抗性前列腺癌(high risk nmCRPC)的成年男性)-PC Darolutamide Rule2](Library-PCDarolutamideRule2.html)
 
-- [Enzalutamide給付規定（高風險非轉移性去勢抗性前列腺癌(high risk nmCRPC)）-PC Enzalutamide Rule1](Library-PCEnzalutamideRule1.html)
+- [Enzalutamide給付規定(高風險非轉移性去勢抗性前列腺癌(high risk nmCRPC))-PC Enzalutamide Rule1](Library-PCEnzalutamideRule1.html)
 
-- [Enzalutamide給付規定（高風險轉移性的去勢敏感性前列腺癌(mCSPC)）-PC Enzalutamide Rule2](Library-PCEnzalutamideRule2.html)
+- [Enzalutamide給付規定(高風險轉移性的去勢敏感性前列腺癌(mCSPC))-PC Enzalutamide Rule2](Library-PCEnzalutamideRule2.html)
 
-- [Enzalutamide給付規定（藥物或手術去勢抗性的轉移性前列腺癌(mCRPC)-未化療）-PC Enzalutamide Rule3](Library-PCEnzalutamideRule3.html)
+- [Enzalutamide給付規定(藥物或手術去勢抗性的轉移性前列腺癌(mCRPC)-未化療)-PC Enzalutamide Rule3](Library-PCEnzalutamideRule3.html)
 
-- [Enzalutamide給付規定（藥物或手術去勢抗性的轉移性前列腺癌(mCRPC)-已化療）-PC Enzalutamide Rule4](Library-PCEnzalutamideRule4.html)
+- [Enzalutamide給付規定(藥物或手術去勢抗性的轉移性前列腺癌(mCRPC)-已化療)-PC Enzalutamide Rule4](Library-PCEnzalutamideRule4.html)
 
 - [Larotrectinib給付規定-PC Larotrectinib Rule1](Library-PCLarotrectinibRule1.html)
 

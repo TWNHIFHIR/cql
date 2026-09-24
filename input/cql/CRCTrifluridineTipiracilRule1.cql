@@ -137,8 +137,8 @@ define "1規則1":
   and "1規則1-4=若K-ras為原生型(wild type)，需再加上接受過抗表皮生長因子受體（anti-EGFR）療法"
 
 
-/*規則3*/
-define "1規則3=申請項目":
+/*規則2*/
+define "1規則2=申請項目":
   exists (
     [MedicationRequest] MRPlan
     where MRPlan.intent = 'plan'
@@ -153,7 +153,7 @@ define "主要規定一":
   Reusable."初次申請"
   and Reusable."醫令類別為1"
   and "1規則1" 
-  and "1規則3=申請項目"
+  and "1規則2=申請項目"
 
 
 //============================================
@@ -254,33 +254,13 @@ define "併用Regorafenib資料存在":
   Reusable."HasMedicationRecord"(CodeConcept.L01BC59)
   or Reusable."HasMedicationRecord"(CodeConcept.L01EX05)
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "TrifluridineTipiracil申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "影像或檢查報告資料存在"
-      or not "癌症分期資料存在"
-      or Patient.birthDate is null
-      or not "先前基礎化療資料存在"
-      or not "RAS檢測資料存在"
-      or ("1規則1-4-1=檢核是否為RAS 原生型(wild type)(符合者需有條件4-2不符合者不用)" and not "AntiEGFR療法資料存在")
-    ))
-    or (Reusable."續用申請" and (
-      not "TrifluridineTipiracil申請資料存在"
-      or not "續用客觀證據資料存在"
-    ))
-    or not "療程期間資料存在"
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
 
 define function "符合項目"():
   // 主要規定一：初次使用條件
-  (if Reusable."初次申請" and (Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" or "1規則1-1-2=三個月內有影像檢查報告" or "1規則1-1-3=癌症分期分數或結果為M≠0" or "1規則1-1-4=三個月內有檢查報告" or "1規則1-2=成人" or "1規則1-3-1=曾接受fluoropyrimidine為基礎的化療" or "1規則1-3-2=曾接受oxaliplatin為基礎的化療" or "1規則1-3-3=曾接受irinotecan為基礎的化療" or "1規則1-3-4=曾接受抗血管內皮生長因子(anti-VEGF)" or "1規則1-4-1=檢核是否為RAS 原生型(wild type)(符合者需有條件4-2不符合者不用)" or "1規則1-4-2=接受過抗表皮生長因子受體（anti-EGFR）療法" or "1規則3=申請項目")
+  (if Reusable."初次申請" and (Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" or "1規則1-1-2=三個月內有影像檢查報告" or "1規則1-1-3=癌症分期分數或結果為M≠0" or "1規則1-1-4=三個月內有檢查報告" or "1規則1-2=成人" or "1規則1-3-1=曾接受fluoropyrimidine為基礎的化療" or "1規則1-3-2=曾接受oxaliplatin為基礎的化療" or "1規則1-3-3=曾接受irinotecan為基礎的化療" or "1規則1-3-4=曾接受抗血管內皮生長因子(anti-VEGF)" or "1規則1-4-1=檢核是否為RAS 原生型(wild type)(符合者需有條件4-2不符合者不用)" or "1規則1-4-2=接受過抗表皮生長因子受體（anti-EGFR）療法" or "1規則2=申請項目")
     then '<主要規定一：初次使用條件>\n' +
          (if Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '● 規則1-1-1：主要疾病之ICD代碼為C18、C19、C20、C21\n' else '') +
@@ -305,8 +285,8 @@ define function "符合項目"():
            else if not "1規則1-4-1=檢核是否為RAS 原生型(wild type)(符合者需有條件4-2不符合者不用)"
            then '● 規則1-4：RAS非原生型，無需接受anti-EGFR療法\n'
            else '') +
-         (if "1規則3=申請項目" 
-           then '● 規則3：申請項目為Trifluridine/Tipiracil\n' else '') +
+         (if "1規則2=申請項目" 
+           then '● 規則2：申請項目為Trifluridine/Tipiracil\n' else '') +
          '\n'  
     else '') +
   
@@ -353,9 +333,16 @@ define function "不符合項目_條件或代碼不符合"():
           then '▲ 規則1-3：先前基礎化學治療資料未完整符合條件\n' else '') +
          (if "RAS檢測資料存在" and "1規則1-4-1=檢核是否為RAS 原生型(wild type)(符合者需有條件4-2不符合者不用)" and "AntiEGFR療法資料存在" and not "1規則1-4-2=接受過抗表皮生長因子受體（anti-EGFR）療法"
           then '▲ 規則1-4-2：未接受抗表皮生長因子受體（anti-EGFR）療法\n' else '') +
-         '\n'  
+         '\n'
     else '') +
-  
+
+  // 主要規定二：續用條件 - 已提供資料但條件不符
+  (if Reusable."續用申請" and "續用客觀證據資料存在" and not "2規則1=客觀證據（如：影像學）證實無惡化"
+    then '<主要規定二：續用條件－治療持續給付>\n' +
+         '▲ 續用規則1：客觀證據（如：影像學）證實無惡化\n' +
+         '\n'
+    else '') +
+
   // 主要規定三：藥品使用規則 - 代碼條件不符
   (if ("併用Regorafenib資料存在" and not "3規則1=不得與regorafenib併用") or ("療程期間資料存在" and not "3規則2=每次申請事前審查之療程以8週為限")
     then '<主要規定三：藥品使用規則>\n' +
@@ -370,6 +357,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "TrifluridineTipiracil申請資料存在"
@@ -383,7 +373,7 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "TrifluridineTipiracil申請資料存在"
-           then '▲ 規則3：未提供Trifluridine/Tipiracil申請醫令資料\n' else '') +
+           then '▲ 規則2：未提供Trifluridine/Tipiracil申請醫令資料\n' else '') +
          (if not Reusable."主要疾病ICD診斷資料存在"
            then '▲ 規則1-1-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "影像或檢查報告資料存在"
@@ -432,7 +422,7 @@ define "大腸直腸癌TrifluridineTipiracil申請結果_布林":
   case
     when Reusable."初次申請" then (
       "1規則1" and
-      "1規則3=申請項目"
+      "1規則2=申請項目"
     )
     when Reusable."續用申請" then (
       "2規則1=客觀證據（如：影像學）證實無惡化"
@@ -441,16 +431,9 @@ define "大腸直腸癌TrifluridineTipiracil申請結果_布林":
   end
 
 define "大腸直腸癌TrifluridineTipiracil申請結果":
-  if (
-    Reusable."初次申請" and 
-    "1規則1" and
-    "1規則3=申請項目"
-  )
+  if Reusable."初次申請" and "大腸直腸癌TrifluridineTipiracil申請結果_布林"
   then '✓通過：初次使用－大腸直腸癌 Trifluridine/Tipiracil 用藥申請'
-  else if (
-    Reusable."續用申請" and
-    "2規則1=客觀證據（如：影像學）證實無惡化"
-  )
+  else if Reusable."續用申請" and "大腸直腸癌TrifluridineTipiracil申請結果_布林"
   then '✓通過：續用－大腸直腸癌 Trifluridine/Tipiracil 用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－大腸直腸癌 Trifluridine/Tipiracil 用藥申請'

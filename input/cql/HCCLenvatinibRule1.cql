@@ -83,18 +83,7 @@ define "手術報告":
 Reusable."HasRecentOPReport"("本次申請起始日期", 360)
 
 define "手術日期":
-exists (
-    [Claim] C
-      where exists (
-        C.procedure P
-          where P.procedure is FHIR.CodeableConcept
-            and exists (
-              ((P.procedure as FHIR.CodeableConcept).coding) Cdg
-                where Cdg.code in CodeConcept.opCode
-            )
-            and P.date < "本次申請起始日期"
-      )
-  )
+  Reusable."HasSurgeryBeforeDate"("本次申請起始日期")
 
 define "1規則1-2-2=局部治療失敗且有手術報告及手術日期":
 "簡要病摘" and "手術報告" and "手術日期"
@@ -118,23 +107,7 @@ define "3個月內有評估報告":
 Reusable."HasRecentPatReport"("本次申請起始日期", 90)
 
 define "評估結果":
-exists (
-    [Observation] OBs
-      where exists (
-        OBs.category C
-          where exists (
-            C.coding Cdg
-              where Cdg in CodeConcept.NHIPASSupportingInfoType
-                and Cdg.code = 'patientAssessment'
-          )
-      )
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.ChildPugh
-        )
-        and Matches(OBs.value, '(?i).*(A|a).*')
-  )
+  Reusable."HasChildPughA"
 
 define "1規則1-3=成人且Child-Pugh A並符合申請註記及醫令類別":
 "成人" and "ICD-10使用C22"
@@ -265,22 +238,6 @@ define "手術相關資料存在":
 
 define "局部治療說明資料存在":
   Reusable."HasClaimDiagnosisText"('(?i).*(不適合局部治療|局部治療失敗).*')
-
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Lenvatinib申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "癌症分期資料存在"
-      or not "評估報告資料存在"
-      or not "局部治療說明資料存在"
-    ))
-    or (Reusable."續用申請" and (
-      not "Lenvatinib申請資料存在"
-      or not "影像報告資料存在"
-    ))
-    or not "療程期間資料存在"
-  )
 
 //============================================
 // 列出「符合」項目判斷式

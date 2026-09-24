@@ -62,9 +62,13 @@ define "1規則2=檢驗檢查-具HER2過度表現":
 define "1規則2=基因檢測-具HER2過度表現":
   Reusable."HasHER2OverexpressionGene"
 
+define "檢查報告-1規則2=具HER2過度表現":
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+
 define "1規則2=具HER2過度表現":
   "1規則2=檢驗檢查-具HER2過度表現"
   or "1規則2=基因檢測-具HER2過度表現"
+  or "檢查報告-1規則2=具HER2過度表現"
 
 
 //條件3-1:轉移後未曾以抗HER2治療
@@ -141,7 +145,7 @@ define "1規則5=與docetaxel併用":
 
 //主要規定一
 define "主要規定一":
-"1規則1=轉移性乳癌"
+"1規則1=轉移性乳癌" 
 and "1規則2=具HER2過度表現"
 and "1規則3-1=轉移後未曾以抗HER2治療"
 and "1規則3-2=轉移後未曾以化學療法治療"
@@ -267,24 +271,6 @@ define "主要規定三":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-          not "Pertuzumab申請" or
-          not ("1規則1-1=3個月內影像報告" or "1規則1-3=3個月內有檢查報告") or
-          not Reusable."癌症分期資料存在"
-        )
-    )
-    or (
-      Reusable."續用申請" and (
-          not "2規則1-1=每18週須再次申請並檢附療效評估資料" or
-          not "2規則1-2=疾病有惡化情形須停止使用"
-        )
-    )
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -347,9 +333,9 @@ define function "符合項目"():
   (if "3規則1=得繼續使用至18個療程為上限" or "3規則2"
     then '<主要規定三：藥品使用規則>\n' +
          (if "3規則1=得繼續使用至18個療程為上限"
-           then '● 3規則1：總療程天數未超過378天（18個療程×21天）\n' else '') +
+           then '● 3規則1：總療程天數未超過378天（18個療程×21天）（參考資訊）\n' else '') +
          (if "3規則2"
-           then '● 3規則2：符合pertuzumab與trastuzumab併用限制\n' else '') +
+           then '● 3規則2：符合pertuzumab與trastuzumab併用限制（參考資訊）\n' else '') +
          '\n'
     else '')
 
@@ -390,9 +376,9 @@ define function "不符合項目_條件或代碼不符合"():
   (if not "3規則1=得繼續使用至18個療程為上限" or not "3規則2"
     then '<主要規定三：藥品使用規則>\n' +
          (if not "3規則1=得繼續使用至18個療程為上限"
-           then '▲ 3規則1：總療程天數超過378天（超過18個療程×21天上限）\n' else '') +
+           then '▲ 3規則1：總療程天數超過378天（超過18個療程×21天上限）（參考資訊）\n' else '') +
          (if not "3規則2"
-           then '▲ 3規則2：早期乳癌已使用pertuzumab與trastuzumab且轉移時間在12個月內，不得再次申請併用\n' else '') +
+           then '▲ 3規則2：早期乳癌已使用pertuzumab與trastuzumab且轉移時間在12個月內，不得再次申請併用（參考資訊）\n' else '') +
          '\n'
     else '')
 
@@ -401,6 +387,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "Pertuzumab申請" or
@@ -446,16 +435,10 @@ define "乳癌Pertuzumab轉移性申請結果_布林":
   end
 
 define "乳癌Pertuzumab轉移性申請之CQL檢核結果":
-  if (
-    Reusable."初次申請" and
-    "主要規定一"
-  )
+  if Reusable."初次申請" and "乳癌Pertuzumab轉移性申請結果_布林"
   then '✓通過：初次使用－轉移性乳癌 Pertuzumab 用藥申請'
 
-  else if (
-    Reusable."續用申請" and
-    "主要規定二"
-  )
+  else if Reusable."續用申請" and "乳癌Pertuzumab轉移性申請結果_布林"
   then '✓通過：續用－轉移性乳癌 Pertuzumab 用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－轉移性乳癌 Pertuzumab 用藥申請'

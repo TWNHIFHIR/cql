@@ -188,10 +188,8 @@ define "1規則2-1=病人身體狀況良好(ECOG≦1)":
       where Cdg in CodeConcept.LOINC
       and Cdg.code = '89247-1'
     )
-    and (
-      (OBs.value is FHIR.integer and (OBs.value as FHIR.integer).value <= 1)
-      or (OBs.value is FHIR.Quantity and (OBs.value as FHIR.Quantity).value <= 1)
-    )
+    and Reusable."GetNumericValue"(OBs.value) is not null
+    and Reusable."GetNumericValue"(OBs.value) <= 1
   )
 
 //條件2
@@ -235,8 +233,8 @@ define "1規則2-3-1=GOT<60U/L及GPT<60U/L":
         or Cdg.code in CodeConcept.GPT
         )
     )
-     and OBs.value is FHIR.Quantity
-    and (OBs.value as FHIR.Quantity).value < 60
+     and Reusable."GetNumericValue"(OBs.value) is not null
+    and Reusable."GetNumericValue"(OBs.value) < 60
   )
 
 //條件3-2
@@ -256,8 +254,8 @@ define "1規則2-3-2=T-bilirubin<1.5mg/dL":
       where Cdg in CodeConcept.LOINC
         and Cdg.code in CodeConcept.Tbilirubin
     )
-     and OBs.value is FHIR.Quantity
-    and (OBs.value as FHIR.Quantity).value < 1.5
+     and Reusable."GetNumericValue"(OBs.value) is not null
+    and Reusable."GetNumericValue"(OBs.value) < 1.5
   )
 
 define "1規則2-3":
@@ -280,8 +278,8 @@ define "1規則2-4-1=Creatinine<1.5mg/dL":
       where Cdg in CodeConcept.LOINC
         and Cdg.code in CodeConcept.Creatinine
     )
-     and OBs.value is FHIR.Quantity
-    and (OBs.value as FHIR.Quantity).value < 1.5
+     and Reusable."GetNumericValue"(OBs.value) is not null
+    and Reusable."GetNumericValue"(OBs.value) < 1.5
   )
 
 //條件4-2
@@ -301,8 +299,8 @@ define "1規則2-4-2=eGFR>60mL/min/1.73m2":
       where Cdg in CodeConcept.LOINC
         and Cdg.code in CodeConcept.eGFR
     )
-     and OBs.value is FHIR.Quantity
-    and (OBs.value as FHIR.Quantity).value > 60
+     and Reusable."GetNumericValue"(OBs.value) is not null
+    and Reusable."GetNumericValue"(OBs.value) > 60
   )
 
 define "1規則2-4":
@@ -333,7 +331,7 @@ define "1規則4-1=12週內之疾病影像檢查及報告":
     and FHIRHelpers.ToDateTime(O.effective) <= "本次申請起始日期"
   ) 
 
-define "1規則4-2-使用免疫檢查點抑制劑之治療計畫":
+define "1規則4-2=使用免疫檢查點抑制劑之治療計畫":
   exists (
     [Claim] C
       where exists (
@@ -360,7 +358,7 @@ define "1規則4-2-使用免疫檢查點抑制劑之治療計畫":
 
 define "1規則4":
   "1規則4-1=12週內之疾病影像檢查及報告"
-  and "1規則4-2-使用免疫檢查點抑制劑之治療計畫"
+  and "1規則4-2=使用免疫檢查點抑制劑之治療計畫"
 
 define "主要規定一":
   Reusable."初次申請" and
@@ -575,42 +573,13 @@ define "併用免疫或標靶藥品資料存在":
   Reusable."HasMedicationRecord"(CodeConcept.L01FF)
   or Reusable."HasMedicationRecord"(CodeConcept."CRCTargetedTherapy")
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Pembrolizumab申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "給付適應症資料存在"
-      or Patient.birthDate is null
-      or not "影像報告資料存在"
-      or not "無法切除說明資料存在"
-      or not "MSI或dMMR檢測資料存在"
-      or not "ECOG資料存在"
-      or not "NYHA資料存在"
-      or not "肝功能資料存在"
-      or not "腎功能資料存在"
-      or not "治療計畫資料存在"
-    ))
-    or (Reusable."續用申請" and (
-      not "Pembrolizumab申請資料存在"
-      or not "續用療效評估資料存在"
-      or not "影像報告資料存在"
-      or not "ECOG資料存在"
-      or not "NYHA資料存在"
-      or not "肝功能資料存在"
-      or not "腎功能資料存在"
-    ))
-    or not "療程期間資料存在"
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
 
 define function "符合項目"():
   // 主要規定一：初次使用條件
-  (if Reusable."初次申請" and ("1規則1-1" or "1規則1-1-2=三個月內有影像檢查報告" or "1規則1-3=做為無法切除" or "1規則1-4=或轉移性高微衛星不穩定性(MSI-H)" or "1規則1-5=或錯誤配對修復功能不足性(dMMR)" or "1規則1-6=成年病人第一線治療" or "1規則2-1=病人身體狀況良好(ECOG≦1)" or "1規則2-2=NYHA(the New York Heart Association) Functional Class I或II" or "1規則2-3" or "1規則2-4" or "1規則4-1=12週內之疾病影像檢查及報告" or "1規則4-2-使用免疫檢查點抑制劑之治療計畫")
+  (if Reusable."初次申請" and ("1規則1-1" or "1規則1-1-2=三個月內有影像檢查報告" or "1規則1-3=做為無法切除" or "1規則1-4=或轉移性高微衛星不穩定性(MSI-H)" or "1規則1-5=或錯誤配對修復功能不足性(dMMR)" or "1規則1-6=成年病人第一線治療" or "1規則2-1=病人身體狀況良好(ECOG≦1)" or "1規則2-2=NYHA(the New York Heart Association) Functional Class I或II" or "1規則2-3" or "1規則2-4" or "1規則4-1=12週內之疾病影像檢查及報告" or "1規則4-2=使用免疫檢查點抑制劑之治療計畫")
     then '<主要規定一：初次使用條件>\n' +
          (if Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '● 規則1-1-1：主要疾病之ICD代碼為C18、C19、C20、C21\n' else '') +
@@ -640,7 +609,7 @@ define function "符合項目"():
            then '● 規則2-4-2：eGFR>60mL/min/1.73m2\n' else '') +
          (if "1規則4-1=12週內之疾病影像檢查及報告" 
            then '● 規則4-1：12週內之疾病影像檢查及報告\n' else '') +
-         (if "1規則4-2-使用免疫檢查點抑制劑之治療計畫" 
+         (if "1規則4-2=使用免疫檢查點抑制劑之治療計畫" 
            then '● 規則4-2：使用免疫檢查點抑制劑之治療計畫\n' else '') +
          '\n'  
     else '') +
@@ -693,7 +662,7 @@ define function "不符合項目_條件或代碼不符合"():
     or ("NYHA資料存在" and not "1規則2-2=NYHA(the New York Heart Association) Functional Class I或II")
     or ("肝功能資料存在" and not "1規則2-3")
     or ("腎功能資料存在" and not "1規則2-4")
-    or ("治療計畫資料存在" and not "1規則4-2-使用免疫檢查點抑制劑之治療計畫")
+    or ("治療計畫資料存在" and not "1規則4-2=使用免疫檢查點抑制劑之治療計畫")
   )
     then '<主要規定一：初次使用條件>\n' +
          (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
@@ -739,8 +708,16 @@ define function "不符合項目_條件或代碼不符合"():
     or ("腎功能資料存在" and (not "1規則2-4-1=Creatinine<1.5mg/dL" or not "1規則2-4-2=eGFR>60mL/min/1.73m2"))
   )
     then '<主要規定二：續用條件－治療持續給付>\n' +
-         '▲ 續用規則2：病人身體狀況檢查不符\n' +
-         (if not "1規則2-1=病人身體狀況良好(ECOG≦1)" 
+         '▲ 續用規則：以下續用條件不符\n' +
+         (if not ("2規則1-1=以i-RECIST標準(HCC患者以mRECIST標準)評定藥物療效反應，依下列原則申請續用：有療效反應(PR及CR)者得繼續用藥" or "2規則1-4-1=檢查是第一次被評估為SD")
+           then '  - 以i-RECIST標準（HCC患者以mRECIST標準）評定藥物療效反應，依下列原則申請續用：有療效反應（PR及CR）者得繼續用藥；或檢查是第一次被評估為SD\n' else '') +
+         (if not "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生命之藥物不良反應者，應停止用藥"
+           then '  - 未出現疾病惡化（PD）或未出現中、重度或危及生命之藥物不良反應者，應停止用藥\n' else '') +
+         (if not "2規則1-3=未出現疾病併發症或輕度藥物不良反應等，或沒有暫停用藥超過原事前審查核定日起24週期限者"
+           then '  - 未出現疾病併發症或輕度藥物不良反應等，或沒有暫停用藥超過原事前審查核定日起24週期限者\n' else '') +
+         (if "影像報告資料存在" and not "1規則4-1=12週內之疾病影像檢查及報告"
+           then '  - 12週內之疾病影像檢查及報告\n' else '') +
+         (if not "1規則2-1=病人身體狀況良好(ECOG≦1)"
            then '  - 病人身體狀況不佳（非ECOG≦1）\n' else '') +
          (if not "1規則2-2=NYHA(the New York Heart Association) Functional Class I或II" 
            then '  - NYHA Functional Class非I或II\n' else '') +
@@ -779,6 +756,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "Pembrolizumab申請資料存在"
@@ -856,18 +836,9 @@ define "大腸直腸癌Pembrolizumab申請結果_布林":
   end
 
 define "大腸直腸癌Pembrolizumab申請結果":
-  if (
-    Reusable."初次申請" and 
-    "1規則1" and
-    "1規則2" and
-    "1規則4"
-  )
+  if Reusable."初次申請" and "大腸直腸癌Pembrolizumab申請結果_布林"
   then '✓通過：初次使用－大腸直腸癌 Pembrolizumab 用藥申請'
-  else if (
-    Reusable."續用申請" and
-    "2規則1" and
-    "2規則2"
-  )
+  else if Reusable."續用申請" and "大腸直腸癌Pembrolizumab申請結果_布林"
   then '✓通過：續用－大腸直腸癌 Pembrolizumab 用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－大腸直腸癌 Pembrolizumab 用藥申請'

@@ -80,21 +80,7 @@ define "賀爾蒙治療藥物處方時間":
   )
 
 define "手術項目":
-  "本次申請起始日期" is not null
-  and exists (
-    [Procedure] P
-    where P.status = 'completed'
-      and exists (
-        P.code.coding Cdg
-        where (
-          Cdg in CodeConcept.ICD10PCS2023Image
-          or Cdg in CodeConcept.ICD10PCS2014Image
-        )
-        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-      )
-      and P.performed is FHIR.dateTime
-      and (duration in days between FHIRHelpers.ToDateTime(P.performed as FHIR.dateTime) and "本次申請起始日期") <= 90
-  )
+  Reusable."HasRecentSurgicalCastrationProcedure"("本次申請起始日期", 90)
 
 define "1規則1-1":
 Reusable."主要疾病之ICD-10使用C61"
@@ -320,29 +306,7 @@ exists (
 
 //條件2
 define "照護計畫文件資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.supportingInfo Cs
-          where exists (
-            Cs.category.coding coding
-              where coding in CodeConcept.NHIPASSupportingInfoType
-                and coding.code = 'carePlanDocument'
-          )
-          and Cs.value is FHIR.Reference
-          and exists (
-            [DocumentReference] D
-              where (
-                (Cs.value as FHIR.Reference).reference = 'DocumentReference/' + D.id
-                or (Cs.value as FHIR.Reference).reference = D.id
-              )
-              and exists (
-                D.content Ct
-                  where Ct.attachment.url is not null
-              )
-          )
-      )
-  )
+  Reusable."HasCarePlanDocument"
   and (
     exists ([MedicationRequest])
     or exists (
@@ -619,18 +583,7 @@ define "賀爾蒙治療藥物用藥資料存在":
   Reusable."HasMedicationRecord"("賀爾蒙治療藥物代碼")
 
 define "手術項目資料存在":
-  exists (
-    [Procedure] P
-    where P.status = 'completed'
-      and exists (
-        P.code.coding Cdg
-        where (
-          Cdg in CodeConcept.ICD10PCS2023Image
-          or Cdg in CodeConcept.ICD10PCS2014Image
-        )
-        and Cdg.code in CodeConcept."SurgicalCastrationOPCode"
-      )
-  )
+  Reusable."HasSurgicalCastrationProcedure"
 
 define "BRCA基因檢測資料存在":
   exists (
@@ -677,34 +630,6 @@ define "出生日期資料存在":
 
 define "前次申請紀錄資料存在":
   "前次申請紀錄" is not null
-
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-        not "Olaparib申請資料存在"
-        or not "醫令類別資料存在"
-        or not "攝護腺癌ICD診斷資料存在"
-        or not "病摘資料存在"
-        or not "影像或檢查報告資料存在"
-        or not "癌症分期資料存在"
-        or not "PSA檢驗資料存在"
-        or not "賀爾蒙治療藥物用藥資料存在"
-        or not "手術項目資料存在"
-        or not "BRCA基因檢測資料存在"
-        or not "出生日期資料存在"
-        or not "照護計畫文件資料存在"
-      )
-    )
-    or (
-      Reusable."續用申請" and (
-        not "Olaparib申請資料存在"
-        or not "PSA檢驗資料存在"
-      )
-    )
-    or not "療程期間資料存在"
-  )
-
 
 //============================================
 // 列出「符合」項目判斷式

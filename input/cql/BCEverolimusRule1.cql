@@ -78,9 +78,13 @@ define "1規則1-4-1=檢驗檢查-荷爾蒙接受體陽性(ER)":
 define "1規則1-4-1=基因檢測-荷爾蒙接受體陽性(ER)":
   Reusable."HasMarkerPositiveGene"(CodeConcept.MolecularER)
 
+define "檢查報告-1規則1-4-1=荷爾蒙接受體陽性(ER)":
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(\\+|陽性|positive).*')
+
 define "1規則1-4-1=荷爾蒙接受體陽性(ER)":
   "1規則1-4-1=檢驗檢查-荷爾蒙接受體陽性(ER)"
   or "1規則1-4-1=基因檢測-荷爾蒙接受體陽性(ER)"
+  or "檢查報告-1規則1-4-1=荷爾蒙接受體陽性(ER)"
 
 //條件4-2
 define "1規則1-4-2=檢驗檢查-荷爾蒙接受體陽性(PR)":
@@ -89,9 +93,13 @@ define "1規則1-4-2=檢驗檢查-荷爾蒙接受體陽性(PR)":
 define "1規則1-4-2=基因檢測-荷爾蒙接受體陽性(PR)":
   Reusable."HasMarkerPositiveGene"(CodeConcept.MolecularPR)
 
+define "檢查報告-1規則1-4-2=荷爾蒙接受體陽性(PR)":
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(\\+|陽性|positive).*')
+
 define "1規則1-4-2=荷爾蒙接受體陽性(PR)":
   "1規則1-4-2=檢驗檢查-荷爾蒙接受體陽性(PR)"
   or "1規則1-4-2=基因檢測-荷爾蒙接受體陽性(PR)"
+  or "檢查報告-1規則1-4-2=荷爾蒙接受體陽性(PR)"
 
 //條件4-3
 define "1規則1-4-3=檢驗檢查-HER2受體陰性":
@@ -100,9 +108,13 @@ define "1規則1-4-3=檢驗檢查-HER2受體陰性":
 define "1規則1-4-3=基因檢測-HER2受體陰性":
   Reusable."HasHER2NegativeGene"
 
+define "檢查報告-1規則1-4-3=HER2受體陰性":
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative).*')
+
 define "1規則1-4-3=HER2受體陰性":
   "1規則1-4-3=檢驗檢查-HER2受體陰性"
   or "1規則1-4-3=基因檢測-HER2受體陰性"
+  or "檢查報告-1規則1-4-3=HER2受體陰性"
 
 define "1規則1-4":
 "1規則1-4-1=荷爾蒙接受體陽性(ER)"
@@ -187,24 +199,6 @@ define "主要規定三":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
-define "必要資料皆存在":
-  not (
-    (
-      Reusable."初次申請" and (
-          not Reusable."影像報告資料存在" or
-          not Reusable."癌症分期資料存在" or
-          not Reusable."檢查報告資料存在" or
-          not "1規則1-1-5=Everolimus申請" or
-          not "1規則1-2=先前已使用過非類固醇類之芳香環酶抑制劑治療無效" or
-          not "1規則1-3=沒有使用exemestane" or
-          not "1規則1-4" or
-          not "1規則1-5=尚未出現器官轉移危急症狀 (visceral crisis)"
-        )
-    )
-    or (Reusable."續用申請" and not "2規則1=影像證據顯示病情有無惡化")
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -259,13 +253,13 @@ define function "符合項目"():
     else '') +
   
   // 主要規定三：藥品使用規則
-  (if "3規則1=每次申請之療程以3個月為限" or 
+  (if "3規則1=每次申請之療程以3個月為限" or
       "3規則2=每日最大劑量為10mg"
     then '<主要規定三：藥品使用規則>\n' +
-         (if "3規則1=每次申請之療程以3個月為限" 
-           then '● 3規則1：申請療程≤3個月(84天)\n' else '') +
-         (if "3規則2=每日最大劑量為10mg" 
-           then '● 3規則2：每日劑量≤10mg\n' else '')
+         (if "3規則1=每次申請之療程以3個月為限"
+           then '● 3規則1：申請療程≤3個月(84天)（參考資訊）\n' else '') +
+         (if "3規則2=每日最大劑量為10mg"
+           then '● 3規則2：每日劑量≤10mg（參考資訊）\n' else '')
     else '')
 
 //============================================
@@ -287,13 +281,13 @@ define function "不符合項目_條件或代碼不符合"():
     else '') +
   
   // 主要規定三：藥品使用規則 - 條件或代碼不符合
-  (if not "3規則1=每次申請之療程以3個月為限" or 
+  (if not "3規則1=每次申請之療程以3個月為限" or
       not "3規則2=每日最大劑量為10mg"
     then '<主要規定三：藥品使用規則>\n' +
-         (if not "3規則1=每次申請之療程以3個月為限" 
-           then '▲ 3規則1：申請療程超過3個月(84天)\n' else '') +
-         (if not "3規則2=每日最大劑量為10mg" 
-           then '▲ 3規則2：每日劑量超過10mg\n' else '')
+         (if not "3規則1=每次申請之療程以3個月為限"
+           then '▲ 3規則1：申請療程超過3個月(84天)（參考資訊）\n' else '') +
+         (if not "3規則2=每日最大劑量為10mg"
+           then '▲ 3規則2：每日劑量超過10mg（參考資訊）\n' else '')
     else '')
 
 //============================================
@@ -301,6 +295,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not Reusable."影像報告資料存在" or 
@@ -359,16 +356,10 @@ define "乳癌Everolimus申請結果_布林":
   end
 
 define "乳癌Everolimus申請之CQL檢核結果":
-  if (
-    Reusable."初次申請" and 
-    "主要規定一"
-  )
+  if Reusable."初次申請" and "乳癌Everolimus申請結果_布林"
   then '✓通過：初次使用－乳癌 Everolimus 用藥申請'
 
-  else if (
-    Reusable."續用申請" and
-    "主要規定二"
-  )
+  else if Reusable."續用申請" and "乳癌Everolimus申請結果_布林"
   then '✓通過：續用－乳癌 Everolimus 用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－乳癌 Everolimus 用藥申請'

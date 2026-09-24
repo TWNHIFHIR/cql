@@ -282,23 +282,6 @@ define "替代治療說明資料存在":
 define "手術風險或不可切除資料存在":
   Reusable."HasClaimDiagnosisText"('(?i).*(手術切除會造成嚴重病症|無法手術切除).*')
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Larotrectinib申請資料存在"
-      or not "NTRK檢測資料存在"
-      or not "NTRK基因報告資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "替代治療說明資料存在"
-    ))
-    or (Reusable."續用申請" and (
-      not "Larotrectinib申請資料存在"
-      or not "影像報告資料存在"
-      or "前次申請紀錄" is null
-    ))
-    or not "療程期間資料存在"
-  )
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================

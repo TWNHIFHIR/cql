@@ -60,10 +60,10 @@ define "1規則1-1A=NTRK基因融合且無已知的後天阻抗性突變-檢驗�
         ComponentRecord.code.coding ComponentCodeCoding
         where ComponentCodeCoding.code in CodeConcept.LarotrectinibGeneTest
       )
+      and ComponentRecord.value is not null
+      and ComponentRecord.value is FHIR.string
+      and Matches((ComponentRecord.value as FHIR.string).value, '(?i).*fusion且無後天阻抗性突變.*')
     )
-    and RasO.value is not null
-    and RasO.value is FHIR.string
-    and Matches((RasO.value as FHIR.string).value, '(?i).*fusion且無後天阻抗性突變.*')
   )
 
 define "1規則1-1B=NTRK用藥申請":
@@ -168,20 +168,20 @@ define "1規則3-2=曾接受一線治療後無效或復發":
   )
 
 //條件3-3-2-1
-define "1規則3-3-3-2-1=先前已使用過FOLFIRI（folinic acid/5-fluorouracil/irinotecan）":
+define "1規則3-3-2-1=先前已使用過FOLFIRI（folinic acid/5-fluorouracil/irinotecan）":
   Reusable."HasPriorMedicationUse"(CodeConcept.L01EX12, CodeConcept.L01CE02)
   and Reusable."HasPriorMedicationUse"(CodeConcept.L01EX12, CodeConcept.L01BC02)
   and Reusable."醫令類別為1"
 
 //條件3-3-2-2
-define "1規則3-3-3-2-2=先前已使用過FOLFOX（folinic acid/5-fluorouracil/oxaliplatin）":
+define "1規則3-3-2-2=先前已使用過FOLFOX（folinic acid/5-fluorouracil/oxaliplatin）":
   Reusable."HasPriorMedicationUse"(CodeConcept.L01EX12, CodeConcept.L01BC02)
   and Reusable."HasPriorMedicationUse"(CodeConcept.L01EX12, CodeConcept.L01XA03)
   and Reusable."醫令類別為1"
 
 define "1規則3-3-2=先前已使用過相關化學藥物治療失敗":
-  "1規則3-3-3-2-1=先前已使用過FOLFIRI（folinic acid/5-fluorouracil/irinotecan）"
-  or "1規則3-3-3-2-2=先前已使用過FOLFOX（folinic acid/5-fluorouracil/oxaliplatin）"
+  "1規則3-3-2-1=先前已使用過FOLFIRI（folinic acid/5-fluorouracil/irinotecan）"
+  or "1規則3-3-2-2=先前已使用過FOLFOX（folinic acid/5-fluorouracil/oxaliplatin）"
 
 define "1規則3":
   if ("1規則3-1=檢核未滿18歲與定(符合採條件2不符合採條件3)")
@@ -287,27 +287,6 @@ define "續用客觀證據資料存在":
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01EX12)
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Larotrectinib申請資料存在"
-      or not "NTRK檢測資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "影像或檢查報告資料存在"
-      or not "癌症分期資料存在"
-      or not "替代治療說明資料存在"
-      or Patient.birthDate is null
-      or (not "是否滿18歲" and not "先前治療資料存在")
-      or ("是否滿18歲" and not "先前治療資料存在")
-    ))
-    or (Reusable."續用申請" and (
-      not "Larotrectinib申請資料存在"
-      or not "續用客觀證據資料存在"
-    ))
-    or not "療程期間資料存在"
-  )
-
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -392,9 +371,16 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 規則1-3：替代治療選項說明不符合條件\n' else '') +
          (if "先前治療資料存在" and not "1規則3"
            then '▲ 規則3：先前治療條件不符合\n' else '') +
-         '\n'  
+         '\n'
     else '') +
-  
+
+  // 主要規定二：續用條件 - 已提供資料但條件不符
+  (if Reusable."續用申請" and "續用客觀證據資料存在" and not "2規則1=影像證據顯示病情有無惡化"
+    then '<主要規定二：續用條件－治療持續給付>\n' +
+         '▲ 續用規則1：影像證據顯示病情有無惡化\n' +
+         '\n'
+    else '') +
+
   // 主要規定三：藥品使用規則 - 代碼條件不符
   (if "療程期間資料存在" and not "3規則1=每次申請之療程以12週為限"
     then '<主要規定三：藥品使用規則>\n' +
@@ -406,6 +392,9 @@ define function "不符合項目_條件或代碼不符合"():
 //============================================
 
 define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "Larotrectinib申請資料存在"
@@ -463,16 +452,9 @@ define "大腸直腸癌Larotrectinib申請結果_布林":
   end
 
 define "大腸直腸癌Larotrectinib申請結果":
-  if (
-    Reusable."初次申請" and 
-    "1規則1" and
-    "1規則3"
-  )
+  if Reusable."初次申請" and "大腸直腸癌Larotrectinib申請結果_布林"
   then '✓通過：初次使用－大腸直腸癌 Larotrectinib 用藥申請'
-  else if (
-    Reusable."續用申請" and
-    "2規則1=影像證據顯示病情有無惡化"
-  )
+  else if Reusable."續用申請" and "大腸直腸癌Larotrectinib申請結果_布林"
   then '✓通過：續用－大腸直腸癌 Larotrectinib 用藥申請'
   else if Reusable."初次申請"
   then '✖不通過：初次使用－大腸直腸癌 Larotrectinib 用藥申請'

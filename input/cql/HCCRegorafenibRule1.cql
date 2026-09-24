@@ -86,7 +86,7 @@ define "1規則1-3-3":
 and Reusable."HasRecentOPReport"("本次申請起始日期", 360)
 
 define "1規則1-3":
-"1規則1-3-1" and "1規則1-3-2" or "1規則1-3-3"
+"1規則1-3-1" and ("1規則1-3-2" or "1規則1-3-3")
 
 //條件4
 define "1規則1-4":
@@ -99,24 +99,7 @@ exists (
 
 //條件5
 define "1規則1-5":
-exists (
-    [Observation] OBs
-      where exists (
-          OBs.category C
-            where exists (
-              C.coding Cdg
-                where Cdg in CodeConcept.NHIPASSupportingInfoType
-                  and Cdg.code = 'patientAssessment'
-            )
-        )
-        and exists (
-          OBs.code.coding Cdg
-            where Cdg in CodeConcept.LOINC
-              and Cdg.code in CodeConcept.ChildPugh
-        )
-        and Matches(OBs.value, '(?i).*(A|a).*')
-        and Reusable."IsObservationWithinDaysBefore"(OBs, "本次申請起始日期", 90)
-  )
+  Reusable."HasRecentChildPughA"("本次申請起始日期", 90)
   
 //條件6
 define "1規則1-6":
@@ -240,24 +223,6 @@ define "劑量資料存在":
       )
   )
 
-define "必要資料皆存在":
-  not (
-    (Reusable."初次申請" and (
-      not "Regorafenib申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
-      or not "分子病理報告資料存在"
-      or not "癌症分期資料存在"
-      or not ("影像或檢查報告資料存在" or "無法手術切除或不適合局部治療說明資料存在")
-      or not "評估報告資料存在"
-    ))
-    or (Reusable."續用申請" and (
-      not "Regorafenib申請資料存在"
-      or not "影像報告資料存在"
-    ))
-    or not "療程期間資料存在"
-    or not "劑量資料存在"
-  )
-
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -331,13 +296,13 @@ define function "不符合項目_必要資料未填寫"():
 define function "不符合項目_條件或代碼不符合"():
   (if Reusable."初次申請" and (
       ((Reusable."主要疾病ICD診斷資料存在" and "分子病理報告資料存在") and not "1規則1-1")
-      or ((Reusable."主要疾病ICD診斷資料存在" and "影像或檢查報告資料存在" and "癌症分期資料存在") and not "1規則1-2")
+      or ((Reusable."主要疾病ICD診斷資料存在" and "影像或檢查報告資料存在" and "癌症分期資料存在") and not "1規則1-2" and not "1規則1-3")
       or (("影像或檢查報告資料存在" or "無法手術切除或不適合局部治療說明資料存在" or "手術相關資料存在") and not "1規則1-3" and not "1規則1-2")
       or ("評估報告資料存在" and not "1規則1-5")
     )
     then '<主要規定一：初次使用條件>\n' +
       (if (Reusable."主要疾病ICD診斷資料存在" and "分子病理報告資料存在") and not "1規則1-1" then '▲ 規則1-1：ICD診斷或分子病理檢查報告不符合條件，或申請註記/醫令類別不符合\n' else '') +
-      (if (Reusable."主要疾病ICD診斷資料存在" and "影像或檢查報告資料存在" and "癌症分期資料存在") and not "1規則1-2" then '▲ 規則1-2：ICD診斷、影像或分期資料不符合條件\n' else '') +
+      (if (Reusable."主要疾病ICD診斷資料存在" and "影像或檢查報告資料存在" and "癌症分期資料存在") and not "1規則1-2" and not "1規則1-3" then '▲ 規則1-2：ICD診斷、影像或分期資料不符合條件\n' else '') +
       (if ("影像或檢查報告資料存在" or "無法手術切除或不適合局部治療說明資料存在" or "手術相關資料存在") and not "1規則1-3" and not "1規則1-2" then '▲ 規則1-3：影像、無法手術切除/不適合局部治療說明或手術報告不符合條件\n' else '') +
       (if "評估報告資料存在" and not "1規則1-5" then '▲ 規則1-5：Child-Pugh評估結果不符合A級或超過90天\n' else '') +
       '\n'
