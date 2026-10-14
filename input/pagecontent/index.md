@@ -40,42 +40,34 @@
 </thead>
 <tbody>
 <tr>
+    <td>作者-IG</td>
+    <td colspan="2">資拓宏宇國際股份有限公司</td>
 </tr>
 <tr>
-    <td>作者-IG</td>
-    <td>李奇安</td>
-    <td rowspan="1" style="vertical-align: middle;">資拓宏宇</td>
+    <td>貢獻者-IG</td>
+    <td colspan="2">醫藥品查驗中心(CDE)</td>
 </tr>
-       <tr>
-            <td>貢獻者-IG</td>
-            <td>張如薰</td>
-            <td rowspan="4" style="vertical-align: middle;">衛生福利部中央健康保險署-醫審及藥材組</td>
-        </tr>
-        <tr>
-            <td>貢獻者-IG</td>
-            <td>涂奇君</td>
-        </tr>
-        <tr>
-            <td>貢獻者-IG</td>
-            <td>張佐安</td>
-        </tr>
-        <tr>
-            <td>貢獻者-IG</td>
-            <td>鄧嘉欣</td>
-        </tr>
-        <tr>
-            <td>貢獻者-IG</td>
-            <td colspan="2">醫藥品查驗中心(CDE)</td>
-        </tr>
-        <tr>
-            <td>貢獻者-IG</td>
-            <td colspan="2">衛生福利部中央健康保險署-資訊組</td>
-        </tr>
-        <tr>
-            <td>貢獻者-IG</td>
-            <td colspan="2">衛生福利部資訊處</td>
-        </tr>
-
+<tr>
+    <td>貢獻者-IG</td>
+    <td colspan="2">衛生福利部中央健康保險署-資訊組</td>
+</tr>
+<tr>
+    <td>貢獻者-IG</td>
+    <td colspan="2">衛生福利部資訊處</td>
+</tr>
+<tr>
+    <td>貢獻者-IG</td>
+    <td>張如薰</td>
+    <td rowspan="3" style="vertical-align: middle;">衛生福利部中央健康保險署-醫審及藥材組</td>
+</tr>
+<tr>
+    <td>貢獻者-IG</td>
+    <td>涂奇君</td>
+</tr>
+<tr>
+    <td>貢獻者-IG</td>
+    <td>張佐安</td>
+</tr>
 </tbody>
 </table>
 
