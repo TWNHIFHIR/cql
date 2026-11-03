@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "BCOlaparibRule2",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/BCOlaparibRule2",
+  "version": "1.0.0",
+  "name": "BCOlaparibRule2",
+  "title": "Olaparib給付規定-Olaparib Rule2",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-09-24",
+  "description": "此 Library 為乳癌(高復發風險早期乳癌)患者於申請使用 Olaparib 之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-BCOlaparibRule2.cql"
+    }
+  ]
+}

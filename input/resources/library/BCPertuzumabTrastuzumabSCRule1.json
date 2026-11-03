@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "BCPertuzumabTrastuzumabSCRule1",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/BCPertuzumabTrastuzumabSCRule1",
+  "version": "1.0.0",
+  "name": "BCPertuzumabTrastuzumabSCRule1",
+  "title": "Pertuzumab與Trastuzumab_皮下(SC)給付規定-PertuzumabTrastuzumabSC Rule1",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-09-24",
+  "description": "此 Library 為乳癌(早期乳癌)患者於申請使用 Pertuzumab與Trastuzumab皮下注射複方製劑 之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-BCPertuzumabTrastuzumabSCRule1.cql"
+    }
+  ]
+}

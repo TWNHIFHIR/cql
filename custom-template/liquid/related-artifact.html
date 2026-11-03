@@ -1,0 +1,83 @@
+{% if include.relatedArtifact.exists() %}
+{% for relatedArtifact in include.relatedArtifact %}
+<tr>
+  {% if relatedArtifact.where(type = 'documentation').exists() %}
+  {% include row-header.html header='Documentation' %}
+  {% endif %}
+  {% if relatedArtifact.where(type = 'justification').exists() %}
+  {% include row-header.html header='Justification' %}
+  {% endif %}
+  {% if relatedArtifact.where(type = 'citation').exists() %}
+  {% include row-header.html header='Citation' %}
+  {% endif %}
+  {% if relatedArtifact.where(type = 'depends-on').exists() %}
+  {% include row-header.html header='Dependency' %}
+  {% endif %}
+  {% if relatedArtifact.where(type = 'composed-of').exists() %}
+  {% include row-header.html header='Component' %}
+  {% endif %}
+  <td class="content-container">
+    {% if relatedArtifact.display.exists() %}
+    <em>Description</em>: {{relatedArtifact.display}}
+    {% if relatedArtifact.citation.exists() or relatedArtifact.url.exists() or relatedArtifact.document.exists() or
+    relatedArtifact.resource.exists() %}
+    <br />
+    {% endif %}
+    {% endif %}
+    {% if relatedArtifact.citation.exists() %}
+    {% if relatedArtifact.type = 'citation' %}
+    {{relatedArtifact.citation}}
+    {% else %}
+    <em>Citation</em>: {{relatedArtifact.citation}}
+    {% endif %}
+    {% endif %}
+    {% if relatedArtifact.url.exists() %}
+    <em>Content URL</em>: {{relatedArtifact.url}}
+    {% if relatedArtifact.document.exists() or relatedArtifact.resource.exists() %}
+    <br />
+    {% endif %}
+    {% endif %}
+    {% if relatedArtifact.document.exists() %}
+    <em>Document</em>: {{relatedArtifact.document}}
+    {% if relatedArtifact.citation.resource.exists() %}
+    <br />
+    {% endif %}
+    {% endif %}
+    {% if relatedArtifact.resource.exists() %}
+    {% assign resourceUrl = relatedArtifact.resource.toString() %}
+    {% if relatedArtifact.resource.lower().contains('bccodeconcept') %}
+    <em>Resource</em>: <a href="Library-BCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('bcreusable') %}
+    <em>Resource</em>: <a href="Library-BCReusable.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('crccodeconcept') %}
+    <em>Resource</em>: <a href="Library-CRCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('crcreusable') %}
+    <em>Resource</em>: <a href="Library-CRCReusable.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('lccodeconcept') %}
+    <em>Resource</em>: <a href="Library-LCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('lcreusable') %}
+    <em>Resource</em>: <a href="Library-LCReusable.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('hcccodeconcept') %}
+    <em>Resource</em>: <a href="Library-HCCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('hccreusable') %}
+    <em>Resource</em>: <a href="Library-HCCReusable.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('pccodeconcept') %}
+    <em>Resource</em>: <a href="Library-PCCodeConcept.html">{{resourceUrl}}</a>
+    {% elsif relatedArtifact.resource.lower().contains('pcreusable') %}
+    <em>Resource</em>: <a href="Library-PCReusable.html">{{resourceUrl}}</a>
+    {% else %}
+    <em>Resource</em>: <a href="{{resourceUrl}}">{{resourceUrl}}</a>
+    {% endif %}
+    <br />
+    <em>Canonical URL</em>: <tt>{{resourceUrl}}</tt>
+    {% endif %}
+    {% for group in extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-groupId' or url = 'http://hl7.org/fhir/uv/cqm/StructureDefinition/cqm-groupId') %}
+    <em>Group Id</em>: {{group.value}}
+    {% endfor %}
+    {% for weight in extension.where(url = 'http://hl7.org/fhir/us/cqfmeasures/StructureDefinition/cqfm-weight' or url = 'http://hl7.org/fhir/uv/cqm/StructureDefinition/cqm-weight') %}
+    <em>Weight</em>: {{weight.value}}
+    {% endfor %}
+  </td>
+</tr>
+{% endfor %}
+{% endif %}

@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "BCSacituzumabGovitecanRule",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/BCSacituzumabGovitecanRule",
+  "version": "1.0.0",
+  "name": "BCSacituzumabGovitecanRule",
+  "title": "Sacituzumab govitecan給付規定",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-09-24",
+  "description": "此 Library 為乳癌患者於申請使用 Sacituzumab Govitecan 之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-BCSacituzumabGovitecanRule.cql"
+    }
+  ]
+}

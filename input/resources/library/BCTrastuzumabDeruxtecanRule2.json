@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "BCTrastuzumabDeruxtecanRule2",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/BCTrastuzumabDeruxtecanRule2",
+  "version": "1.0.0",
+  "name": "BCTrastuzumabDeruxtecanRule2",
+  "title": "Trastuzumab Deruxtecan給付規定-TrastuzumabDeruxtecan Rule2",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-09-24",
+  "description": "此 Library 為乳癌（轉移性乳癌）患者於申請使用 Trastuzumab Deruxtecan 之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-BCTrastuzumabDeruxtecanRule2.cql"
+    }
+  ]
+}

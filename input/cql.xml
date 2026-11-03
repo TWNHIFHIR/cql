@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ImplementationGuide xmlns="http://hl7.org/fhir">
+  <id value="tw.gov.mohw.nhi.cql"/>
+  <url value="https://nhicore.nhi.gov.tw/cql/ImplementationGuide/tw.gov.mohw.nhi.cql"/>
+  <version value="0.0.1"/>
+  <name value="TWNHIACQL"/>
+  <title value="臺灣健保預檢規則實作指引"/>
+  <status value="draft"/>
+  <experimental value="false"/>
+  <date value="2026-11-02"/>
+  <publisher value="Example Publisher"/>
+  <contact>
+  <name value="衛生福利部中央健康保險署"/>
+    <telecom>
+      <system value="url"/>
+      <value value="https://www.nhi.gov.tw"/>
+    </telecom>
+  </contact>
+  <description value="CQL libraries and shared terminology for CRC rules."/>
+  <packageId value="tw.gov.mohw.nhi.cql"/>
+  <license value="CC0-1.0"/>
+  <fhirVersion value="4.0.1"/>
+
+
+
+  <dependsOn id="TWPAS">
+    <uri value="https://nhicore.nhi.gov.tw/pas/ImplementationGuide/tw.gov.mohw.nhi.pas"/>
+    <packageId value="tw.gov.mohw.nhi.pas"/>
+    <version value="1.2.4"/>
+  </dependsOn>
+  <dependsOn id="CQL">
+    <uri value="http://hl7.org/fhir/uv/cql/ImplementationGuide/hl7.fhir.uv.cql"/>
+    <packageId value="hl7.fhir.uv.cql"/>
+    <version value="2.0.0"/>
+  </dependsOn>
+
+  <definition>
+
+    <resource>
+      <reference>
+        <reference value="Library/BCAbemaciclibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCCDK46Rule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCCodeConcept"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCEverolimusRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCLarotrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCOlaparibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCOlaparibRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCPembrolizumabRule"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCPertuzumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCPertuzumabRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCPertuzumabTrastuzumabSCRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCPertuzumabTrastuzumabSCRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCReusable"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCSacituzumabGovitecanRule"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCTalazoparibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCTrastuzumabDeruxtecanRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCTrastuzumabDeruxtecanRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCTrastuzumabEmtansineRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCTrastuzumabEmtansineRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCTrastuzumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCTrastuzumabRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/BCTrastuzumabRule3"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCBevacizumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCBevacizumabRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCCetuximabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCCetuximabRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCCodeConcept"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCLarotrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCPanitumumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCPembrolizumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCRegorafenibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCReusable"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/CRCTrifluridineTipiracilRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCAtezoDurvaRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCCodeConcept"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCLarotrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCLenvatinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCPemigatinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCRamucirumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCRegorafenibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCReusable"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/HCCSorafenibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCAlectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCAtezDurvRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCBevacizumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCBrigatinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCCeritinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCCodeConcept"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCCrizotinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCDabrafenibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCDurvalumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCEntrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCLarotrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCLorlatinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCOsimertinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCOsimertinibRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPemNivAteRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPemNivAteRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPembrAtezoRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPembrAtezoRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCPembrolizumabRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCReusable"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/LCTepotinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCAbirateroneRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCApalutamideRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCCodeConcept"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCDarolutamideRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCDarolutamideRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCEnzalutamideRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCEnzalutamideRule2"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCEnzalutamideRule3"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCEnzalutamideRule4"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCLarotrectinibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCOlaparibRule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCRadium223Rule1"/>
+      </reference>
+    </resource>
+    <resource>
+      <reference>
+        <reference value="Library/PCReusable"/>
+      </reference>
+    </resource>
+
+<page>
+    <nameUrl value="toc.html"/>
+    <title value="目錄"/>
+    <generation value="html"/>
+
+    <page>
+      <nameUrl value="index.html"/>
+      <title value="應用說明"/>
+      <generation value="markdown"/>
+    </page>
+
+    <page>
+      <nameUrl value="libraries.html"/>
+      <title value="Libraries"/>
+      <generation value="markdown"/>
+    </page>
+
+    <page>
+      <nameUrl value="downloads.html"/>
+      <title value="Libraries下載"/>
+      <generation value="markdown"/>
+    </page>
+  </page>
+  
+    <parameter>
+      <code value="copyrightyear"/>
+      <value value="2023+"/>
+    </parameter>
+
+    <parameter>
+      <code value="releaselabel"/>
+      <value value="CI Build"/>
+    </parameter>
+
+
+    <parameter>
+      <code value="find-other-resources"/>
+      <value value="true"/>
+    </parameter>
+
+    <parameter>
+      <code value="path-pages"/>
+      <value value="input/pagecontent"/>
+    </parameter>
+
+    <parameter>
+      <code value="path-resource"/>
+      <value value="input/resources/library"/>
+    </parameter>
+
+    <parameter>
+      <code value="path-binary"/>
+      <value value="input/cql"/>
+    </parameter>
+
+ 
+    <parameter><code value="apply-contact"/><value value="false"/></parameter>
+    <parameter><code value="apply-context"/><value value="false"/></parameter>
+    <parameter><code value="apply-copyright"/><value value="false"/></parameter>
+    <parameter><code value="apply-jurisdiction"/><value value="false"/></parameter>
+    <parameter><code value="apply-license"/><value value="false"/></parameter>
+    <parameter><code value="apply-publisher"/><value value="false"/></parameter>
+    <parameter><code value="apply-version"/><value value="false"/></parameter>
+    <parameter><code value="default-version"/><value value="true"/></parameter>
+  </definition>
+</ImplementationGuide>

@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "HCCCodeConcept",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/HCCCodeConcept",
+  "version": "1.0.0",
+  "name": "HCCCodeConcept",
+  "title": "肝癌代碼集",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-08-21",
+  "description": "此 Library 為肝癌給付檢核條件所使用之代碼系統、代碼與概念定義。",
+  "content": [
+    {
+      "id": "ig-loader-HCCCodeConcept.cql"
+    }
+  ]
+}

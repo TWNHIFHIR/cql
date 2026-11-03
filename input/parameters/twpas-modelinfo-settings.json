@@ -1,0 +1,29 @@
+{
+  "resourceType": "Parameters",
+  "id": "twpas-modelinfo-settings",
+  "parameter": [
+    { "name": "modelName", "valueString": "TWPAS" },
+    { "name": "isDerivedModelInfo", "valueBoolean": true },
+    { "name": "defaultIsRetrievable", "valueBoolean": true },
+
+    {
+      "name": "profiles",
+      "part": [
+        {
+          "name": "profile",
+          "part": [
+            { "name": "url", "valueUri": "https://nhicore.nhi.gov.tw/pas/StructureDefinition/Claim-twpas" },
+            { "name": "label", "valueString": "ClaimTWPAS" }
+          ]
+        },
+         {
+          "name": "profile",
+          "part": [
+            { "name": "url", "valueUri": "https://nhicore.nhi.gov.tw/pas/StructureDefinition/MedicationRequest-treat-twpas" },
+            { "name": "label", "valueString": "MedicationRequestTreatTWPAS" }
+          ]
+        }
+      ]
+    }
+  ]
+}

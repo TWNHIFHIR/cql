@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "PCDarolutamideRule1",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/PCDarolutamideRule1",
+  "version": "1.0.0",
+  "name": "PCDarolutamideRule1",
+  "title": "Darolutamide給付規定-與docetaxel併用於治療高風險轉移性的去勢敏感性前列腺癌(mCSPC)",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-08-21",
+  "description": "此 Library 為攝護腺癌_Darolutamide給付規定-與docetaxel併用於治療高風險轉移性的去勢敏感性前列腺癌(mCSPC)之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-PCDarolutamideRule1.cql"
+    }
+  ]
+}

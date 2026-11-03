@@ -1,0 +1,503 @@
+//早期乳癌_Pertuzumab給付規定
+
+library BCPertuzumabRule1 version '1.0.0'
+
+using FHIR version '4.0.1'
+
+include FHIRHelpers version '4.0.1' called FHIRHelpers
+
+include BCCodeConcept version '1.0.0' called CodeConcept
+
+include BCReusable version '1.0.0' called Reusable
+
+context Patient
+
+
+
+//============================================
+// 主要規定一：初次使用條件
+//============================================
+
+/*規則1*/
+define "ICD代碼檢核_布林值": Reusable."ICD-10使用C50"
+
+define "醫令類別為1_布林值":Reusable."醫令類別為1"
+
+define "Pertuzumab申請":
+  exists (        
+    [MedicationRequest] MRPlan
+    where MRPlan.intent = 'plan'
+      and Reusable."HasMedicationCode"(MRPlan, CodeConcept.L01FD02)
+  )
+
+//條件1-1:具腋下淋巴結轉移但無遠處臟器轉移之早期乳癌(M=0)
+//條件1-1-1
+define "1規則1-1-1-1=3個月內影像報告":
+Reusable."HasRecentImageReport"("本次事前審查申請日期", 90)
+
+
+//條件1-1-2
+define "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+        and O.value is FHIR.string
+        and Matches((O.value as FHIR.string).value, '.*M[0].*')
+        and Matches((O.value as FHIR.string).value, '.*N[1-9][a-zA-Z]?.*')
+  )
+
+//條件1-1-3/條件1-2-3(檢查報告)
+define "1規則1-1-1-3/1規則1-1-2-3=3個月內有檢查報告":
+Reusable."HasRecentMolecularReport"("本次事前審查申請日期", 90)
+
+
+define "1規則1-1-1=具腋下淋巴結轉移但無遠處臟器轉移之早期乳癌(M=0)":
+  "ICD代碼檢核_布林值" 
+  and "醫令類別為1_布林值" 
+  and "Pertuzumab申請"
+  and "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0"
+  or ("1規則1-1-1-1=3個月內影像報告" and "1規則1-1-1-3/1規則1-1-2-3=3個月內有檢查報告")
+
+
+//條件1-2:具腋下淋巴結轉移但無遠處臟器轉移之早期乳癌(M=1但為骨轉移)
+//條件1-2-1
+define "1規則1-1-2-1=3個月內影像報告(為骨轉移)":
+  exists (
+    [DiagnosticReport] O
+    where Reusable."IsImageReport"(O)
+    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 90)
+    and O.conclusion is not null
+    and Matches(O.conclusion, '(?i).*(顯示僅具有骨轉移無其他轉移).*')
+  ) 
+
+
+//條件1-2-2
+define "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+        and O.value is FHIR.string
+        and Matches((O.value as FHIR.string).value, '.*M[1].*')
+        and Matches((O.value as FHIR.string).value, '.*N[1-9][a-zA-Z]?.*')
+  )
+
+
+define "1規則1-1-2=具腋下淋巴結轉移但無遠處臟器轉移之早期乳癌(M=1但為骨轉移)":
+  "醫令類別為1_布林值" 
+  and "Pertuzumab申請"
+  and "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1"
+  and "1規則1-1-2-1=3個月內影像報告(為骨轉移)" 
+  or "1規則1-1-1-3/1規則1-1-2-3=3個月內有檢查報告"
+
+define "1規則1-1":
+  "1規則1-1-1=具腋下淋巴結轉移但無遠處臟器轉移之早期乳癌(M=0)" 
+  or "1規則1-1-2=具腋下淋巴結轉移但無遠處臟器轉移之早期乳癌(M=1但為骨轉移)"
+
+
+//條件2:具HER2過度表現(IHC3+或FISH+)
+define "1規則1-2=檢驗檢查-具HER2過度表現":
+  Reusable."HasHER2OverexpressionTest"
+
+define "1規則1-2=基因檢測-具HER2過度表現":
+  Reusable."HasHER2OverexpressionGene"
+
+define "檢查報告-1規則1-2=具HER2過度表現":
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+
+define "1規則1-2=具HER2過度表現":
+  "1規則1-2=檢驗檢查-具HER2過度表現"
+  or "1規則1-2=基因檢測-具HER2過度表現"
+  or "檢查報告-1規則1-2=具HER2過度表現"
+
+//規則1
+define "1規則1":
+"1規則1-1" and "1規則1-2=具HER2過度表現"
+
+
+/*規則2*/
+//條件1:與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用
+define "1規則2-1=與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用":
+  Reusable."HasConcurrentMedicationOrder"(CodeConcept."L01FD02", CodeConcept."Trastuzumab併用藥物")
+  and Reusable."醫令類別為1"
+
+
+//條件2:與化學療法併用
+define "1規則2-2=與化學療法併用":
+  Reusable."HasConcurrentMedicationOrder"(CodeConcept."L01FD02", CodeConcept."化學療法")
+  and Reusable."醫令類別為1"
+
+
+//規則2
+define "1規則2":
+"1規則2-1=與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用"
+and "1規則2-2=與化學療法併用"
+
+
+//主要規定一
+define "主要規定一": "1規則1" and "1規則2"
+
+//============================================
+// 主要規定二：續用條件－治療持續給付
+//============================================
+
+//條件1:每24週須檢附療效評估資料再次申請，若疾病有惡化情形即不應再行申請
+// 本次事前審查申請品項紀錄：事前審查申請藥品的預定處方紀錄
+// MedicationRequest(intent=plan)，依申請藥品代碼篩選，取預定起始日最新的一筆
+define "本次事前審查申請品項紀錄":
+  Reusable."LatestMedicationPlan"(CodeConcept.L01FD02)
+
+// 本次事前審查申請品項預定起始日期：事前審查申請品項的預定處方起始日期
+// MedicationRequest(intent=plan).dosageInstruction[0].timing.repeat.boundsPeriod.start
+define "本次事前審查申請品項預定起始日期":
+  Reusable."GetStartTime"("本次事前審查申請品項紀錄")
+
+// 本次事前審查申請日期（Claim.created），報告三個月內判斷及年齡計算的基準日
+define "本次事前審查申請日期":
+  Reusable."本次事前審查申請日期"
+
+// 前次事前審查申請品項紀錄（本次申請之前最近一次的申請）
+define "前次事前審查申請品項紀錄":
+  Reusable."LatestMedicationPlanBefore"(CodeConcept.L01FD02, "本次事前審查申請品項預定起始日期")
+
+// 檢查本次申請療程長度是否在24週內
+define "2規則1-1=每24週須再次申請並檢附療效評估資料":
+  Reusable."醫令類別為1" 
+  and Reusable."續用註記為2"
+  and "本次事前審查申請品項紀錄" is not null
+  and Reusable."HasMedicationPlanPeriodWithinDays"(CodeConcept.L01FD02, 168)
+
+
+//條件2:疾病有惡化情形須停止使用
+
+// 取得前次治療紀錄（最近一次已完成的治療）
+define "前次治療紀錄":
+  Reusable."LatestCompletedMedicationOrderBefore"(CodeConcept.L01FD02, "本次事前審查申請品項預定起始日期")
+
+// 前次用藥開始日期
+define "前次用藥開始日期":
+  Reusable."GetStartTime"("前次治療紀錄")
+
+// 規則1-2: 疾病有惡化情形須停止使用(續用須檢附前次治療後影像學報告)
+define "2規則1-2=疾病有惡化情形須停止使用":
+  Reusable."HasImageReportBetweenPreviousTreatmentAndCurrentApply"(CodeConcept.L01FD02)
+
+// 主要規定二
+define "主要規定二":
+Reusable."續用註記為2"
+and Reusable."醫令類別為1"
+and "本次事前審查申請品項紀錄" is not null
+and "2規則1-1=每24週須再次申請並檢附療效評估資料"
+and "2規則1-2=疾病有惡化情形須停止使用"
+
+
+
+//============================================
+// 主要規定三：藥品使用規則
+//============================================
+
+/*規則1*/
+
+//條件1:使用於術前輔助治療，經外科手術後達病理上完全緩解者（pCR）(病摘或病理報告結果須至少一項符合)
+//條件1-1
+define "3規則1-1-1=經外科手術後達病理上完全緩解者（pCR）":
+  exists (
+    [DiagnosticReport] O2
+    where exists (
+        O2.code.coding Cdg
+        where Cdg in CodeConcept.LOINC
+          and Cdg.code = '66110-8'
+      )
+      and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 90)
+      and (O2.conclusion is not null
+        or Matches(O2.conclusion, '(?i).*(外科手術後達病理上完全緩解（pCR）).*'))
+  )
+  or exists (
+    [Claim] C
+    where exists (
+        C.diagnosis D
+        where exists (
+            D.type.text T
+            where Matches(T.value, '(?i).*(外科手術後達病理上完全緩解（pCR）).*')
+          )
+      )
+  )
+
+
+//條件1-2:此藥物之申請藥品為術前治療，影像檢查日期為處方起始日期後
+define "3規則1-1-2=此藥物之申請藥品為術前治療，影像檢查日期為處方起始日期後":
+  Reusable."醫令類別為1"
+  and exists (
+    [MedicationRequest] MRApply
+    where MRApply.intent = 'plan'
+    and Reusable."HasMedicationCode"(MRApply, CodeConcept.L01FD02)
+    and MRApply.dosageInstruction[0].timing.repeat.bounds is Period
+    and Reusable."GetStartTime"(MRApply) is not null
+    and Reusable."GetEndTime"(MRApply) is not null
+    and exists (
+      [DiagnosticReport] O
+      where exists (
+        O.code.coding Cdg
+        where (
+          Cdg in CodeConcept.ICD10PCS2023Image
+          or Cdg in CodeConcept.ICD10PCS2014Image
+        )
+        and Cdg.code in CodeConcept.ProcedureCodes
+      )
+      and O.effective is not null
+      and FHIRHelpers.ToDateTime(O.effective) > Reusable."GetStartTime"(MRApply)
+    )
+  )
+
+
+//條件1-3:得繼續使用至18個療程為上限
+define "3規則1-1-3=得繼續使用至18個療程為上限":
+  Count(
+    [MedicationRequest] MRTotal
+      where (MRTotal.intent = 'plan' or MRTotal.intent = 'order')
+        and (MRTotal.status is null or MRTotal.status in { 'active', 'completed', 'on-hold' })
+        and exists MRTotal.dosageInstruction
+        and MRTotal.dosageInstruction[0].timing.repeat.bounds is Period
+        and Reusable."GetStartTime"(MRTotal) is not null
+        and Reusable."GetEndTime"(MRTotal) is not null
+        and Reusable."HasMedicationCode"(MRTotal, CodeConcept.L01FD02)
+  ) <= 18
+
+
+define "3規則1-1=使用於術前輔助治療，經外科手術後達病理上完全緩解者（pCR）":
+"3規則1-1-1=經外科手術後達病理上完全緩解者（pCR）"
+and "3規則1-1-2=此藥物之申請藥品為術前治療，影像檢查日期為處方起始日期後"
+and "3規則1-1-3=得繼續使用至18個療程為上限"
+
+
+define "3規則1-2=若未接受術前輔助治療，即先行手術者，可給予術後輔助治療":
+"3規則1-1-2=此藥物之申請藥品為術前治療，影像檢查日期為處方起始日期後"
+and "3規則1-1-3=得繼續使用至18個療程為上限"
+
+//規則1
+define "3規則1":
+"3規則1-1=使用於術前輔助治療，經外科手術後達病理上完全緩解者（pCR）"
+or "3規則1-2=若未接受術前輔助治療，即先行手術者，可給予術後輔助治療"
+
+
+/*規則2*/
+//I、II、III總療程以18個療程為上限(Ｉ：pertuzumab 與trastuzumab 併用Ⅱ：trastuzumabⅢ：pertuzumab 與trastuzumab 皮下注射複方製劑(如Phesgo))
+define "3規則2=總療程以18個療程為上限":
+  Count(
+    [MedicationRequest] MRTotal
+      where (MRTotal.intent = 'plan' or MRTotal.intent = 'order')
+        and (MRTotal.status is null or MRTotal.status in { 'active', 'completed', 'on-hold' })
+        and exists MRTotal.dosageInstruction
+        and MRTotal.dosageInstruction[0].timing.repeat.bounds is Period
+        and Reusable."GetStartTime"(MRTotal) is not null
+        and Reusable."GetEndTime"(MRTotal) is not null
+        and Reusable."HasMedicationCode"(MRTotal, CodeConcept."Pertuzumab併用藥物")
+  ) <= 18
+
+
+// 主要規定三
+define "主要規定三": "3規則1" and "3規則2=總療程以18個療程為上限"
+
+
+//============================================
+// 檢核結果用：必要資料存在判斷
+//============================================
+
+//============================================
+// 列出「符合」項目判斷式
+//============================================
+
+define function "符合項目"():
+  // 主要規定一：初次使用條件
+  (if Reusable."初次申請" and (
+    "1規則1-1" or 
+    "1規則1-2=具HER2過度表現" or 
+    "1規則2-1=與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用" or 
+    "1規則2-2=與化學療法併用"
+  )
+    then '<主要規定一：初次使用條件>\n' +
+         (if "ICD代碼檢核_布林值" 
+           then '● 1規則1-0：ICD代碼為C50\n' else '') +
+         (if "1規則1-1-1-1=3個月內影像報告" 
+           then '● 1規則1-1-1：3個月內影像報告\n' else '') +
+         (if "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0" 
+           then '● 1規則1-1-2：癌症分期為N≠0且M=0（腋下淋巴結轉移但無遠處臟器轉移）\n' else '') +
+         (if "1規則1-1-1-3/1規則1-1-2-3=3個月內有檢查報告" 
+           then '● 1規則1-1-3：3個月內有檢查報告\n' else '') +
+         (if "1規則1-1-2-1=3個月內影像報告(為骨轉移)" 
+           then '● 1規則1-2-1：3個月內影像報告顯示僅具有骨轉移無其他轉移\n' else '') +
+         (if "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1" 
+           then '● 1規則1-2-2：癌症分期為N≠0且M=1（腋下淋巴結轉移且僅骨轉移）\n' else '') +
+         (if "Pertuzumab申請" 
+           then '● Pertuzumab申請\n' else '') +
+         (if "1規則1-2=具HER2過度表現" 
+           then '● 1規則1-條件2：具HER2過度表現（IHC3+或FISH+）\n' else '') +
+         (if "1規則2-1=與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用" 
+           then '● 1規則2-條件1：與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用\n' else '') +
+         (if "1規則2-2=與化學療法併用" 
+           then '● 1規則2-條件2：與化學療法併用\n' else '') +
+         '\n'
+    else '') +
+  
+  // 主要規定二：續用條件
+  (if Reusable."續用申請" and (
+    "2規則1-1=每24週須再次申請並檢附療效評估資料" or 
+    "2規則1-2=疾病有惡化情形須停止使用"
+  )
+    then '<主要規定二：續用條件－治療持續給付>\n' +
+         (if "2規則1-1=每24週須再次申請並檢附療效評估資料" 
+           then '● 2規則1-1：於24週內再次申請並檢附療效評估資料\n' else '') +
+         (if "2規則1-2=疾病有惡化情形須停止使用" 
+           then '● 2規則1-2：已檢附前次治療後影像學報告，確認無惡化\n' else '') +
+         '\n'
+    else '') +
+  
+  // 主要規定三：藥品使用規則
+  (if "3規則1" or "3規則2=總療程以18個療程為上限"
+    then '<主要規定三：藥品使用規則>\n' +
+         (if "3規則1-1-1=經外科手術後達病理上完全緩解者（pCR）"
+           then '● 3規則1-1：術前輔助治療後，經外科手術後達病理上完全緩解者（pCR）（參考資訊）\n' else '') +
+         (if "3規則1-1-2=此藥物之申請藥品為術前治療，影像檢查日期為處方起始日期後"
+           then '● 3規則1-2：申請藥品為術前治療或術後輔助治療（參考資訊）\n' else '') +
+         (if "3規則1-1-3=得繼續使用至18個療程為上限"
+           then '● 3規則1-3：使用療程≤18個療程（參考資訊）\n' else '') +
+         (if "3規則2=總療程以18個療程為上限"
+           then '● 3規則2：總療程（含pertuzumab與trastuzumab併用、trastuzumab單用、或複方製劑）≤18個療程（參考資訊）\n' else '')
+    else '')
+
+//============================================
+// 列出「不符合」項目判斷式 - 條件或代碼不符合
+//============================================
+
+define function "不符合項目_條件或代碼不符合"():
+  // 主要規定一：初次使用條件 - 條件或代碼不符合
+  (if Reusable."初次申請" and (
+    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
+    (Reusable."癌症分期資料存在" and not "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0" and Reusable."癌症分期資料存在" and not "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1")
+  )
+    then '<主要規定一：初次使用條件>\n' +
+         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
+           then '▲ 1規則1-0：主要疾病之ICD代碼未使用C50\n' else '') +
+         (if Reusable."癌症分期資料存在" and not "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0" and Reusable."癌症分期資料存在" and not "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1" 
+           then '▲ 1規則1-條件1：癌症分期不符合（需為N≠0且M=0，或N≠0且M=1但僅骨轉移）\n' else '') +
+         '\n'
+    else '') +
+  
+  // 主要規定三：藥品使用規則 - 條件或代碼不符合
+  (if not "3規則1-1-3=得繼續使用至18個療程為上限" or not "3規則2=總療程以18個療程為上限"
+    then '<主要規定三：藥品使用規則>\n' +
+         (if not "3規則1-1-3=得繼續使用至18個療程為上限"
+           then '▲ 3規則1-3：使用療程超過18個療程（參考資訊）\n' else '') +
+         (if not "3規則2=總療程以18個療程為上限"
+           then '▲ 3規則2：總療程（含pertuzumab與trastuzumab併用、trastuzumab單用、或複方製劑）超過18個療程（參考資訊）\n' else '')
+    else '')
+
+//============================================
+// 列出「不符合」項目判斷式 - 必要資料未填寫
+//============================================
+
+define function "不符合項目_必要資料未填寫"():
+  (if Reusable."申請類型未知"
+    then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
+    else '') +
+  // 主要規定一：初次使用條件 - 必要資料未填寫
+  (if Reusable."初次申請" and (
+    not "Pertuzumab申請" or 
+    not ("1規則1-1-1-1=3個月內影像報告" or "1規則1-1-2-1=3個月內影像報告(為骨轉移)" or "1規則1-1-1-3/1規則1-1-2-3=3個月內有檢查報告") or 
+    not Reusable."HER2檢測資料存在" or 
+    not "1規則2-1=與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用" or 
+    not "1規則2-2=與化學療法併用"
+  )
+    then '<主要規定一：初次使用條件>\n' +
+         (if not "Pertuzumab申請" 
+           then '▲ 未申請Pertuzumab\n' else '') +
+         (if not ("1規則1-1-1-1=3個月內影像報告" or "1規則1-1-2-1=3個月內影像報告(為骨轉移)" or "1規則1-1-1-3/1規則1-1-2-3=3個月內有檢查報告") 
+           then '▲ 1規則1-條件1：未提供影像或檢查報告資料\n' else '') +
+         (if not Reusable."HER2檢測資料存在" 
+           then '▲ 1規則1-條件2：未提供HER2過度表現檢測資料（需IHC3+或FISH+）\n' else '') +
+         (if not "1規則2-1=與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用" 
+           then '▲ 1規則2-條件1：未與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用\n' else '') +
+         (if not "1規則2-2=與化學療法併用" 
+           then '▲ 1規則2-條件2：未與化學療法併用\n' else '') +
+         '\n'
+    else '') +
+  
+  // 主要規定二：續用條件 - 必要資料未填寫
+  (if Reusable."續用申請" and (
+    not "2規則1-1=每24週須再次申請並檢附療效評估資料" or 
+    not "2規則1-2=疾病有惡化情形須停止使用"
+  )
+    then '<主要規定二：續用條件－治療持續給付>\n' +
+         (if not "2規則1-1=每24週須再次申請並檢附療效評估資料" 
+           then '▲ 2規則1-1：未於24週內再次申請或未檢附療效評估資料\n' else '') +
+         (if not "2規則1-2=疾病有惡化情形須停止使用" 
+           then '▲ 2規則1-2：未提供前次治療後影像學報告資料\n' else '') +
+         '\n'
+    else '') +
+  
+  // 主要規定三：藥品使用規則 - 必要資料未填寫
+  (if not "3規則1-1-2=此藥物之申請藥品為術前治療，影像檢查日期為處方起始日期後"
+    then '<主要規定三：藥品使用規則>\n' +
+         '▲ 3規則1-2：未提供術前治療或術後輔助治療相關影像檢查資料（參考資訊）\n' +
+         '\n'
+    else '')
+
+
+//============================================
+// 審核結果
+//============================================
+
+define "乳癌Pertuzumab申請結果_布林":
+  case
+    when Reusable."初次申請" then (
+      "1規則1" and
+      "1規則2"
+    )
+    when Reusable."續用申請" then (
+      "2規則1-1=每24週須再次申請並檢附療效評估資料" and
+      "2規則1-2=疾病有惡化情形須停止使用"
+    )
+    else false
+  end
+
+define "乳癌Pertuzumab申請之CQL檢核結果":
+  if Reusable."初次申請" and "乳癌Pertuzumab申請結果_布林"
+  then '✓通過：初次使用－早期乳癌 Pertuzumab 用藥申請'
+
+  else if Reusable."續用申請" and "乳癌Pertuzumab申請結果_布林"
+  then '✓通過：續用－早期乳癌 Pertuzumab 用藥申請'
+  
+  else if Reusable."初次申請"
+  then '✖不通過：初次使用－早期乳癌 Pertuzumab 用藥申請'
+  
+  else if Reusable."續用申請"
+  then '✖不通過：續用－早期乳癌 Pertuzumab 用藥申請'
+  
+  else '✖不通過：無法判定申請類型－早期乳癌 Pertuzumab 用藥申請'
+
+//============================================
+// 報告總結
+//============================================
+
+define "報告總結":
+  '\n=== 早期乳癌之Pertuzumab 申請審核報告 ===\n' +
+  '\n※ 備註：標示為「參考資訊」之檢核項目，係供審核參酌使用，不作為最終【申請結果】判定之依據。\n' +
+  '\n【申請類型】' + Reusable."申請類型" + '\n' +
+  '\n【●符合項目】\n' +
+  (if "符合項目"() = '' then '無\n' else "符合項目"()) +
+  '\n【▲不符合項目 - 必要資料未填寫】\n' +
+  (if "不符合項目_必要資料未填寫"() = '' then '無\n' else "不符合項目_必要資料未填寫"()) +
+  '\n【▲不符合項目 - 條件或代碼不符合】\n' +
+  (if "不符合項目_條件或代碼不符合"() = '' then '無\n' else "不符合項目_條件或代碼不符合"()) +
+  '\n【申請結果】\n' +
+  "乳癌Pertuzumab申請之CQL檢核結果" +
+  '\n===============================================\n'

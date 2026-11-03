@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "CRCReusable",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/CRCReusable",
+  "version": "1.0.0",
+  "name": "CRCReusable",
+  "title": "規則共通模組-CRCReusable",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-09-24",
+  "description": "此 Library 為癌藥事前審查規則共通使用規則模組。",
+  "content": [
+    {
+      "id": "ig-loader-CRCReusable.cql"
+    }
+  ]
+}

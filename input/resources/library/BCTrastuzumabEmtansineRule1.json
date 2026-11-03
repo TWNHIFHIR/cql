@@ -1,0 +1,24 @@
+{
+  "resourceType": "Library",
+  "id": "BCTrastuzumabEmtansineRule1",
+  "url": "https://nhicore.nhi.gov.tw/cql/Library/BCTrastuzumabEmtansineRule1",
+  "version": "1.0.0",
+  "name": "BCTrastuzumabEmtansineRule1",
+  "title": "Trastuzumab Emtansine給付規定-TrastuzumabEmtansine Rule1",
+  "status": "draft",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/library-type",
+        "code": "logic-library"
+      }
+    ]
+  },
+  "date": "2026-09-24",
+  "description": "此 Library 為乳癌早期乳癌）患者於申請使用 Trastuzumab Emtansine 之給付檢核條件。",
+  "content": [
+    {
+      "id": "ig-loader-BCTrastuzumabEmtansineRule1.cql"
+    }
+  ]
+}
