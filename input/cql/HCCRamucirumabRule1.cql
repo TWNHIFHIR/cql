@@ -104,7 +104,7 @@ exists (
   )
 
 define "手術報告":
-Reusable."HasRecentOPReport"("本次事前審查申請品項預定起始日期", 360)
+Reusable."HasRecentOPReport"("本次事前審查申請日期", 360)
 
 define "手術日期":
   Reusable."HasSurgeryBeforeDate"("本次事前審查申請品項預定起始日期")
@@ -169,7 +169,7 @@ and "1規則1-1" and "1規則1-2" and "1規則1-3" and "1規則1-4" and "1規則
 
 define "主要規定二":
 "本次事前審查申請品項紀錄" is not null
-and Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 56)
+and Reusable."HasRecentImageReport"("本次事前審查申請日期", 56)
 and Reusable."續用註記為2"
 and Reusable."醫令類別為1"
 

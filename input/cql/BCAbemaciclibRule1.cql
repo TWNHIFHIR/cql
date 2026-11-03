@@ -260,7 +260,7 @@ define "1規則1-3=有填HER2檢測資料":
 
 //條件4-1
 define "1規則1-4-1=6個月內影像報告":
-  Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 180)
+  Reusable."HasRecentImageReport"("本次事前審查申請日期", 180)
 
 define "1規則1-4-1=有填影像報告資料":
   exists (
@@ -268,7 +268,7 @@ define "1規則1-4-1=有填影像報告資料":
     where Report.effective is not null
       and (
         Reusable."IsImageReport"(Report)
-        or Reusable."IsReportWithinDaysBefore"(Report, "本次事前審查申請品項預定起始日期", 180)
+        or Reusable."IsReportWithinDaysBefore"(Report, "本次事前審查申請日期", 180)
       )
   )
 
@@ -310,7 +310,7 @@ define "1規則1-4-3=6個月內淋巴結陽性檢查報告":
       where Cdg in CodeConcept.LOINC
         and Cdg.code in CodeConcept.DiagnosticReportCode
     )
-    and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請品項預定起始日期", 180)
+    and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 180)
     and O2.conclusion is not null
     and Matches(O2.conclusion, '(?i).*(positive|detected|present|Positive|Detected|Present|\\+).*')
   )
@@ -323,7 +323,7 @@ define "1規則1-4-3=有填6個月內淋巴結檢查報告":
       where Cdg in CodeConcept.LOINC
         and Cdg.code in CodeConcept.DiagnosticReportCode
     )
-    and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請品項預定起始日期", 180)
+    and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 180)
     and O2.conclusion is not null
   )
 
@@ -531,7 +531,7 @@ define "1規則3-2=應於手術切除後16個月內接受本品治療":
       )
       and Cdg.code in CodeConcept.ProcedureCodes
     )
-    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請品項預定起始日期", 480)
+    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 480)
   ) 
 
 define "1規則3-2=有填手術切除紀錄":

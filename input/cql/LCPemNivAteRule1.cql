@@ -357,7 +357,7 @@ define "1規則3":
 /*規則4*/
 //條件1
 define "1規則4-1=12週內有影像檢查報告":
-Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 84)
+Reusable."HasRecentImageReport"("本次事前審查申請日期", 84)
 
 define "使用免疫檢查點抑制劑之治療計畫":
   exists (
@@ -396,7 +396,7 @@ and "1規則1" and "1規則2" and "1規則3" and "1規則4"
 /*規則1*/
 //條件1
 define "2規則1-1=以i-RECIST標準(HCC患者以mRECIST標準)評定藥物療效反應，依下列原則申請續用：有療效反應(PR及CR)者得繼續用藥":
-  Reusable."HasRecentIRECISTResponse"("本次事前審查申請品項預定起始日期", 84)
+  Reusable."HasRecentIRECISTResponse"("本次事前審查申請日期", 84)
 
 //條件2
 define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生命之藥物不良反應者，應停止用藥":

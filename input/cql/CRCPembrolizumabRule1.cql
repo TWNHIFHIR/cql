@@ -332,7 +332,7 @@ define "1規則4-1=12週內之疾病影像檢查及報告":
       )
       and Cdg.code in CodeConcept.PembrolizumabImage
     )
-    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請品項預定起始日期", 84)
+    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 84)
   ) 
 
 define "1規則4-2=使用免疫檢查點抑制劑之治療計畫":

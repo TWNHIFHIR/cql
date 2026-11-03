@@ -341,7 +341,7 @@ define "1規則2":
 /*規則4*/
 //條件1:病人12週內之疾病影像檢查及報告(如胸部X光、電腦斷層或其他可作為評估的影像)，此影像證明以可測量(measurable)的病灶為優先，如沒有可以測量的病灶，則可評估(evaluable)的病灶亦可採用。備註：上述影像檢查之給付範圍不包括正子造影(PET)。
 define "12週內有影像檢查報告":
-  Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 84)
+  Reusable."HasRecentImageReport"("本次事前審查申請日期", 84)
 
 define "1規則4-1=12週內有影像檢查報告":
   "12週內有影像檢查報告"
@@ -386,7 +386,7 @@ define "主要規定一":
 /*規則1*/
 //條件1
 define "2規則1-1=以i-RECIST標準評定藥物療效反應，依下列原則申請續用：有療效反應(PR及CR)者得繼續用藥":
-  Reusable."HasRecentIRECISTResponse"("本次事前審查申請品項預定起始日期", 84)
+  Reusable."HasRecentIRECISTResponse"("本次事前審查申請日期", 84)
 
 //條件2
 define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生命之藥物不良反應者，應停止用藥":

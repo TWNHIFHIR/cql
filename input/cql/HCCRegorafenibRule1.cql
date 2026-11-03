@@ -37,7 +37,7 @@ define "首次事前審查申請品項紀錄":
   )
 
 define "12周內有影像檢查報告":
-  Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 84)
+  Reusable."HasRecentImageReport"("本次事前審查申請日期", 84)
 
 //============================================
 // 主要規定一：初次使用條件
@@ -90,7 +90,7 @@ define "1規則1-3-2":
 
 define "1規則1-3-3":
 "12周內有影像檢查報告"
-and Reusable."HasRecentOPReport"("本次事前審查申請品項預定起始日期", 360)
+and Reusable."HasRecentOPReport"("本次事前審查申請日期", 360)
 
 define "1規則1-3":
 "1規則1-3-1" and ("1規則1-3-2" or "1規則1-3-3")
@@ -106,7 +106,7 @@ exists (
 
 //條件5
 define "1規則1-5":
-  Reusable."HasRecentChildPughA"("本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentChildPughA"("本次事前審查申請日期", 90)
   
 //條件6
 define "1規則1-6":
@@ -136,7 +136,7 @@ define "用藥期間未逾56天":
 
 define "主要規定二":
 "本次事前審查申請品項紀錄" is not null
-and Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 56)
+and Reusable."HasRecentImageReport"("本次事前審查申請日期", 56)
 and Reusable."續用註記為2"
 and Reusable."醫令類別為1"
 and "用藥期間未逾56天"

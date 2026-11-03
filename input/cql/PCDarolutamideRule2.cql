@@ -163,7 +163,7 @@ define "有去勢用藥處方":
   )
 
 define "手術去勢處置項目":
-  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請日期", 90)
 
 define "檢查報告66117-3":
   [DiagnosticReport] Report
@@ -325,7 +325,7 @@ or "第二筆PSA未達2ngmL"
 or "第三筆PSA低於第二筆" )
 
 define "2規則2-2":
-Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 180)
+Reusable."HasRecentImageReport"("本次事前審查申請日期", 180)
 and "PSA未持續上升趨勢"
 
 define "2規則2":

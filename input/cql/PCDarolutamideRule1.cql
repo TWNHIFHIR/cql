@@ -157,7 +157,7 @@ define "有去勢用藥處方":
   )
 
 define "手術去勢處置項目":
-  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請日期", 90)
 
 define "1規則1-3":
 "ICD-C61"

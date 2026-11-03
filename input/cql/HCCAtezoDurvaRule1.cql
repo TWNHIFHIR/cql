@@ -54,12 +54,12 @@ define "給付適應症條件P072":
 define "12周內有影像檢查報告":
   (
     "本次Atezolizumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentImageReport"("本次Atezolizumab事前審查申請品項預定起始日期", 84)
+    and Reusable."HasRecentImageReport"("本次事前審查申請日期", 84)
   )
   or
   (
     "本次Durvalumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentImageReport"("本次Durvalumab事前審查申請品項預定起始日期", 84)
+    and Reusable."HasRecentImageReport"("本次事前審查申請日期", 84)
   )
 
 define "癌症分期分數或結果為M≠0":
@@ -161,12 +161,12 @@ define "1規則1-2-5-3":
 and (
   (
     "本次Atezolizumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentOPReport"("本次Atezolizumab事前審查申請品項預定起始日期", 360)
+    and Reusable."HasRecentOPReport"("本次事前審查申請日期", 360)
   )
   or
   (
     "本次Durvalumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentOPReport"("本次Durvalumab事前審查申請品項預定起始日期", 360)
+    and Reusable."HasRecentOPReport"("本次事前審查申請日期", 360)
   )
 )
 
@@ -224,12 +224,12 @@ define "1規則1-3-3":
 and (
   (
     "本次Atezolizumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentOPReportV3"("本次Atezolizumab事前審查申請品項預定起始日期", 360)
+    and Reusable."HasRecentOPReportV3"("本次事前審查申請日期", 360)
   )
   or
   (
     "本次Durvalumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentOPReportV3"("本次Durvalumab事前審查申請品項預定起始日期", 360)
+    and Reusable."HasRecentOPReportV3"("本次事前審查申請日期", 360)
   )
 )
 
@@ -293,12 +293,12 @@ exists (
 define "6個月內有上消化道出血影像檢查報告":
   (
     "本次Atezolizumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentUpperGIBleedingImageReport"("本次Atezolizumab事前審查申請品項預定起始日期", 180)
+    and Reusable."HasRecentUpperGIBleedingImageReport"("本次事前審查申請日期", 180)
   )
   or
   (
     "本次Durvalumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentUpperGIBleedingImageReport"("本次Durvalumab事前審查申請品項預定起始日期", 180)
+    and Reusable."HasRecentUpperGIBleedingImageReport"("本次事前審查申請日期", 180)
   )
 
 define "1規則1-4-3":
@@ -412,12 +412,12 @@ define "1規則2":
 define "1規則4-1-1":
   (
     "本次Atezolizumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentImageReportV2"("本次Atezolizumab事前審查申請品項預定起始日期", 84)
+    and Reusable."HasRecentImageReportV2"("本次事前審查申請日期", 84)
   )
   or
   (
     "本次Durvalumab事前審查申請品項紀錄" is not null
-    and Reusable."HasRecentImageReportV2"("本次Durvalumab事前審查申請品項預定起始日期", 84)
+    and Reusable."HasRecentImageReportV2"("本次事前審查申請日期", 84)
   )
 
 define "1規則4-1-2":

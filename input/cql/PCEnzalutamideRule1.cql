@@ -178,7 +178,7 @@ Reusable."續用註記為2"
 
 //條件2
 define "2規則1-2":
-Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 180)
+Reusable."HasRecentImageReport"("本次事前審查申請日期", 180)
 and "1規則4"
 
 define "2規則1":

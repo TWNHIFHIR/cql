@@ -87,7 +87,7 @@ exists (
   )
 
 define "手術報告":
-Reusable."HasRecentOPReport"("本次事前審查申請品項預定起始日期", 360)
+Reusable."HasRecentOPReport"("本次事前審查申請日期", 360)
 
 define "手術日期":
   Reusable."HasSurgeryBeforeDate"("本次事前審查申請品項預定起始日期")
@@ -154,7 +154,7 @@ define "12個月內局部治療達3次以上":
   Count("12個月內符合opCode之處置日期") >= 3
 
 define "1規則1-4-3=十二個月內局部治療達3次以上":
-Reusable."HasRecentOPReportV2"("本次事前審查申請品項預定起始日期", 360)
+Reusable."HasRecentOPReportV2"("本次事前審查申請日期", 360)
 and "12個月內局部治療達3次以上"
 and Reusable."續用註記為1"
 and Reusable."醫令類別為1"

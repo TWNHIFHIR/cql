@@ -126,7 +126,7 @@ define "1規則1-5=尚未出現器官轉移危急症狀 (visceral crisis)":
   exists (
     [DiagnosticReport] O
     where Reusable."IsImageReport"(O)
-    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請品項預定起始日期", 180)
+    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 180)
     and O.conclusion is not null
     and Matches(O.conclusion, '(?i).*(no visceral crisis|\\+).*')
   ) 

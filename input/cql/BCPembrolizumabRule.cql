@@ -470,7 +470,7 @@ define "3規則1=疾病評估狀態":
 
 //3規則2
 define "3規則2=6個月內影像報告":
-Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 180)
+Reusable."HasRecentImageReport"("本次事前審查申請日期", 180)
 
 define "二規則3=使用於早期三陰性乳癌，術前前導性治療腫瘤惡化(PD)者，或術後輔助治療復發者，不得申請續用":
   "3規則1=疾病評估狀態"

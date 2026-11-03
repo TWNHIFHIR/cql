@@ -96,7 +96,7 @@ define "處方時間":
   )
 
 define "手術項目":
-  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請日期", 90)
 
 define "1規則1-1":
 "ICD-C61"
@@ -142,7 +142,7 @@ define "1規則1-5":
 
 //條件6
 define "1規則1-6":
-  Reusable."HasRecentECOGAtMost"(1, "本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentECOGAtMost"(1, "本次事前審查申請日期", 90)
 
 //條件7
 define "PSABasic檢驗代碼":
@@ -300,7 +300,7 @@ define "2規則1-4-2":
 "3個月內有影像檢查報告"
 
 define "2規則1-4-3":
-Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 180)
+Reusable."HasRecentImageReport"("本次事前審查申請日期", 180)
 
 define "2規則1-4":
 if "2規則1-4-1" then "2規則1-4-2" else "2規則1-4-3"

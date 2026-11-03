@@ -64,7 +64,7 @@ define "ICD腫瘤代碼檢核_布林值": Reusable."ICD-10使用C77、C78、C79"
 
 //條件2-2
 define "1規則2-2=6個月內影像報告":
-Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 180)
+Reusable."HasRecentImageReport"("本次事前審查申請日期", 180)
 
 
 //條件2-3
@@ -197,7 +197,7 @@ define "1規則5-1=未出現器官轉移危急症狀 (visceral crisis)":
   exists (
     [DiagnosticReport] O
     where Reusable."IsImageReport"(O)
-    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請品項預定起始日期", 180)
+    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 180)
     and O.conclusion is not null
     and Matches(O.conclusion, '(?i).*(no visceral crisis|\\+).*')
   ) 
@@ -207,7 +207,7 @@ define "1規則5-2=無中樞神經系統(CNS)轉移":
   exists (
     [DiagnosticReport] O
     where Reusable."IsImageReport"(O)
-    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請品項預定起始日期", 180)
+    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 180)
     or Reusable."ICD-10使用C77、C78、C79但排除C79.3"
   )
 
@@ -220,7 +220,7 @@ define "1規則6=骨轉移不可為唯一轉移部位":
   exists (
     [DiagnosticReport] O
     where Reusable."IsImageReport"(O)
-    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請品項預定起始日期", 180)
+    and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 180)
   )
 
 //條件7:且滿足下列條件之一：

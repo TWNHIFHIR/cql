@@ -95,7 +95,7 @@ define "處方時間":
   )
 
 define "手術項目":
-  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請日期", 90)
 
 define "1規則1-1":
 "ICD-C61"
@@ -149,7 +149,7 @@ define "1規則1-5":
 
 //條件6
 define "1規則1-6":
-  Reusable."HasRecentECOGAtMost"(1, "本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentECOGAtMost"(1, "本次事前審查申請日期", 90)
 
 //條件7
 define "1規則1-7-2":
@@ -371,7 +371,7 @@ define "1規則3-2":
 
 //條件3
 define "1規則3-3":
-  Reusable."HasRecentECOGAtMost"(2, "本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentECOGAtMost"(2, "本次事前審查申請日期", 90)
 
 //條件4
 define "1規則3-4":

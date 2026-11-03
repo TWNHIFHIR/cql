@@ -85,7 +85,7 @@ define "ICD代碼檢核_布林值": Reusable."ICD-10使用C34"
 define "醫令類別為1_布林值": Reusable."醫令類別為1"
 
 define "12週內有影像檢查報告":
-  Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 84)
+  Reusable."HasRecentImageReport"("本次事前審查申請日期", 84)
 
 define "癌症分期分數或結果為M≠0":
   Reusable."癌症分期分數或結果為M≠0"

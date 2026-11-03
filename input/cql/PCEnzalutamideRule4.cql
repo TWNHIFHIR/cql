@@ -98,7 +98,7 @@ define "2規則1-1":
           where Cdg in CodeConcept.LOINC
             and Cdg.code = '66117-3'
       )
-        and Reusable."IsReportWithinDaysBefore"(Report, "本次事前審查申請品項預定起始日期", 84)
+        and Reusable."IsReportWithinDaysBefore"(Report, "本次事前審查申請日期", 84)
   )
 and Reusable."續用註記為2"
 

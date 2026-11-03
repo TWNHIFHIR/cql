@@ -11,6 +11,10 @@ include LCReusable version '1.0.0' called Reusable
 
 context Patient
 
+// 報告及評估時效以本次申請日期（Claim.created）為基準
+define "本次事前審查申請日期":
+  Reusable."本次事前審查申請日期"
+
 //============================================
 // 主要規定一：初次使用條件
 //============================================
@@ -226,7 +230,7 @@ define "1規則3":
 /*規則4*/
 //條件11:病人12週內之疾病影像檢查及報告
 define "12週內有影像檢查報告":
-  Reusable."HasRecentImageReport"("本次事前審查申請品項預定起始日期", 84)
+  Reusable."HasRecentImageReport"("本次事前審查申請日期", 84)
 
 define "1規則4-1=12週內有影像檢查報告":
   "12週內有影像檢查報告"
@@ -286,7 +290,7 @@ define "2規則1":
 /*規則2*/
 //條件1
 define "2規則2-1=以i-RECIST標準(HCC患者以mRECIST標準)評定藥物療效反應，依下列原則申請續用：有療效反應(PR及CR)者得繼續用藥":
-  Reusable."HasRecentIRECISTResponse"("本次事前審查申請品項預定起始日期", 84)
+  Reusable."HasRecentIRECISTResponse"("本次事前審查申請日期", 84)
 
 //條件2
 define "2規則2-2=未出現疾病惡化(PD)或未出現中、重度或危及生命之藥物不良反應者，應停止用藥":

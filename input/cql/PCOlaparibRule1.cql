@@ -88,7 +88,7 @@ define "賀爾蒙治療藥物處方時間":
   )
 
 define "手術項目":
-  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請品項預定起始日期", 90)
+  Reusable."HasRecentSurgicalCastrationProcedure"("本次事前審查申請日期", 90)
 
 define "1規則1-1":
 Reusable."主要疾病之ICD-10使用C61"
