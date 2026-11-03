@@ -100,9 +100,26 @@ define "1規則3=RAS基因沒有突變":
         where Cdg.code in CodeConcept.GeneTest
       )
     )
-    and exists (
-      RasObs.interpretation.coding I
-      where I.code = 'NEG'
+    and (
+      exists (
+        RasObs.interpretation.coding I
+        where I.code = 'NEG'
+      )
+      or exists (
+        RasObs.component C
+        where exists (
+          C.code.coding Cdg
+          where Cdg.code in CodeConcept.GeneTest
+        )
+        and exists (
+          C.interpretation I
+          where exists (
+            I.coding Coding
+            where Coding.system.value = 'http://loinc.org'
+              and Coding.code.value = 'LA11883-8'
+          )
+        )
+      )
     )
   )
 
