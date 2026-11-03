@@ -91,7 +91,7 @@ define "1規則2=用於治療先前曾接受下列療法的轉移性大腸直腸
 /*規則3*/
 //條件1
 define "1規則3-1=K-ras為原生型(wild type)":
-  exists (
+exists (
     [Observation] RasObs
     where RasObs.status = 'final'
     and exists (
@@ -100,8 +100,32 @@ define "1規則3-1=K-ras為原生型(wild type)":
       and Cdg in CodeConcept.LOINC
     )
     and exists (
-      RasObs.interpretation.coding I
-      where I.code = 'NEG'
+      RasObs.component C
+      where exists (
+        C.code.coding Cdg
+        where Cdg.code in CodeConcept.GeneTest
+      )
+    )
+    and (
+      exists (
+        RasObs.interpretation.coding I
+        where I.code = 'NEG'
+      )
+      or exists (
+        RasObs.component C
+        where exists (
+          C.code.coding Cdg
+          where Cdg.code in CodeConcept.GeneTest
+        )
+        and exists (
+          C.interpretation I
+          where exists (
+            I.coding Coding
+            where Coding.system.value = 'http://loinc.org'
+              and Coding.code.value = 'LA11883-8'
+          )
+        )
+      )
     )
   )
 

@@ -88,7 +88,7 @@ define  "1規則2-2=用於治療具表皮生長因子受體表現型(EGFR expres
   
 //條件3
 define "1規則2-3=K-ras為原生型(wild type)":
-  exists (
+exists (
     [Observation] RasObs
     where RasObs.status = 'final'
     and exists (
@@ -97,8 +97,32 @@ define "1規則2-3=K-ras為原生型(wild type)":
       and Cdg in CodeConcept.LOINC
     )
     and exists (
-      RasObs.interpretation.coding I
-      where I.code = 'NEG'
+      RasObs.component C
+      where exists (
+        C.code.coding Cdg
+        where Cdg.code in CodeConcept.GeneTest
+      )
+    )
+    and (
+      exists (
+        RasObs.interpretation.coding I
+        where I.code = 'NEG'
+      )
+      or exists (
+        RasObs.component C
+        where exists (
+          C.code.coding Cdg
+          where Cdg.code in CodeConcept.GeneTest
+        )
+        and exists (
+          C.interpretation I
+          where exists (
+            I.coding Coding
+            where Coding.system.value = 'http://loinc.org'
+              and Coding.code.value = 'LA11883-8'
+          )
+        )
+      )
     )
   )
 

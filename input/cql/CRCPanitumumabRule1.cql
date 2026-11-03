@@ -60,7 +60,7 @@ define "1規則1":
 
 /*規則2*/
 define "1規則2=K-RAS基因及N-RAS基因沒有突變":
-  exists (
+exists (
     [Observation] RasObs
     where RasObs.status = 'final'
     and exists (
@@ -75,9 +75,26 @@ define "1規則2=K-RAS基因及N-RAS基因沒有突變":
         where Cdg.code in CodeConcept.GeneTest
       )
     )
-    and exists (
-      RasObs.interpretation.coding I
-      where I.code = 'NEG'
+    and (
+      exists (
+        RasObs.interpretation.coding I
+        where I.code = 'NEG'
+      )
+      or exists (
+        RasObs.component C
+        where exists (
+          C.code.coding Cdg
+          where Cdg.code in CodeConcept.GeneTest
+        )
+        and exists (
+          C.interpretation I
+          where exists (
+            I.coding Coding
+            where Coding.system.value = 'http://loinc.org'
+              and Coding.code.value = 'LA11883-8'
+          )
+        )
+      )
     )
   )
 
