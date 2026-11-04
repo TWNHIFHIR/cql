@@ -312,23 +312,6 @@ exists (
   )
 
 //條件2
-define "照護計畫文件資料存在":
-  Reusable."HasCarePlanDocument"
-  and (
-    exists ([MedicationRequest])
-    or exists (
-      [Claim] C
-        where exists (
-          C.procedure P
-            where P.procedure is FHIR.CodeableConcept
-              and exists (
-                ((P.procedure as FHIR.CodeableConcept).coding) Cdg
-                  where Cdg.code in CodeConcept.SurgicalCastrationOPCode
-              )
-        )
-    )
-  )
-
 define "1規則3-2":
 "3個月內有檢查報告"
 and "檢驗名稱或套組代碼"
@@ -548,7 +531,7 @@ define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept."L01XK01")
 
 define "攝護腺癌ICD診斷資料存在":
-  Reusable."主要疾病ICD診斷資料存在"
+  "主要疾病ICD診斷資料存在"
 
 define "病摘資料存在":
   exists (
@@ -566,8 +549,41 @@ define "影像或檢查報告資料存在":
         or Reusable."IsMolecularReport"(Report)
   )
 
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
+define "PSAExtended檢驗資料存在":
+  exists (
+    [Observation] OBs
+      where exists (
+        OBs.category C
+          where exists (
+            C.coding Cdg
+              where Cdg in CodeConcept.NHIPASSupportingInfoType
+                and Cdg.code = 'tests'
+          )
+      )
+        and exists (
+          OBs.code.coding Cdg
+          where Cdg in CodeConcept.LOINC
+            and Cdg.code in CodeConcept."PSALabTestCodeExtended"
+        )
+  )
+
+define "PSALab檢驗資料存在":
+  exists (
+    [Observation] OBs
+      where exists (
+        OBs.category C
+          where exists (
+            C.coding Cdg
+              where Cdg in CodeConcept.NHIPASSupportingInfoType
+                and Cdg.code = 'tests'
+          )
+      )
+        and exists (
+          OBs.code.coding Cdg
+          where Cdg in CodeConcept.LOINC
+            and Cdg.code in CodeConcept."PSALabTestCode"
+        )
+  )
 
 define "PSA檢驗資料存在":
   exists (
@@ -583,6 +599,7 @@ define "PSA檢驗資料存在":
         and exists (
           OBs.code.coding Cdg
           where Cdg in CodeConcept.LOINC
+            and Cdg.code in CodeConcept."PSALabTestCodeBasic"
         )
   )
 
@@ -638,6 +655,49 @@ define "出生日期資料存在":
 define "前次事前審查申請品項紀錄資料存在":
   "前次事前審查申請品項紀錄" is not null
 
+define "照護計畫文件資料存在":
+  Reusable."HasCarePlanDocument"
+  and (
+    exists ([MedicationRequest])
+    or exists (
+      [Claim] C
+        where exists (
+          C.procedure P
+            where P.procedure is FHIR.CodeableConcept
+              and exists (
+                ((P.procedure as FHIR.CodeableConcept).coding) Cdg
+                  where Cdg.code in CodeConcept.SurgicalCastrationOPCode
+              )
+        )
+    )
+  )
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+  )
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -691,32 +751,32 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 已提供資料但條件或代碼不符合
   (if Reusable."初次申請" and (
-      (("攝護腺癌ICD診斷資料存在" and "病摘資料存在" and "PSA檢驗資料存在" and "賀爾蒙治療藥物用藥資料存在" and "手術項目資料存在" and "醫令類別資料存在") and not "1規則1-1")
+      (("攝護腺癌ICD診斷資料存在" and "病摘資料存在" and "PSALab檢驗資料存在" and "賀爾蒙治療藥物用藥資料存在" and "手術項目資料存在" and "醫令類別資料存在") and not "1規則1-1")
       or ("AbirateronePrednisoneClass用藥資料存在" and not "1規則1-2")
       or ("BRCA基因檢測資料存在" and not "1規則1-3")
       or ("新型荷爾蒙藥物用藥資料存在" and not "1規則1-4")
       or ("出生日期資料存在" and not "1規則1-5")
-      or (("攝護腺癌ICD診斷資料存在" and "病摘資料存在" and "PSA檢驗資料存在" and "mCRPC治療藥物用藥資料存在" and "手術項目資料存在" and "醫令類別資料存在") and not "1規則2-1")
+      or (("攝護腺癌ICD診斷資料存在" and "病摘資料存在" and "PSAExtended檢驗資料存在" and "mCRPC治療藥物用藥資料存在" and "手術項目資料存在" and "醫令類別資料存在") and not "1規則2-1")
       or ("L02BX03用藥資料存在" and not "1規則2-2")
       or ("皮質類固醇藥物用藥資料存在" and not "1規則2-3")
       or (("病摘資料存在" or "化學治療藥物用藥資料存在") and not "1規則2-5")
       or (("新型荷爾蒙藥物用藥資料存在" or "病摘資料存在") and not "1規則2-7")
       or ("BRCA基因檢測資料存在" and not "1規則3-1")
-      or (("影像或檢查報告資料存在" and "PSA檢驗資料存在" and "mCRPC治療藥物用藥資料存在" and "手術項目資料存在" and "照護計畫文件資料存在") and not "1規則3-2")
+      or (("影像或檢查報告資料存在" and "PSAExtended檢驗資料存在" and "mCRPC治療藥物用藥資料存在" and "手術項目資料存在" and "照護計畫文件資料存在") and not "1規則3-2")
     )
     then '<主要規定一：初次使用條件>\n' +
-      (if ("攝護腺癌ICD診斷資料存在" and "病摘資料存在" and "PSA檢驗資料存在" and "賀爾蒙治療藥物用藥資料存在" and "手術項目資料存在" and "醫令類別資料存在") and not "1規則1-1" then '▲ 規則1-1：ICD診斷、病摘、影像/檢查報告、癌症分期、PSA檢驗、賀爾蒙治療藥物處方時間、手術項目、續用註記或醫令類別條件不符合\n' else '') +
+      (if ("攝護腺癌ICD診斷資料存在" and "病摘資料存在" and "PSALab檢驗資料存在" and "賀爾蒙治療藥物用藥資料存在" and "手術項目資料存在" and "醫令類別資料存在") and not "1規則1-1" then '▲ 規則1-1：ICD診斷、病摘、影像/檢查報告、癌症分期、PSA檢驗、賀爾蒙治療藥物處方時間、手術項目、續用註記或醫令類別條件不符合\n' else '') +
       (if "AbirateronePrednisoneClass用藥資料存在" and not "1規則1-2" then '▲ 規則1-2：合併使用abiraterone/prednisone等指定藥物涵蓋本次申請期間\n' else '') +
       (if "BRCA基因檢測資料存在" and not "1規則1-3" then '▲ 規則1-3/2-4：BRCA1/2基因檢驗結果非致病性或疑似致病性突變\n' else '') +
       (if "新型荷爾蒙藥物用藥資料存在" and not "1規則1-4" then '▲ 規則1-4：新型荷爾蒙藥物處方時間未早於本次事前審查申請品項預定終止日期\n' else '') +
       (if "出生日期資料存在" and not "1規則1-5" then '▲ 規則1-5/2-6：年齡未滿18歲\n' else '') +
-      (if ("攝護腺癌ICD診斷資料存在" and "病摘資料存在" and "PSA檢驗資料存在" and "mCRPC治療藥物用藥資料存在" and "手術項目資料存在" and "醫令類別資料存在") and not "1規則2-1" then '▲ 規則2-1：ICD診斷、病摘、影像/檢查報告、癌症分期、PSA檢驗（擴充版）、mCRPC藥物處方時間、手術項目、續用註記或醫令類別條件不符合\n' else '') +
+      (if ("攝護腺癌ICD診斷資料存在" and "病摘資料存在" and "PSAExtended檢驗資料存在" and "mCRPC治療藥物用藥資料存在" and "手術項目資料存在" and "醫令類別資料存在") and not "1規則2-1" then '▲ 規則2-1：ICD診斷、病摘、影像/檢查報告、癌症分期、PSA檢驗（擴充版）、mCRPC藥物處方時間、手術項目、續用註記或醫令類別條件不符合\n' else '') +
       (if "L02BX03用藥資料存在" and not "1規則2-2" then '▲ 規則2-2：併用L02BX03藥物期間未涵蓋本次申請期間\n' else '') +
       (if "皮質類固醇藥物用藥資料存在" and not "1規則2-3" then '▲ 規則2-3：併用皮質類固醇藥物期間未涵蓋本次申請期間\n' else '') +
       (if ("病摘資料存在" or "化學治療藥物用藥資料存在") and not "1規則2-5" then '▲ 規則2-5：病摘未載明未接受過化療，或已有化學治療藥物用藥紀錄\n' else '') +
       (if ("新型荷爾蒙藥物用藥資料存在" or "病摘資料存在") and not "1規則2-7" then '▲ 規則2-7：已有新型荷爾蒙藥物使用紀錄，且病摘未載明使用abiraterone期間未惡化或處方期間未滿4個月\n' else '') +
       (if "BRCA基因檢測資料存在" and not "1規則3-1" then '▲ 規則3-1：BRCA檢測報告未具derivedFrom引用資料\n' else '') +
-      (if ("影像或檢查報告資料存在" and "PSA檢驗資料存在" and "mCRPC治療藥物用藥資料存在" and "手術項目資料存在" and "照護計畫文件資料存在") and not "1規則3-2" then '▲ 規則3-2：檢查報告、PSA檢驗、mCRPC藥物處方時間、手術項目或照護計畫文件條件不符合\n' else '') +
+      (if ("影像或檢查報告資料存在" and "PSAExtended檢驗資料存在" and "mCRPC治療藥物用藥資料存在" and "手術項目資料存在" and "照護計畫文件資料存在") and not "1規則3-2" then '▲ 規則3-2：檢查報告、PSA檢驗、mCRPC藥物處方時間、手術項目或照護計畫文件條件不符合\n' else '') +
       '\n'
     else '') +
 
@@ -753,7 +813,7 @@ define function "不符合項目_條件或代碼不符合"():
 
 define function "不符合項目_必要資料未填寫"():
   // 申請類型無法判定
-  (if Reusable."申請類型" = '無法判定申請類型'
+  (if Reusable."申請類型" = '無法判斷申請類型'
     then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
     else '') +
 
@@ -765,7 +825,8 @@ define function "不符合項目_必要資料未填寫"():
       or not "病摘資料存在"
       or not "影像或檢查報告資料存在"
       or not "癌症分期資料存在"
-      or not "PSA檢驗資料存在"
+      or not "PSALab檢驗資料存在"
+      or not "PSAExtended檢驗資料存在"
       or not "賀爾蒙治療藥物用藥資料存在"
       or not "手術項目資料存在"
       or not "BRCA基因檢測資料存在"
@@ -779,7 +840,8 @@ define function "不符合項目_必要資料未填寫"():
       (if not "病摘資料存在" then '▲ 規則1-1/2-1/2-5：未提供病摘資料\n' else '') +
       (if not "影像或檢查報告資料存在" then '▲ 規則1-1/2-1/3-2：未提供影像或檢查報告資料\n' else '') +
       (if not "癌症分期資料存在" then '▲ 規則1-1/2-1：未提供癌症分期分數或結果資料\n' else '') +
-      (if not "PSA檢驗資料存在" then '▲ 規則1-1/2-1/3-2：未提供PSA檢驗資料\n' else '') +
+      (if not "PSALab檢驗資料存在" then '▲ 規則1-1：未提供指定檢驗資料（79碼清單）\n' else '') +
+      (if not "PSAExtended檢驗資料存在" then '▲ 規則2-1/3-2：未提供PSA及睪固酮相關檢驗資料（擴充清單）\n' else '') +
       (if not "賀爾蒙治療藥物用藥資料存在" then '▲ 規則1-1：未提供賀爾蒙治療藥物用藥紀錄\n' else '') +
       (if not "手術項目資料存在" then '▲ 規則1-1/2-1/3-2：未提供手術去勢項目資料\n' else '') +
       (if not "BRCA基因檢測資料存在" then '▲ 規則1-3/2-4/3-1：未提供BRCA1/2基因檢測資料\n' else '') +
@@ -827,7 +889,7 @@ define "攝護腺癌Olaparib申請結果":
   then '✖不通過：初次使用－攝護腺癌 Olaparib 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－攝護腺癌 Olaparib 用藥申請'
-  else '✖不通過：無法判定申請類型－攝護腺癌 Olaparib 用藥申請'
+  else '✖不通過：無法判斷申請類型－攝護腺癌 Olaparib 用藥申請'
 
 
 //============================================

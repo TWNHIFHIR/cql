@@ -428,9 +428,6 @@ define "GPT檢驗清單":
       and OBs.value is FHIR.Quantity
       and OBs.effective is not null
 
-define "GPT資料存在":
-  exists ("GPT檢驗清單")
-
 //去重後的GPT檢驗日期(僅取日期)
 define "GPT檢驗日期清單":
   distinct (
@@ -615,7 +612,7 @@ define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept."L02BB06")
 
 define "攝護腺癌ICD診斷資料存在":
-  Reusable."主要疾病ICD診斷資料存在"
+  "主要疾病ICD診斷資料存在"
 
 define "docetaxel併用處方資料存在":
   exists (
@@ -800,6 +797,24 @@ define "eGFR資料存在":
         )
   )
 
+define "GPT資料存在":
+  exists ("GPT檢驗清單")
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -902,7 +917,7 @@ define function "不符合項目_條件或代碼不符合"():
 
 define function "不符合項目_必要資料未填寫"():
   // 申請類型無法判定
-  (if Reusable."申請類型" = '無法判定申請類型'
+  (if Reusable."申請類型" = '無法判斷申請類型'
     then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
     else '') +
 
@@ -969,7 +984,7 @@ define "攝護腺癌Darolutamide申請結果":
   then '✖不通過：初次使用－攝護腺癌 Darolutamide 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－攝護腺癌 Darolutamide 用藥申請'
-  else '✖不通過：無法判定申請類型－攝護腺癌 Darolutamide 用藥申請'
+  else '✖不通過：無法判斷申請類型－攝護腺癌 Darolutamide 用藥申請'
 
 //============================================
 // 審核報告總結

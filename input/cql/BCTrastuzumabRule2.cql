@@ -513,6 +513,29 @@ define "主要規定三":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+define "ER檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularER)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -580,16 +603,16 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
-    Reusable."HER2檢測資料存在" and not "1規則2-1=HER2過度表現(IHC3+或FISH+)" or
-    Reusable."ER檢測資料存在" and not "1規則2-2=雌激素受體(ER)為陰性"
+    "主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
+    "HER2檢測資料存在" and not "1規則2-1=HER2過度表現(IHC3+或FISH+)" or
+    "ER檢測資料存在" and not "1規則2-2=雌激素受體(ER)為陰性"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
+         (if "主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."HER2檢測資料存在" and not "1規則2-1=HER2過度表現(IHC3+或FISH+)"
+         (if "HER2檢測資料存在" and not "1規則2-1=HER2過度表現(IHC3+或FISH+)"
            then '▲ 1規則2-1：HER2非過度表現(非IHC3+或FISH+)\n' else '') +
-         (if Reusable."ER檢測資料存在" and not "1規則2-2=雌激素受體(ER)為陰性"
+         (if "ER檢測資料存在" and not "1規則2-2=雌激素受體(ER)為陰性"
            then '▲ 1規則2-2：雌激素受體(ER)非陰性\n' else '') +
          '\n'
     else '') +
@@ -672,7 +695,7 @@ define "乳癌Trastuzumab2申請之CQL檢核結果":
   else if Reusable."續用申請"
   then '✖不通過：續用－早期乳癌Trastuzumab用藥申請'
 
-  else '✖不通過：無法判定申請類型－早期乳癌Trastuzumab用藥申請'
+  else '✖不通過：無法判斷申請類型－早期乳癌Trastuzumab用藥申請'
 
 
 //============================================

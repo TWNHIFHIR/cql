@@ -204,20 +204,8 @@ define "Ramucirumab申請資料存在":
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01FG02)
 
-define "影像報告資料存在":
-  Reusable."影像報告資料存在"
-
-define "分子病理報告資料存在":
-  Reusable."分子病理報告資料存在"
-
-define "影像或檢查報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
 define "評估報告資料存在":
-  Reusable."ChildPugh評估資料存在"
+  "ChildPugh評估資料存在"
 
 define "AFP檢驗資料存在":
   Reusable."HasTestObservationCode"(CodeConcept.AFP)
@@ -230,7 +218,7 @@ define "先前Sorafenib治療資料存在":
   )
 
 define "手術相關資料存在":
-  Reusable."手術報告資料存在"
+  "手術報告資料存在"
   or exists ([Claim] C where exists (C.procedure P where P.procedure is FHIR.CodeableConcept))
 
 define "無法手術切除說明資料存在":
@@ -238,6 +226,60 @@ define "無法手術切除說明資料存在":
 
 define "局部治療說明資料存在":
   Reusable."HasClaimDiagnosisText"('(?i).*(不適合局部治療|局部治療失敗).*')
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+  )
+
+define "影像報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsImageReport"(Report)
+  )
+
+define "分子病理報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsMolecularReport"(Report)
+      or Reusable."IsMolecularReportV2"(Report)
+      or Reusable."IsMolecularReport1"(Report)
+      or Reusable."IsMolecularReport2"(Report)
+  )
+
+define "影像或檢查報告資料存在":
+  "影像報告資料存在" or "分子病理報告資料存在"
+
+define "手術報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsOPReport"(Report)
+      or Reusable."IsOPReportV2"(Report)
+  )
+
+define "ChildPugh評估資料存在":
+  Reusable."HasPatientAssessmentObservationCode"(CodeConcept.ChildPugh)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -275,7 +317,7 @@ define function "不符合項目_必要資料未填寫"():
     else '') +
   (if Reusable."初次申請" and (
       not "Ramucirumab申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
+      or not "主要疾病ICD診斷資料存在"
       or not "癌症分期資料存在"
       or not "評估報告資料存在"
       or not "AFP檢驗資料存在"
@@ -287,7 +329,7 @@ define function "不符合項目_必要資料未填寫"():
       (if not ("影像或檢查報告資料存在" or "無法手術切除說明資料存在") then '▲ 規則1-2：未提供影像檢查報告或無法手術切除相關說明\n' else '') +
       (if not "局部治療說明資料存在" then '▲ 規則1-3：未提供不適合局部治療或局部治療失敗相關說明\n' else '') +
       (if not "AFP檢驗資料存在" then '▲ 規則1-4：未提供AFP檢驗資料\n' else '') +
-      (if not Reusable."主要疾病ICD診斷資料存在" then '▲ 規則1-5：未提供主要疾病ICD診斷資料\n' else '') +
+      (if not "主要疾病ICD診斷資料存在" then '▲ 規則1-5：未提供主要疾病ICD診斷資料\n' else '') +
       (if not "癌症分期資料存在" then '▲ 規則1-2/1-5：未提供癌症分期資料\n' else '') +
       (if not "評估報告資料存在" then '▲ 規則1-5：未提供Child-Pugh評估資料\n' else '') +
       '\n'
@@ -312,14 +354,14 @@ define function "不符合項目_條件或代碼不符合"():
       or (("影像或檢查報告資料存在" or "無法手術切除說明資料存在") and not "1規則1-2")
       or (("局部治療說明資料存在" or "手術相關資料存在") and not "1規則1-3")
       or ("AFP檢驗資料存在" and not "1規則1-4")
-      or ((Reusable."主要疾病ICD診斷資料存在" or "癌症分期資料存在" or "評估報告資料存在") and not "1規則1-5")
+      or (("主要疾病ICD診斷資料存在" or "癌症分期資料存在" or "評估報告資料存在") and not "1規則1-5")
     )
     then '<主要規定一：初次使用條件>\n' +
       (if "先前Sorafenib治療資料存在" and not "1規則1-1" then '▲ 規則1-1：先前Sorafenib治療紀錄、申請註記或醫令類別不符合條件\n' else '') +
       (if ("影像或檢查報告資料存在" or "無法手術切除說明資料存在") and not "1規則1-2" then '▲ 規則1-2：影像、分期或無法手術切除說明不符合條件\n' else '') +
       (if ("局部治療說明資料存在" or "手術相關資料存在") and not "1規則1-3" then '▲ 規則1-3：局部治療相關說明或手術報告不符合條件\n' else '') +
       (if "AFP檢驗資料存在" and not "1規則1-4" then '▲ 規則1-4：AFP檢驗值未達400 ng/mL門檻\n' else '') +
-      (if (Reusable."主要疾病ICD診斷資料存在" or "癌症分期資料存在" or "評估報告資料存在") and not "1規則1-5" then '▲ 規則1-5：年齡、ICD、分期、Child-Pugh、申請註記或醫令類別不符合條件\n' else '') +
+      (if ("主要疾病ICD診斷資料存在" or "癌症分期資料存在" or "評估報告資料存在") and not "1規則1-5" then '▲ 規則1-5：年齡、ICD、分期、Child-Pugh、申請註記或醫令類別不符合條件\n' else '') +
       '\n'
     else '') +
   (if Reusable."續用申請" and "影像報告資料存在" and not "主要規定二"
@@ -352,7 +394,7 @@ define "肝癌Ramucirumab申請結果":
   then '✖不通過：初次使用－肝癌 Ramucirumab 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－肝癌 Ramucirumab 用藥申請'
-  else '✖不通過：無法判定申請類型－肝癌 Ramucirumab 用藥申請'
+  else '✖不通過：無法判斷申請類型－肝癌 Ramucirumab 用藥申請'
 
 //============================================
 // 審核報告總結

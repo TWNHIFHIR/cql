@@ -262,6 +262,63 @@ define "主要規定三":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "醫令類別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.productOrService.coding PSC
+              where PSC in CodeConcept.NHIOrderType
+          )
+      )
+  )
+
+define "影像報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsImageReport"(Report)
+      and Report.effective is not null
+  )
+
+define "檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsMolecularReport"(Report)
+      and Report.effective is not null
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -337,20 +394,20 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
-    Reusable."醫令類別資料存在" and not "醫令類別為1_布林值" or
-    Reusable."HER2檢測資料存在" and not "1規則2=具HER2過度表現" or
+    "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
+    "醫令類別資料存在" and not "醫令類別為1_布林值" or
+    "HER2檢測資料存在" and not "1規則2=具HER2過度表現" or
     not "1規則3-1=轉移後未曾以抗HER2治療" or
     not "1規則3-2=轉移後未曾以化學療法治療" or
     not "1規則4=與trastuzumab併用" or
     not "1規則5=與docetaxel併用"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
+         (if "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."醫令類別資料存在" and not "醫令類別為1_布林值"
+         (if "醫令類別資料存在" and not "醫令類別為1_布林值"
            then '▲ 1條件醫令類別檢核：醫令類別非1\n' else '') +
-         (if Reusable."HER2檢測資料存在" and not "1規則2=具HER2過度表現"
+         (if "HER2檢測資料存在" and not "1規則2=具HER2過度表現"
            then '▲ 1條件2：HER2未達過度表現標準（需IHC3+或FISH+）\n' else '') +
          (if not "1規則3-1=轉移後未曾以抗HER2治療"
            then '▲ 1條件3-1：轉移後曾接受抗HER2治療，不符合初次給付資格\n' else '') +
@@ -385,14 +442,14 @@ define function "不符合項目_必要資料未填寫"():
   (if Reusable."初次申請" and (
     not "Pertuzumab申請" or
     not ("1規則1-1=3個月內影像報告" or "1規則1-3=3個月內有檢查報告") or
-    not Reusable."癌症分期資料存在"
+    not "癌症分期資料存在"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "Pertuzumab申請"
            then '▲ 未提供Pertuzumab申請資料\n' else '') +
-         (if not Reusable."影像報告資料存在" and not Reusable."檢查報告資料存在"
+         (if not "影像報告資料存在" and not "檢查報告資料存在"
            then '▲ 1條件1-1/1-3：未提供影像或檢查報告資料\n' else '') +
-         (if not Reusable."癌症分期資料存在"
+         (if not "癌症分期資料存在"
            then '▲ 1條件1-2：未提供癌症分期分數或結果資料\n' else '') +
          '\n'
     else '') +
@@ -435,7 +492,7 @@ define "乳癌Pertuzumab轉移性申請之CQL檢核結果":
   then '✖不通過：初次使用－轉移性乳癌 Pertuzumab 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－轉移性乳癌 Pertuzumab 用藥申請'
-  else '✖不通過：無法判定申請類型－轉移性乳癌 Pertuzumab 用藥申請'
+  else '✖不通過：無法判斷申請類型－轉移性乳癌 Pertuzumab 用藥申請'
 
 //============================================
 // 報告總結

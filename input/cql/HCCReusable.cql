@@ -127,7 +127,7 @@ define "申請類型":
   case
     when "續用註記為1" then '初次使用'
     when "續用註記為2" then '續用'
-    else '無法判定申請類型'
+    else '無法判斷申請類型'
   end
 
 define "初次申請":
@@ -137,7 +137,7 @@ define "續用申請":
   "申請類型" = '續用'
 
 define "申請類型未知":
-  "申請類型" = '無法判定申請類型'
+  "申請類型" = '無法判斷申請類型'
 
 //用藥線別不為1
 define "用藥線別≠1":
@@ -783,14 +783,14 @@ define function "HasGeneInfoObservationWithTextPattern"(MarkerCodes List<String>
   )
 
 define function "HasMarkerNegative"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative|wild type|原生型).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative|wild type|原生型).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerNegativeTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative|wild type|原生型).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerNegativeGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative|wild type|原生型).*')
+  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerPositive"(MarkerCodes List<String>):
   "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
@@ -1256,8 +1256,8 @@ define function "HasConcurrentDailyDoseAtMost"(DrugCodes List<String>, MaxValue 
 
 // 指定藥物所有申請療程天數加總是否未超過上限
 define function "HasMedicationTotalDurationWithin"(DrugCodes List<String>, MaxDays Integer):
-  Sum(
-    (
+  Coalesce(
+    Sum(
       [MedicationRequest] MR
       where MR.intent = 'plan'
         and (MR.status is null or MR.status in { 'active', 'completed', 'on-hold' })
@@ -1266,7 +1266,8 @@ define function "HasMedicationTotalDurationWithin"(DrugCodes List<String>, MaxDa
       return
         days between "GetStartTime"(MR)
           and "GetEndTime"(MR)
-    )
+    ),
+    0
   ) <= MaxDays
 
 // 是否有同藥物先前療程與本次療程間隔超過指定天數
@@ -1297,61 +1298,6 @@ define function "HasClaimDiagnosisText"(Pattern String):
           )
       )
   )
-
-// 檢核報告用：是否有主要疾病 ICD 診斷資料
-define "主要疾病ICD診斷資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.diagnosis D
-          where D.sequence = 1
-            and exists (
-              D.diagnosis.coding Cdg
-                where Cdg in CodeConcept.ICD10CM2023
-                  or Cdg in CodeConcept.ICD10CM2014
-            )
-      )
-  )
-
-// 檢核報告用：是否有癌症分期資料
-define "癌症分期資料存在":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '399390009'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and O.value is not null
-  )
-
-define "影像報告資料存在":
-  exists (
-    [DiagnosticReport] Report
-    where "IsImageReport"(Report)
-  )
-
-define "分子病理報告資料存在":
-  exists (
-    [DiagnosticReport] Report
-    where "IsMolecularReport"(Report)
-      or "IsMolecularReportV2"(Report)
-      or "IsMolecularReport1"(Report)
-      or "IsMolecularReport2"(Report)
-  )
-
-define "影像或檢查報告資料存在":
-  "影像報告資料存在" or "分子病理報告資料存在"
-
-define "手術報告資料存在":
-  exists (
-    [DiagnosticReport] Report
-    where "IsOPReport"(Report)
-      or "IsOPReportV2"(Report)
-  )
-
-define "ChildPugh評估資料存在":
-  "HasPatientAssessmentObservationCode"(CodeConcept.ChildPugh)
 
 // Child-Pugh 評估結果為 A 級（不限時間）
 define "HasChildPughA":

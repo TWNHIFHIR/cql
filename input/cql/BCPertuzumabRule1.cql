@@ -312,6 +312,37 @@ define "主要規定三": "3規則1" and "3規則2=總療程以18個療程為上
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -381,13 +412,13 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
-    (Reusable."癌症分期資料存在" and not "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0" and Reusable."癌症分期資料存在" and not "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1")
+    "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
+    ("癌症分期資料存在" and not "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0" and "癌症分期資料存在" and not "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1")
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
+         (if "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
            then '▲ 1規則1-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0" and Reusable."癌症分期資料存在" and not "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1" 
+         (if "癌症分期資料存在" and not "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0" and "癌症分期資料存在" and not "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1" 
            then '▲ 1規則1-條件1：癌症分期不符合（需為N≠0且M=0，或N≠0且M=1但僅骨轉移）\n' else '') +
          '\n'
     else '') +
@@ -413,7 +444,7 @@ define function "不符合項目_必要資料未填寫"():
   (if Reusable."初次申請" and (
     not "Pertuzumab申請" or 
     not ("1規則1-1-1-1=3個月內影像報告" or "1規則1-1-2-1=3個月內影像報告(為骨轉移)" or "1規則1-1-1-3/1規則1-1-2-3=3個月內有檢查報告") or 
-    not Reusable."HER2檢測資料存在" or 
+    not "HER2檢測資料存在" or 
     not "1規則2-1=與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用" or 
     not "1規則2-2=與化學療法併用"
   )
@@ -422,7 +453,7 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 未申請Pertuzumab\n' else '') +
          (if not ("1規則1-1-1-1=3個月內影像報告" or "1規則1-1-2-1=3個月內影像報告(為骨轉移)" or "1規則1-1-1-3/1規則1-1-2-3=3個月內有檢查報告") 
            then '▲ 1規則1-條件1：未提供影像或檢查報告資料\n' else '') +
-         (if not Reusable."HER2檢測資料存在" 
+         (if not "HER2檢測資料存在" 
            then '▲ 1規則1-條件2：未提供HER2過度表現檢測資料（需IHC3+或FISH+）\n' else '') +
          (if not "1規則2-1=與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用" 
            then '▲ 1規則2-條件1：未與trastuzumab（限使用Ogivri、Herzuma、Eirgasun、Herceptin、Kanjinti）併用\n' else '') +
@@ -482,7 +513,7 @@ define "乳癌Pertuzumab申請之CQL檢核結果":
   else if Reusable."續用申請"
   then '✖不通過：續用－早期乳癌 Pertuzumab 用藥申請'
   
-  else '✖不通過：無法判定申請類型－早期乳癌 Pertuzumab 用藥申請'
+  else '✖不通過：無法判斷申請類型－早期乳癌 Pertuzumab 用藥申請'
 
 //============================================
 // 報告總結

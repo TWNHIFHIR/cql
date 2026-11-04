@@ -256,6 +256,72 @@ and "3規則3=Olaparib每日最多使用4粒"
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "醫令類別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.productOrService.coding PSC
+              where PSC in CodeConcept.NHIOrderType
+          )
+      )
+  )
+
+define "影像報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsImageReport"(Report)
+      and Report.effective is not null
+  )
+
+define "檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsMolecularReport"(Report)
+      and Report.effective is not null
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+define "ER檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularER)
+
+define "PR檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularPR)
+
+define "BRCA1或BRCA2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.BRCA1or2)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -335,14 +401,14 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
-    Reusable."醫令類別資料存在" and not "醫令類別為1_布林值" or 
+    "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
+    "醫令類別資料存在" and not "醫令類別為1_布林值" or 
     not "1規則1-2=單獨使用(註：考量藥品數量繁多，此處僅限縮於不同時使用其他需事前審查之乳癌藥品，不包含傳統化療等)"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
+         (if "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."醫令類別資料存在" and not "醫令類別為1_布林值" 
+         (if "醫令類別資料存在" and not "醫令類別為1_布林值" 
            then '▲ 1條件醫令類別檢核：醫令類別非1\n' else '') +
          (if not "1規則1-2=單獨使用(註：考量藥品數量繁多，此處僅限縮於不同時使用其他需事前審查之乳癌藥品，不包含傳統化療等)" 
            then '▲ 1規則1-2：不得與其他需事前審查之乳癌藥品併用\n' else '') +
@@ -373,28 +439,28 @@ define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not ("1規則1-1-1=3個月內影像報告" or "1規則1-1-4=3個月內有檢查報告") or 
-    not Reusable."癌症分期資料存在" or 
+    not "癌症分期資料存在" or 
     not "1規則1-1-5=Olaparib申請" or 
     not "1規則1-3=曾接受前導性化療或術後輔助性化療或轉移性化療" or 
-    not Reusable."BRCA1或BRCA2檢測資料存在" or 
-    not Reusable."HER2檢測資料存在"
+    not "BRCA1或BRCA2檢測資料存在" or 
+    not "HER2檢測資料存在"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if not Reusable."影像報告資料存在" and not Reusable."檢查報告資料存在" 
+         (if not "影像報告資料存在" and not "檢查報告資料存在" 
            then '▲ 1規則1-1-1/1-1-4：未提供影像或檢查報告資料\n' else '') +
-         (if not Reusable."癌症分期資料存在" 
+         (if not "癌症分期資料存在" 
            then '▲ 1規則1-1-3：未提供癌症分期分數或結果資料\n' else '') +
          (if not "1規則1-1-5=Olaparib申請" 
            then '▲ 1規則1-1-5：未提供Olaparib申請資料\n' else '') +
          (if not "1規則1-3=曾接受前導性化療或術後輔助性化療或轉移性化療" 
            then '▲ 1規則1-3：未提供前導性化療或術後輔助性化療或轉移性化療紀錄\n' else '') +
-         (if not Reusable."BRCA1或BRCA2檢測資料存在" 
+         (if not "BRCA1或BRCA2檢測資料存在" 
            then '▲ 1規則1-4：未提供germline BRCA 1/2致病性或疑似致病性突變檢測報告\n' else '') +
-         (if not Reusable."ER檢測資料存在" 
+         (if not "ER檢測資料存在" 
            then '▲ 1規則1-5-1：未提供ER檢測資料\n' else '') +
-         (if not Reusable."PR檢測資料存在" 
+         (if not "PR檢測資料存在" 
            then '▲ 1規則1-5-2：未提供PR檢測資料\n' else '') +
-         (if not Reusable."HER2檢測資料存在" 
+         (if not "HER2檢測資料存在" 
            then '▲ 1規則1-5-3：未提供HER2檢測資料\n' else '') +
          '\n'
     else '') +
@@ -431,7 +497,7 @@ define "乳癌Olaparib申請之CQL檢核結果":
   then '✖不通過：初次使用－三陰性乳癌 Olaparib 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－三陰性乳癌 Olaparib 用藥申請'
-  else '✖不通過：無法判定申請類型－三陰性乳癌 Olaparib 用藥申請'
+  else '✖不通過：無法判斷申請類型－三陰性乳癌 Olaparib 用藥申請'
 
 //============================================
 // 報告總結

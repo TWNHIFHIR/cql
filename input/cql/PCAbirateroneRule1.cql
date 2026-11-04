@@ -189,13 +189,6 @@ or ("1規則1-7-2" and "1規則1-7-4")
 or ("1規則1-7-3" and "1規則1-7-4")
 
 //條件8
-define "照護計畫文件資料存在":
-  Reusable."HasCarePlanDocument"
-  and (
-    Reusable."HasMedicationRecord"("mCRPC藥物代碼")
-    or "手術項目"
-  )
-
 define "1規則1-8":
 "3個月內有檢查報告"
 and "PSAExtended檢驗代碼"
@@ -396,21 +389,13 @@ and "1規則3-4" and "1規則3-5"
 
 /*規則4*/
 //條件1
-//事前審查藥物預定處方起始日期(useSdate)
-define "useSdate":
-  Reusable."GetStartTime"("本次事前審查申請品項紀錄")
-
-//事前審查藥物預定處方終止日期(useEdate)
-define "useEdate":
-  Reusable."GetEndTime"("本次事前審查申請品項紀錄")
-
 define "L01XK01處方期間涵蓋申請區間":
   exists (
     [MedicationRequest] MR
       where Reusable."HasMedicationCode"(MR, CodeConcept."L01XK01")
         and Reusable."HasValidTiming"(MR)
-        and Reusable."GetStartTime"(MR) <= "useSdate"
-        and Reusable."GetEndTime"(MR) >= "useEdate"
+        and Reusable."GetStartTime"(MR) <= "本次事前審查申請品項預定起始日期"
+        and Reusable."GetEndTime"(MR) >= "本次事前審查申請品項預定終止日期"
   )
 
 define "1規則4-1":
@@ -548,8 +533,8 @@ and "手術項目"
 
 //條件2
 define "3規則2-2":
-  "useSdate" is not null
-  and "useEdate" is not null
+  "本次事前審查申請品項預定起始日期" is not null
+  and "本次事前審查申請品項預定終止日期" is not null
   and Reusable."HasMedicationTotalDurationWithin"(CodeConcept."L02BX03", 1095)
   and Reusable."HasMedicationTotalDurationWithin"({ 'BC28581100' }, 730)
 
@@ -640,8 +625,8 @@ define "3規則5":
     [MedicationRequest] MR
       where Reusable."HasMedicationCode"(MR, CodeConcept."V10XX03")
         and Reusable."HasValidTiming"(MR)
-        and Reusable."GetStartTime"(MR) <= "useSdate"
-        and Reusable."GetEndTime"(MR) >= "useEdate"
+        and Reusable."GetStartTime"(MR) <= "本次事前審查申請品項預定起始日期"
+        and Reusable."GetEndTime"(MR) >= "本次事前審查申請品項預定終止日期"
   )
 and Reusable."醫令類別為1"
 
@@ -672,7 +657,7 @@ define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept."L02BX03")
 
 define "攝護腺癌ICD診斷資料存在":
-  Reusable."主要疾病ICD診斷資料存在"
+  "主要疾病ICD診斷資料存在"
 
 define "簡要病摘資料存在":
   exists (
@@ -698,8 +683,23 @@ define "分子檢查報告資料存在":
       where Reusable."IsMolecularReport"(Report)
   )
 
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
+define "PSAExtended檢驗資料存在":
+  exists (
+    [Observation] OBs
+      where exists (
+        OBs.category C
+          where exists (
+            C.coding Cdg
+              where Cdg in CodeConcept.NHIPASSupportingInfoType
+                and Cdg.code = 'tests'
+          )
+      )
+        and exists (
+          OBs.code.coding Cdg
+          where Cdg in CodeConcept.LOINC
+            and Cdg.code in CodeConcept."PSALabTestCodeExtended"
+        )
+  )
 
 define "PSA檢驗資料存在":
   exists (
@@ -715,6 +715,7 @@ define "PSA檢驗資料存在":
         and exists (
           OBs.code.coding Cdg
           where Cdg in CodeConcept.LOINC
+            and Cdg.code in CodeConcept."PSALabTestCodeBasic"
         )
   )
 
@@ -847,6 +848,39 @@ define "不得併用藥物處方資料存在":
       where Reusable."HasMedicationCode"(MR, "AbirateroneExcludedConcurrentMedication")
   )
 
+define "照護計畫文件資料存在":
+  Reusable."HasCarePlanDocument"
+  and (
+    Reusable."HasMedicationRecord"("mCRPC藥物代碼")
+    or "手術項目"
+  )
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+  )
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -931,7 +965,7 @@ define function "不符合項目_條件或代碼不符合"():
 
 define function "不符合項目_必要資料未填寫"():
   // 申請類型無法判定
-  (if Reusable."申請類型" = '無法判定申請類型'
+  (if Reusable."申請類型" = '無法判斷申請類型'
     then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
     else '') +
 
@@ -941,7 +975,7 @@ define function "不符合項目_必要資料未填寫"():
       or not "醫令類別資料存在"
       or not "攝護腺癌ICD診斷資料存在"
       or not "簡要病摘資料存在"
-      or not "PSA檢驗資料存在"
+      or not "PSAExtended檢驗資料存在"
       or (not "去勢用藥處方資料存在" and not "手術去勢處置資料存在")
       or not "皮質類固醇處方資料存在"
       or not "ECOG資料存在"
@@ -959,7 +993,7 @@ define function "不符合項目_必要資料未填寫"():
          (if not "醫令類別資料存在" then '▲ 申請醫令：未提供醫令類別資料\n' else '') +
          (if not "攝護腺癌ICD診斷資料存在" then '▲ 規則1/2/3/4：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "簡要病摘資料存在" then '▲ 規則1/2/3：未提供簡要病摘資料\n' else '') +
-         (if not "PSA檢驗資料存在" then '▲ 規則1/2/3：未提供PSA檢驗資料\n' else '') +
+         (if not "PSAExtended檢驗資料存在" then '▲ 規則1/2/3：未提供PSA檢驗資料\n' else '') +
          (if not "去勢用藥處方資料存在" and not "手術去勢處置資料存在" then '▲ 規則1/2/3：未提供去勢用藥處方或手術去勢處置資料\n' else '') +
          (if not "皮質類固醇處方資料存在" then '▲ 規則1/2/3/4：未提供皮質類固醇併用處方資料\n' else '') +
          (if not "ECOG資料存在" then '▲ 規則1/2/3：未提供ECOG評估資料\n' else '') +
@@ -1016,7 +1050,7 @@ define "攝護腺癌Abiraterone申請結果":
   then '✖不通過：初次使用－攝護腺癌 Abiraterone 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－攝護腺癌 Abiraterone 用藥申請'
-  else '✖不通過：無法判定申請類型－攝護腺癌 Abiraterone 用藥申請'
+  else '✖不通過：無法判斷申請類型－攝護腺癌 Abiraterone 用藥申請'
 
 //============================================
 // 審核報告總結

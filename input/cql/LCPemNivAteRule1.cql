@@ -634,6 +634,7 @@ define "療程期間資料存在":
         and Reusable."HasValidTiming"(MR)
   )
 
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -886,7 +887,7 @@ define "肺癌PembrolizumabNivolumabAtezolizumab申請結果":
   then '✖不通過：初次使用－肺癌 Pembrolizumab/Nivolumab/Atezolizumab 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－肺癌 Pembrolizumab/Nivolumab/Atezolizumab 用藥申請'
-  else '✖不通過：無法判定申請類型－肺癌 Pembrolizumab/Nivolumab/Atezolizumab 用藥申請'
+  else '✖不通過：無法判斷申請類型－肺癌 Pembrolizumab/Nivolumab/Atezolizumab 用藥申請'
 
 
 //============================================

@@ -235,22 +235,10 @@ define "Panitumumab申請資料存在":
   Reusable."HasMedicationPlanRecord"(CodeConcept.L01FE02)
 
 define "化學療法併用資料存在":
-  Reusable."FOLFIRI或FOLFOX化學療法資料存在"
-
-define "RAS基因檢測資料存在":
-  Reusable."RAS基因檢測資料存在"
-
-define "影像或檢查報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
-define "用藥線別資料存在":
-  Reusable."用藥線別資料存在"
+  "FOLFIRI或FOLFOX化學療法資料存在"
 
 define "續用客觀證據資料存在":
-  Reusable."影像或檢查報告資料存在"
+  "影像或檢查報告資料存在"
 
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01FE02)
@@ -262,6 +250,71 @@ define "Cetuximab併用資料存在":
 define "Bevacizumab併用資料存在":
   Reusable."HasMedicationRecord"(CodeConcept.L01FE02)
   or Reusable."HasMedicationRecord"(CodeConcept.L01FG01)
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "用藥線別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.modifier M
+              where exists (
+                M.coding Cdg
+                  where Cdg in CodeConcept.NHILOT
+              )
+          )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "影像或檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Report.effective is not null
+  )
+
+define "RAS基因檢測資料存在":
+  Reusable."HasObservationCode"(CodeConcept.GeneTest)
+  or exists (
+    [Observation] RasObservation
+    where exists (
+      RasObservation.code.coding Cdg
+      where Cdg.code = '69548-6'
+        and Cdg in CodeConcept.LOINC
+    )
+  )
+
+define "FOLFIRI或FOLFOX化學療法資料存在":
+  Reusable."HasMedicationRecord"(CodeConcept.L01BC02)
+  or Reusable."HasMedicationRecord"(CodeConcept.L01XA03)
+  or Reusable."HasMedicationRecord"(CodeConcept.L01CE02)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -324,7 +377,7 @@ define function "不符合項目_條件或代碼不符合"():
   (if Reusable."初次申請" and (
     ("化學療法併用資料存在" and not "1規則1")
     or ("RAS基因檢測資料存在" and not "1規則2=K-RAS基因及N-RAS基因沒有突變")
-    or (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
+    or ("主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
     or ("影像或檢查報告資料存在" and not ("1規則3-2=三個月內有影像檢查報告" or "1規則3-4=三個月內有檢查報告"))
     or ("癌症分期資料存在" and not "1規則3-3=癌症分期分數或結果為M>=1")
     or ("用藥線別資料存在" and not "1規則3-5=用藥線別為第一線")
@@ -334,7 +387,7 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 規則1：未符合Panitumumab與FOLFOX或FOLFIRI併用條件（參考資訊）\n' else '') +
          (if "RAS基因檢測資料存在" and not "1規則2=K-RAS基因及N-RAS基因沒有突變"
            then '▲ 規則2：K-RAS基因或N-RAS基因檢測結果不符合無突變條件\n' else '') +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
+         (if "主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '▲ 規則3-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
          (if "影像或檢查報告資料存在" and not ("1規則3-2=三個月內有影像檢查報告" or "1規則3-4=三個月內有檢查報告")
            then '▲ 規則3-2/3-4：影像檢查報告或檢查報告不在三個月內或代碼不符合\n' else '') +
@@ -384,7 +437,7 @@ define function "不符合項目_必要資料未填寫"():
     not "Panitumumab申請資料存在"
     or not "化學療法併用資料存在"
     or not "RAS基因檢測資料存在"
-    or not Reusable."主要疾病ICD診斷資料存在"
+    or not "主要疾病ICD診斷資料存在"
     or not "影像或檢查報告資料存在"
     or not "癌症分期資料存在"
     or not "用藥線別資料存在"
@@ -396,7 +449,7 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 規則1：未提供化學療法併用資料（需有FOLFOX或FOLFIRI之處方）（參考資訊）\n' else '') +
          (if not "RAS基因檢測資料存在"
            then '▲ 規則2：未提供RAS基因檢測資料\n' else '') +
-         (if not Reusable."主要疾病ICD診斷資料存在"
+         (if not "主要疾病ICD診斷資料存在"
            then '▲ 規則3-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "影像或檢查報告資料存在"
            then '▲ 規則3-2/3-4：未提供三個月內影像檢查報告或檢查報告\n' else '') +
@@ -446,7 +499,7 @@ define "大腸直腸癌Panitumumab申請結果":
   then '✖不通過：初次使用－大腸直腸癌 Panitumumab 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－大腸直腸癌 Panitumumab 用藥申請'
-  else '✖不通過：無法判定申請類型－大腸直腸癌 Panitumumab 用藥申請'
+  else '✖不通過：無法判斷申請類型－大腸直腸癌 Panitumumab 用藥申請'
 
 //============================================
 // 審核報告總結

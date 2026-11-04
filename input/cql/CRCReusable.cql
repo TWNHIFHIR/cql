@@ -112,39 +112,6 @@ define "醫令類別為1":
       )
   )
 
-// 是否有主要疾病 ICD 診斷資料（不限定是否為 CRC 代碼）
-define "主要疾病ICD診斷資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.diagnosis D
-          where D.sequence = 1
-            and exists (
-              D.diagnosis.coding Cdg
-                where (
-                  Cdg in CodeConcept.ICD10CM2023
-                  or Cdg in CodeConcept.ICD10CM2014
-                )
-            )
-      )
-  )
-
-// 是否有用藥線別資料（不限定線別內容）
-define "用藥線別資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.item I
-          where exists (
-            I.modifier M
-              where exists (
-                M.coding Cdg
-                  where Cdg in CodeConcept.NHILOT
-              )
-          )
-      )
-  )
-
 
 // 是否有本次藥物申請紀錄
 // 用於各 Library 的「申請資料存在」
@@ -207,25 +174,6 @@ define function "HasObservationCode"(Codes List<String>):
 // 共用邏輯：資料存在判斷
 // 適用於多個 Library 的必要資料檢查；只判斷資料是否存在，不判斷內容是否符合規則。
 //============================================
-
-// 是否有癌症分期資料（不限定 M 值結果）。
-define "癌症分期資料存在":
-  exists (
-    [Observation] O
-    where exists (
-      O.code.coding Cdg
-      where Cdg.code = '399390009'
-        and Cdg in CodeConcept.SNOMED
-    )
-    and O.value is not null
-  )
-
-// 是否有影像或檢查報告資料（不限定代碼或時間）。
-define "影像或檢查報告資料存在":
-  exists (
-    [DiagnosticReport] Report
-    where Report.effective is not null
-  )
 
 //============================================
 // 共用邏輯：指定期間內的報告檢核
@@ -333,40 +281,6 @@ define function "HasLineOfTherapyIn"(LineCodes List<String>):
 // 共用邏輯：基因檢測與特定治療資料存在
 // 適用於多個 Library 的必要資料檢查
 //============================================
-
-// 是否有 RAS/KRAS 基因檢測資料。
-define "RAS基因檢測資料存在":
-  "HasObservationCode"(CodeConcept.GeneTest)
-  or exists (
-    [Observation] RasObservation
-    where exists (
-      RasObservation.code.coding Cdg
-      where Cdg.code = '69548-6'
-        and Cdg in CodeConcept.LOINC
-    )
-  )
-
-// 是否有 FOLFIRI/FOLFOX 相關化療用藥資料
-define "FOLFIRI或FOLFOX化學療法資料存在":
-  "HasMedicationRecord"(CodeConcept.L01BC02)
-  or "HasMedicationRecord"(CodeConcept.L01XA03)
-  or "HasMedicationRecord"(CodeConcept.L01CE02)
-
-// 是否有 anti-EGFR 療法資料
-define "AntiEGFR療法資料存在":
-  "HasMedicationRecord"(CodeConcept.AntiEGFR)
-
-// 是否有治療反應評估資料（不限定評估結果）
-define "治療反應評估資料存在":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where (Cdg.code in CodeConcept."IREC疾病狀態評估")
-            and Cdg in CodeConcept.NHITreatmentAst
-      )
-      and O.value is not null
-  )
 
 define function "HasValidTiming"(MedicationRequestForTiming MedicationRequest):
   MedicationRequestForTiming.dosageInstruction is not null
@@ -564,18 +478,19 @@ define function "HasMedicationPlanDurationWithin"(CurrentDrugCodes List<String>,
   )
 
 // 指定藥物所有申請療程天數加總是否未超過上限
-define function "HasMedicationTotalDurationWithin"(TotalDurationMedicationCodes List<String>, MaxDays Integer):
-  Sum(
-    (
+define function "HasMedicationTotalDurationWithin"(DrugCodes List<String>, MaxDays Integer):
+  Coalesce(
+    Sum(
       [MedicationRequest] MR
       where MR.intent = 'plan'
         and (MR.status is null or MR.status in { 'active', 'completed', 'on-hold' })
-        and "HasMedicationCode"(MR, TotalDurationMedicationCodes)
+        and "HasMedicationCode"(MR, DrugCodes)
         and "HasValidTiming"(MR)
       return
         days between "GetStartTime"(MR)
           and "GetEndTime"(MR)
-    )
+    ),
+    0
   ) <= MaxDays
 
 // 取得檢驗數值，相容 valueInteger、valueDecimal、valueQuantity、valueString（可解析為數字）四種型態；皆不符合則回傳 null

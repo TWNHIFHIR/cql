@@ -205,52 +205,6 @@ define "醫令類別為1":
       )
   )
 
-// 是否有主要疾病 ICD 診斷資料（不限定是否為 C50）。
-define "主要疾病ICD診斷資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.diagnosis D
-          where D.sequence = 1
-            and exists (
-              D.diagnosis.coding Cdg
-                where (
-                  Cdg in CodeConcept.ICD10CM2023
-                  or Cdg in CodeConcept.ICD10CM2014
-                )
-            )
-      )
-  )
-
-// 是否有用藥線別資料（不限定線別內容）。
-define "用藥線別資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.item I
-          where exists (
-            I.modifier M
-              where exists (
-                M.coding Cdg
-                  where Cdg in CodeConcept.NHILOT
-              )
-          )
-      )
-  )
-
-// 是否有醫令類別資料（不限定是否為癌症治療）。
-define "醫令類別資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.item I
-          where exists (
-            I.productOrService.coding PSC
-              where PSC in CodeConcept.NHIOrderType
-          )
-      )
-  )
-
 //影像報告
 define function "IsImageReport"(Report DiagnosticReport):
   exists (
@@ -290,27 +244,6 @@ define function "HasRecentMolecularReport"(ReferenceDate DateTime, LookbackDays 
     where "IsMolecularReport"(Report)
       and "IsReportWithinDaysBefore"(Report, ReferenceDate, LookbackDays)
   )
-
-// 是否有影像報告資料（不限定時間）。
-define "影像報告資料存在":
-  exists (
-    [DiagnosticReport] Report
-    where "IsImageReport"(Report)
-      and Report.effective is not null
-  )
-
-// 是否有分子/病理檢查報告資料（不限定時間）。
-define "檢查報告資料存在":
-  exists (
-    [DiagnosticReport] Report
-    where "IsMolecularReport"(Report)
-      and Report.effective is not null
-  )
-
-// 是否有影像或分子/病理檢查報告資料（不限定時間）。
-define "影像或檢查報告資料存在":
-  "影像報告資料存在"
-  or "檢查報告資料存在"
 
 define function "IsTestObservation"(OBs Observation):
   exists (
@@ -368,18 +301,6 @@ define function "IsObservationWithinDaysBefore"(Obs Observation, ReferenceDate D
   and ReferenceDate is not null
   and "EffectiveDateTime"(Obs.effective) <= ReferenceDate
   and (days between "EffectiveDateTime"(Obs.effective) and ReferenceDate) <= LookbackDays
-
-// 是否有癌症分期資料（不限定 M/N 值內容）。
-define "癌症分期資料存在":
-  exists (
-    [Observation] O
-    where exists (
-      O.code.coding Cdg
-      where Cdg.code = '399390009'
-        and Cdg in CodeConcept.SNOMED
-    )
-    and O.value is not null
-  )
 
 // 是否有指定 LOINC 檢驗 Observation（不限定結果）。
 define function "HasTestObservationData"(MarkerCodes List<String>):
@@ -455,18 +376,6 @@ define function "HasMarkerData"(MarkerCodes List<String>):
   "HasTestObservationData"(MarkerCodes)
   or "HasGeneInfoComponentData"(MarkerCodes)
   or "HasDiagnosticReportData"(MarkerCodes)
-
-define "HER2檢測資料存在":
-  "HasMarkerData"(CodeConcept.HER2)
-
-define "ER檢測資料存在":
-  "HasMarkerData"(CodeConcept.MolecularER)
-
-define "PR檢測資料存在":
-  "HasMarkerData"(CodeConcept.MolecularPR)
-
-define "BRCA1或BRCA2檢測資料存在":
-  "HasMarkerData"(CodeConcept.BRCA1or2)
 
 define function "HasTestObservationResult"(MarkerCodes List<String>, ResultCodes List<String>, ValuePattern String):
   exists (
@@ -673,14 +582,14 @@ define function "HasMarkerNegativeGene"(MarkerCodes List<String>):
   "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerPositive"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\+|陽性|positive).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\+|陽性|positive).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
 
 define function "HasMarkerPositiveTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\+|陽性|positive).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
 
 define function "HasMarkerPositiveGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\+|陽性|positive).*')
+  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
 
 define "HasHER2NegativeTest":
   "HasMarkerNegativeTest"(CodeConcept.HER2)
@@ -766,7 +675,7 @@ define function "HasValidTiming"(MR MedicationRequest):
 
 // 取得 MedicationRequest 的起始時間
 define function "GetStartTime"(MR MedicationRequest):
-  FHIRHelpers.ToDateTime((MR.dosageInstruction[0].timing.repeat.bounds as Period).start)
+  start of (MR.dosageInstruction[0].timing.repeat.bounds as Period)
 
 // 本次事前審查申請日期：最新一筆 Claim 的 created
 define "本次事前審查申請日期":
@@ -780,7 +689,7 @@ define "本次事前審查申請日期":
 
 // 取得 MedicationRequest 的結束時間  
 define function "GetEndTime"(MR MedicationRequest):
-  FHIRHelpers.ToDateTime((MR.dosageInstruction[0].timing.repeat.bounds as Period).end)
+  end of (MR.dosageInstruction[0].timing.repeat.bounds as Period)
 
 // 檢查 Plan 的時間範圍是否在 Order 的時間範圍內
 define function "PlanTimeWithinOrderTime"(MRPlan MedicationRequest, MROrder MedicationRequest):

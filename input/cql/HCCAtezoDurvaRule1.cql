@@ -747,12 +747,12 @@ define "cancerDrugType":
 define "本次事前審查申請品項紀錄":
   Reusable."LatestMedicationPlan"("cancerDrugType")
 
-//useSdate：本次申請之處方起始日
-define "useSdate":
+// 本次事前審查申請品項預定起始日期：事前審查申請品項的預定處方起始日期
+define "本次事前審查申請品項預定起始日期":
   Reusable."GetStartTime"("本次事前審查申請品項紀錄")
 
-//事前審查藥物預定處方終止日期(useEdate)
-define "useEdate":
+// 本次事前審查申請品項預定終止日期：事前審查申請品項的預定處方終止日期
+define "本次事前審查申請品項預定終止日期":
   Reusable."GetEndTime"("本次事前審查申請品項紀錄")
 
 //首次事前審查申請品項紀錄（同品項藥物最早一筆 plan）
@@ -767,20 +767,20 @@ define "首次事前審查申請品項紀錄":
 define "首次事前審查申請品項預定起始日期":
   Reusable."GetStartTime"("首次事前審查申請品項紀錄")
 
-//useEdate - 首次事前審查申請品項預定起始日期 <= 730
+//本次事前審查申請品項預定終止日期 - 首次事前審查申請品項預定起始日期 <= 730
 define "用藥期間未逾730天":
-  "useEdate" is not null
+  "本次事前審查申請品項預定終止日期" is not null
   and "首次事前審查申請品項預定起始日期" is not null
-  and (days between "首次事前審查申請品項預定起始日期" and "useEdate") <= 730
+  and (days between "首次事前審查申請品項預定起始日期" and "本次事前審查申請品項預定終止日期") <= 730
 
 define "3規則2-3":
 "本次事前審查申請品項紀錄" is not null
 and "用藥期間未逾730天"
 
 define "用藥期間未逾84天":
-  "useSdate" is not null
-  and "useEdate" is not null
-  and (days between "useSdate" and "useEdate") <= 84
+  "本次事前審查申請品項預定起始日期" is not null
+  and "本次事前審查申請品項預定終止日期" is not null
+  and (days between "本次事前審查申請品項預定起始日期" and "本次事前審查申請品項預定終止日期") <= 84
 
 //規則4
 define "3規則4-5":
@@ -808,32 +808,17 @@ define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01FF05)
   or Reusable."HasMedicationPlanTiming"(CodeConcept.L01FF03)
 
-define "影像報告資料存在":
-  Reusable."影像報告資料存在"
-
 define "影像報告V2資料存在":
   exists (
     [DiagnosticReport] Report
       where Reusable."IsImageReportV2"(Report)
   )
 
-define "分子病理報告資料存在":
-  Reusable."分子病理報告資料存在"
-
-define "影像或檢查報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
 define "ECOG評估資料存在":
   Reusable."HasPatientAssessmentObservationCode"(CodeConcept.ECOG)
 
 define "NYHA評估資料存在":
   Reusable."HasPatientAssessmentObservationCode"(CodeConcept.NYHA)
-
-define "ChildPugh評估資料存在":
-  Reusable."ChildPugh評估資料存在"
 
 define "腎功能檢驗資料存在":
   Reusable."HasTestObservationCode"(CodeConcept.Creatinine union CodeConcept.eGFR)
@@ -849,7 +834,7 @@ define "MREC疾病狀態評估資料存在":
   )
 
 define "手術相關資料存在":
-  Reusable."手術報告資料存在"
+  "手術報告資料存在"
   or exists ([Claim] C where exists (C.procedure P where P.procedure is FHIR.CodeableConcept))
 
 define "器官移植病史資料存在":
@@ -885,6 +870,60 @@ define "照護計畫文件資料存在":
           )
       )
   )
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+  )
+
+define "影像報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsImageReport"(Report)
+  )
+
+define "分子病理報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsMolecularReport"(Report)
+      or Reusable."IsMolecularReportV2"(Report)
+      or Reusable."IsMolecularReport1"(Report)
+      or Reusable."IsMolecularReport2"(Report)
+  )
+
+define "影像或檢查報告資料存在":
+  "影像報告資料存在" or "分子病理報告資料存在"
+
+define "手術報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsOPReport"(Report)
+      or Reusable."IsOPReportV2"(Report)
+  )
+
+define "ChildPugh評估資料存在":
+  Reusable."HasPatientAssessmentObservationCode"(CodeConcept.ChildPugh)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -943,7 +982,7 @@ define function "不符合項目_必要資料未填寫"():
     else '') +
   (if Reusable."初次申請" and (
       not "AtezoDurva申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
+      or not "主要疾病ICD診斷資料存在"
       or not "影像或檢查報告資料存在"
       or not "ECOG評估資料存在"
       or not "NYHA評估資料存在"
@@ -953,7 +992,7 @@ define function "不符合項目_必要資料未填寫"():
     )
     then '<主要規定一：初次使用條件>\n' +
       (if not "AtezoDurva申請資料存在" then '▲ 申請醫令：未提供Atezolizumab或Durvalumab申請醫令資料\n' else '') +
-      (if not Reusable."主要疾病ICD診斷資料存在" then '▲ 規則1-1：未提供主要疾病ICD診斷資料\n' else '') +
+      (if not "主要疾病ICD診斷資料存在" then '▲ 規則1-1：未提供主要疾病ICD診斷資料\n' else '') +
       (if not "影像或檢查報告資料存在" then '▲ 規則1-2/1-3：未提供影像檢查或分子病理檢查報告資料\n' else '') +
       (if not "ECOG評估資料存在" then '▲ 規則2-1：未提供ECOG評估資料\n' else '') +
       (if not "NYHA評估資料存在" then '▲ 規則2-2：未提供NYHA評估資料\n' else '') +
@@ -1063,7 +1102,7 @@ define "肝癌AtezoDurva申請結果":
   then '✖不通過：初次使用－肝癌 Atezolizumab/Durvalumab 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－肝癌 Atezolizumab/Durvalumab 用藥申請'
-  else '✖不通過：無法判定申請類型－肝癌 Atezolizumab/Durvalumab 用藥申請'
+  else '✖不通過：無法判斷申請類型－肝癌 Atezolizumab/Durvalumab 用藥申請'
 
 //============================================
 // 審核報告總結

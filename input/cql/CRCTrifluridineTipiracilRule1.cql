@@ -214,12 +214,6 @@ define "主要規定三":
 define "TrifluridineTipiracil申請資料存在":
   Reusable."HasMedicationPlanRecord"(CodeConcept.L01BC59)
 
-define "影像或檢查報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
 define "先前基礎化療資料存在":
   Reusable."HasMedicationRecord"(CodeConcept."FluoropyrimidineBase")
   or Reusable."HasMedicationRecord"(CodeConcept.L01XA03)
@@ -245,11 +239,8 @@ define "RAS檢測資料存在":
     )
   )
 
-define "AntiEGFR療法資料存在":
-  Reusable."AntiEGFR療法資料存在"
-
 define "續用客觀證據資料存在":
-  Reusable."影像或檢查報告資料存在"
+  "影像或檢查報告資料存在"
 
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01BC59)
@@ -257,6 +248,43 @@ define "療程期間資料存在":
 define "併用Regorafenib資料存在":
   Reusable."HasMedicationRecord"(CodeConcept.L01BC59)
   or Reusable."HasMedicationRecord"(CodeConcept.L01EX05)
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "影像或檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Report.effective is not null
+  )
+
+define "AntiEGFR療法資料存在":
+  Reusable."HasMedicationRecord"(CodeConcept.AntiEGFR)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -317,7 +345,7 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 代碼條件不符
   (if Reusable."初次申請" and (
-      (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21") or 
+      ("主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21") or 
       ("影像或檢查報告資料存在" and not ("1規則1-1-2=三個月內有影像檢查報告" or "1規則1-1-4=三個月內有檢查報告")) or
       ("癌症分期資料存在" and not "1規則1-1-3=癌症分期分數或結果為M>=1") or 
       (Patient.birthDate is not null and not "1規則1-2=成人") or 
@@ -325,7 +353,7 @@ define function "不符合項目_條件或代碼不符合"():
       ("RAS檢測資料存在" and "1規則1-4-1=檢核是否為RAS 原生型(wild type)(符合者需有條件4-2不符合者不用)" and "AntiEGFR療法資料存在" and not "1規則1-4-2=接受過抗表皮生長因子受體（anti-EGFR）療法")
     )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
+         (if "主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
           then '▲ 規則1-1-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
          (if "影像或檢查報告資料存在" and not ("1規則1-1-2=三個月內有影像檢查報告" or "1規則1-1-4=三個月內有檢查報告")
           then '▲ 規則1-1-2/1-1-4：影像檢查報告或檢查報告不在三個月內或代碼不符合\n' else '') +
@@ -367,7 +395,7 @@ define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "TrifluridineTipiracil申請資料存在"
-    or not Reusable."主要疾病ICD診斷資料存在"
+    or not "主要疾病ICD診斷資料存在"
     or not "影像或檢查報告資料存在"
     or not "癌症分期資料存在"
     or Patient.birthDate is null
@@ -378,7 +406,7 @@ define function "不符合項目_必要資料未填寫"():
     then '<主要規定一：初次使用條件>\n' +
          (if not "TrifluridineTipiracil申請資料存在"
            then '▲ 規則2：未提供Trifluridine/Tipiracil申請醫令資料\n' else '') +
-         (if not Reusable."主要疾病ICD診斷資料存在"
+         (if not "主要疾病ICD診斷資料存在"
            then '▲ 規則1-1-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "影像或檢查報告資料存在"
            then '▲ 規則1-1-2/1-1-4：未提供三個月內影像檢查報告或檢查報告\n' else '') +
@@ -443,7 +471,7 @@ define "大腸直腸癌TrifluridineTipiracil申請結果":
   then '✖不通過：初次使用－大腸直腸癌 Trifluridine/Tipiracil 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－大腸直腸癌 Trifluridine/Tipiracil 用藥申請'
-  else '✖不通過：無法判定申請類型－大腸直腸癌 Trifluridine/Tipiracil 用藥申請'
+  else '✖不通過：無法判斷申請類型－大腸直腸癌 Trifluridine/Tipiracil 用藥申請'
 
 //============================================
 // 審核報告總結

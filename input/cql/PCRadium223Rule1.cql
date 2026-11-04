@@ -215,7 +215,7 @@ define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept."V10XX03")
 
 define "攝護腺癌ICD診斷資料存在":
-  Reusable."主要疾病ICD診斷資料存在"
+  "主要疾病ICD診斷資料存在"
 
 define "去勢治療資料存在":
   "1規則1-1-2=手術去勢"
@@ -249,14 +249,37 @@ define "檢驗檢查資料存在":
         )
   )
 
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
 define "影像報告資料存在":
   Reusable."HasRecentImageReportWithCodes"(CodeConcept."Radium223MetastasisImageReportCode", "本次事前審查申請日期", 90)
 
 define "止痛藥用藥資料存在":
   Reusable."HasMedicationRecord"(CodeConcept."Radium223Analgesic")
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+  )
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -401,7 +424,7 @@ define "攝護腺癌Radium223申請結果":
   then '✖不通過：初次使用－攝護腺癌 Radium-223 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－攝護腺癌 Radium-223 用藥申請（本頁籤未列續用條件）'
-  else '✖不通過：無法判定申請類型－攝護腺癌 Radium-223 用藥申請'
+  else '✖不通過：無法判斷申請類型－攝護腺癌 Radium-223 用藥申請'
 
 //============================================
 // 審核報告總結

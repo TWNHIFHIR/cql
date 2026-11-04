@@ -120,19 +120,15 @@ and "1規則1-1" and ("1規則1-2" or "1規則1-3") and "1規則1-4" and "1規�
 //============================================
 // 主要規定二：續用條件
 //============================================
-//事前審查藥物預定處方起始日期(useSdate)
-define "useSdate":
-  Reusable."GetStartTime"("本次事前審查申請品項紀錄")
-
-//事前審查藥物預定處方終止日期(useEdate)
-define "useEdate":
+// 本次事前審查申請品項預定終止日期：事前審查申請品項的預定處方終止日期
+define "本次事前審查申請品項預定終止日期":
   Reusable."GetEndTime"("本次事前審查申請品項紀錄")
 
-//(useEdate-useSdate) <= 56天
+//(本次事前審查申請品項預定終止日期-本次事前審查申請品項預定起始日期) <= 56天
 define "用藥期間未逾56天":
-  "useSdate" is not null
-  and "useEdate" is not null
-  and (days between "useSdate" and "useEdate") <= 56
+  "本次事前審查申請品項預定起始日期" is not null
+  and "本次事前審查申請品項預定終止日期" is not null
+  and (days between "本次事前審查申請品項預定起始日期" and "本次事前審查申請品項預定終止日期") <= 56
 
 define "主要規定二":
 "本次事前審查申請品項紀錄" is not null
@@ -145,11 +141,11 @@ and "用藥期間未逾56天"
 // 主要規定三：藥品使用規則
 //============================================
 
-//(useEdate-useSdate) <= 84天
+//(本次事前審查申請品項預定終止日期-本次事前審查申請品項預定起始日期) <= 84天
 define "用藥期間未逾84天":
-  "useSdate" is not null
-  and "useEdate" is not null
-  and (days between "useSdate" and "useEdate") <= 84
+  "本次事前審查申請品項預定起始日期" is not null
+  and "本次事前審查申請品項預定終止日期" is not null
+  and (days between "本次事前審查申請品項預定起始日期" and "本次事前審查申請品項預定終止日期") <= 84
 
 //條件1
 define "3規則1":
@@ -182,20 +178,8 @@ define "Regorafenib申請資料存在":
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01EX05)
 
-define "影像報告資料存在":
-  Reusable."影像報告資料存在"
-
-define "分子病理報告資料存在":
-  Reusable."分子病理報告資料存在"
-
-define "影像或檢查報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
 define "評估報告資料存在":
-  Reusable."ChildPugh評估資料存在"
+  "ChildPugh評估資料存在"
 
 define "先前Sorafenib治療資料存在":
   exists (
@@ -205,7 +189,7 @@ define "先前Sorafenib治療資料存在":
   )
 
 define "手術相關資料存在":
-  Reusable."手術報告資料存在"
+  "手術報告資料存在"
   or exists ([Claim] C where exists (C.procedure P where P.procedure is FHIR.CodeableConcept))
 
 define "無法手術切除或不適合局部治療說明資料存在":
@@ -228,6 +212,60 @@ define "劑量資料存在":
         )
       )
   )
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+  )
+
+define "影像報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsImageReport"(Report)
+  )
+
+define "分子病理報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsMolecularReport"(Report)
+      or Reusable."IsMolecularReportV2"(Report)
+      or Reusable."IsMolecularReport1"(Report)
+      or Reusable."IsMolecularReport2"(Report)
+  )
+
+define "影像或檢查報告資料存在":
+  "影像報告資料存在" or "分子病理報告資料存在"
+
+define "手術報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsOPReport"(Report)
+      or Reusable."IsOPReportV2"(Report)
+  )
+
+define "ChildPugh評估資料存在":
+  Reusable."HasPatientAssessmentObservationCode"(CodeConcept.ChildPugh)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -267,7 +305,7 @@ define function "不符合項目_必要資料未填寫"():
     else '') +
   (if Reusable."初次申請" and (
       not "Regorafenib申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
+      or not "主要疾病ICD診斷資料存在"
       or not "分子病理報告資料存在"
       or not "癌症分期資料存在"
       or not ("影像或檢查報告資料存在" or "無法手術切除或不適合局部治療說明資料存在")
@@ -275,7 +313,7 @@ define function "不符合項目_必要資料未填寫"():
     )
     then '<主要規定一：初次使用條件>\n' +
       (if not "Regorafenib申請資料存在" then '▲ 申請醫令：未提供Regorafenib申請醫令資料\n' else '') +
-      (if not Reusable."主要疾病ICD診斷資料存在" then '▲ 規則1-1/1-2：未提供主要疾病ICD診斷資料\n' else '') +
+      (if not "主要疾病ICD診斷資料存在" then '▲ 規則1-1/1-2：未提供主要疾病ICD診斷資料\n' else '') +
       (if not "分子病理報告資料存在" then '▲ 規則1-1：未提供分子病理檢查報告資料\n' else '') +
       (if not "癌症分期資料存在" then '▲ 規則1-2：未提供癌症分期資料\n' else '') +
       (if not ("影像或檢查報告資料存在" or "無法手術切除或不適合局部治療說明資料存在") then '▲ 規則1-2/1-3：未提供影像檢查報告或無法手術切除/不適合局部治療相關說明\n' else '') +
@@ -301,14 +339,14 @@ define function "不符合項目_必要資料未填寫"():
 
 define function "不符合項目_條件或代碼不符合"():
   (if Reusable."初次申請" and (
-      ((Reusable."主要疾病ICD診斷資料存在" and "分子病理報告資料存在") and not "1規則1-1")
-      or ((Reusable."主要疾病ICD診斷資料存在" and "影像或檢查報告資料存在" and "癌症分期資料存在") and not "1規則1-2" and not "1規則1-3")
+      (("主要疾病ICD診斷資料存在" and "分子病理報告資料存在") and not "1規則1-1")
+      or (("主要疾病ICD診斷資料存在" and "影像或檢查報告資料存在" and "癌症分期資料存在") and not "1規則1-2" and not "1規則1-3")
       or (("影像或檢查報告資料存在" or "無法手術切除或不適合局部治療說明資料存在" or "手術相關資料存在") and not "1規則1-3" and not "1規則1-2")
       or ("評估報告資料存在" and not "1規則1-5")
     )
     then '<主要規定一：初次使用條件>\n' +
-      (if (Reusable."主要疾病ICD診斷資料存在" and "分子病理報告資料存在") and not "1規則1-1" then '▲ 規則1-1：ICD診斷或分子病理檢查報告不符合條件，或申請註記/醫令類別不符合\n' else '') +
-      (if (Reusable."主要疾病ICD診斷資料存在" and "影像或檢查報告資料存在" and "癌症分期資料存在") and not "1規則1-2" and not "1規則1-3" then '▲ 規則1-2：ICD診斷、影像或分期資料不符合條件\n' else '') +
+      (if ("主要疾病ICD診斷資料存在" and "分子病理報告資料存在") and not "1規則1-1" then '▲ 規則1-1：ICD診斷或分子病理檢查報告不符合條件，或申請註記/醫令類別不符合\n' else '') +
+      (if ("主要疾病ICD診斷資料存在" and "影像或檢查報告資料存在" and "癌症分期資料存在") and not "1規則1-2" and not "1規則1-3" then '▲ 規則1-2：ICD診斷、影像或分期資料不符合條件\n' else '') +
       (if ("影像或檢查報告資料存在" or "無法手術切除或不適合局部治療說明資料存在" or "手術相關資料存在") and not "1規則1-3" and not "1規則1-2" then '▲ 規則1-3：影像、無法手術切除/不適合局部治療說明或手術報告不符合條件\n' else '') +
       (if "評估報告資料存在" and not "1規則1-5" then '▲ 規則1-5：Child-Pugh評估結果不符合A級或超過90天\n' else '') +
       '\n'
@@ -344,7 +382,7 @@ define "肝癌Regorafenib申請結果":
   then '✖不通過：初次使用－肝癌 Regorafenib 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－肝癌 Regorafenib 用藥申請'
-  else '✖不通過：無法判定申請類型－肝癌 Regorafenib 用藥申請'
+  else '✖不通過：無法判斷申請類型－肝癌 Regorafenib 用藥申請'
 
 //============================================
 // 審核報告總結

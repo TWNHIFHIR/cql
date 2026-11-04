@@ -444,7 +444,8 @@ define "3規則1=每次申請之療程以3個月為限":
 
 /*規則2*/
 define "3規則2=依藥品仿單記載以1年為上限":
-  Reusable."HasMedicationTotalDurationWithin"(CodeConcept.L01XK01, 365)
+  "3規則1-2=療程期間資料存在"
+  and Reusable."HasMedicationTotalDurationWithin"(CodeConcept.L01XK01, 365)
 
 /*規則3:用於術後輔助治療，olaparib 與 pembrolizumab 僅能擇一給付。(由於此處皆為術後輔助治療，故使用過pembrolizumab者不得使用本品)*/
 define "3規則3=Olaparib、pembrolizumab僅得擇一使用":
@@ -470,6 +471,43 @@ and "3規則4=Olaparib每日最多使用4粒"
 //============================================
 // 檢核結果用：必要資料存在判斷
 //============================================
+
+define "3規則1-2=療程期間資料存在":
+  Reusable."HasMedicationPlanTiming"(CodeConcept.L01XK01)
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+define "BRCA1或BRCA2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.BRCA1or2)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -553,14 +591,14 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
-    Reusable."癌症分期資料存在" and not "1規則1-1-3=癌症分期分數或結果為M=0" or 
+    "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
+    "癌症分期資料存在" and not "1規則1-1-3=癌症分期分數或結果為M=0" or 
     not "1規則1-2=成年"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
+         (if "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
            then '▲ 1規則1-1-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "1規則1-1-3=癌症分期分數或結果為M=0" 
+         (if "癌症分期資料存在" and not "1規則1-1-3=癌症分期分數或結果為M=0" 
            then '▲ 1規則1-1-3：癌症分期分數或結果不為M=0（非早期）\n' else '') +
          (if not "1規則1-2=成年" 
            then '▲ 1規則1-2：非成年患者（<18歲）\n' else '') +
@@ -568,11 +606,11 @@ define function "不符合項目_條件或代碼不符合"():
     else '') +
   
   // 主要規定三：藥品使用規則 - 條件或代碼不符合
-  (if not "3規則1=每次申請之療程以3個月為限" or not "3規則2=依藥品仿單記載以1年為上限" or not "3規則3=Olaparib、pembrolizumab僅得擇一使用" or not "3規則4=Olaparib每日最多使用4粒"
+  (if ("3規則1-2=療程期間資料存在" and (not "3規則1=每次申請之療程以3個月為限" or not "3規則2=依藥品仿單記載以1年為上限")) or not "3規則3=Olaparib、pembrolizumab僅得擇一使用" or not "3規則4=Olaparib每日最多使用4粒"
     then '<主要規定三：藥品使用規則>\n' +
-         (if not "3規則1=每次申請之療程以3個月為限"
+         (if "3規則1-2=療程期間資料存在" and not "3規則1=每次申請之療程以3個月為限"
            then '▲ 3規則1：每次申請之療程超過3個月（84天）（參考資訊）\n' else '') +
-         (if not "3規則2=依藥品仿單記載以1年為上限"
+         (if "3規則1-2=療程期間資料存在" and not "3規則2=依藥品仿單記載以1年為上限"
            then '▲ 3規則2：使用總療程超過1年（365天）（參考資訊）\n' else '') +
          (if not "3規則3=Olaparib、pembrolizumab僅得擇一使用"
            then '▲ 3規則3：同時使用Olaparib與pembrolizumab（參考資訊）\n' else '') +
@@ -592,8 +630,8 @@ define function "不符合項目_必要資料未填寫"():
   (if Reusable."初次申請" and (
     not "1規則1-1-5=Olaparib申請" or 
     not ("1規則1-1-1=3個月內影像報告" or "1規則1-1-4=3個月內有檢查報告") or 
-    not Reusable."BRCA1或BRCA2檢測資料存在" or 
-    not Reusable."HER2檢測資料存在" or 
+    not "BRCA1或BRCA2檢測資料存在" or 
+    not "HER2檢測資料存在" or 
     not "1規則1-5=高復發風險" or 
     not "1規則1-6=曾接受前導性化療或術後輔助性化療，且至少6個週期" or 
     not "1規則1-7=須在最後一次治療完成後的12週內使用olaparib"
@@ -603,9 +641,9 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 1規則1-1-5：未申請Olaparib\n' else '') +
          (if not ("1規則1-1-1=3個月內影像報告" or "1規則1-1-4=3個月內有檢查報告") 
            then '▲ 1規則1-1-1/1-1-4：未提供影像或檢查報告資料\n' else '') +
-         (if not Reusable."BRCA1或BRCA2檢測資料存在" 
+         (if not "BRCA1或BRCA2檢測資料存在" 
            then '▲ 1規則1-3：未提供遺傳性BRCA1/2（germline BRCA1/2）突變檢測資料\n' else '') +
-         (if not Reusable."HER2檢測資料存在" 
+         (if not "HER2檢測資料存在" 
            then '▲ 1規則1-4：未提供HER2檢測資料\n' else '') +
          (if not "1規則1-5=高復發風險" 
            then '▲ 1規則1-5：未符合高復發風險條件（需符合三陰性或HR陽性HER2陰性之相關標準）\n' +
@@ -623,6 +661,13 @@ define function "不符合項目_必要資料未填寫"():
   (if Reusable."續用申請" and not "2規則1=影像證據顯示病情有無惡化"
     then '<主要規定二：續用條件－治療持續給付>\n' +
          '▲ 2規則1：未提供前次治療後影像學報告資料\n' +
+         '\n'
+    else '') +
+
+  // 主要規定三：藥品使用規則 - 必要資料未填寫
+  (if not "3規則1-2=療程期間資料存在"
+    then '<主要規定三：藥品使用規則>\n' +
+         '▲ 3規則1/2：未提供療程起迄日期資料（參考資訊）\n' +
          '\n'
     else '')
 
@@ -660,7 +705,7 @@ define "乳癌Olaparib申請之CQL檢核結果":
   else if Reusable."續用申請"
   then '✖不通過：續用－高復發風險之早期乳癌 Olaparib 用藥申請'
   
-  else '✖不通過：無法判定申請類型－高復發風險之早期乳癌 Olaparib 用藥申請'
+  else '✖不通過：無法判斷申請類型－高復發風險之早期乳癌 Olaparib 用藥申請'
 
 //============================================
 // 報告總結

@@ -201,18 +201,6 @@ define "Pemigatinib申請資料存在":
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01EN02)
 
-define "影像報告資料存在":
-  Reusable."影像報告資料存在"
-
-define "分子病理報告資料存在":
-  Reusable."分子病理報告資料存在"
-
-define "影像或檢查報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
 define "FGFR2檢測資料存在":
   "1規則2-1=具FGFR2基因檢測資料"
 
@@ -239,6 +227,50 @@ define "劑量資料存在":
         )
       )
   )
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+  )
+
+define "影像報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsImageReport"(Report)
+  )
+
+define "分子病理報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsMolecularReport"(Report)
+      or Reusable."IsMolecularReportV2"(Report)
+      or Reusable."IsMolecularReport1"(Report)
+      or Reusable."IsMolecularReport2"(Report)
+  )
+
+define "影像或檢查報告資料存在":
+  "影像報告資料存在" or "分子病理報告資料存在"
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -275,7 +307,7 @@ define function "不符合項目_必要資料未填寫"():
     else '') +
   (if Reusable."初次申請" and (
       not "Pemigatinib申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
+      or not "主要疾病ICD診斷資料存在"
       or not "癌症分期資料存在"
       or not "FGFR2檢測資料存在"
       or not "FGFR2基因報告資料存在"
@@ -283,7 +315,7 @@ define function "不符合項目_必要資料未填寫"():
     )
     then '<主要規定一：初次使用條件>\n' +
       (if not "Pemigatinib申請資料存在" then '▲ 申請醫令：未提供Pemigatinib申請醫令資料\n' else '') +
-      (if not Reusable."主要疾病ICD診斷資料存在" then '▲ 規則1-1：未提供主要疾病ICD診斷資料\n' else '') +
+      (if not "主要疾病ICD診斷資料存在" then '▲ 規則1-1：未提供主要疾病ICD診斷資料\n' else '') +
       (if not "癌症分期資料存在" then '▲ 規則1-1：未提供癌症分期資料\n' else '') +
       (if not "FGFR2檢測資料存在" then '▲ 規則1-3：未提供FGFR2檢測資料\n' else '') +
       (if not "FGFR2基因報告資料存在" then '▲ 規則2：未提供FGFR2基因檢測報告\n' else '') +
@@ -306,7 +338,7 @@ define function "不符合項目_必要資料未填寫"():
 
 define function "不符合項目_條件或代碼不符合"():
   (if Reusable."初次申請" and (
-      ((Reusable."主要疾病ICD診斷資料存在" or "癌症分期資料存在" or "影像或檢查報告資料存在") and not "1規則1-1=膽管癌疾病分類且符合影像檢查與轉移條件")
+      (("主要疾病ICD診斷資料存在" or "癌症分期資料存在" or "影像或檢查報告資料存在") and not "1規則1-1=膽管癌疾病分類且符合影像檢查與轉移條件")
       or not "1規則1-2=年齡為18歲以上"
       or ("FGFR2檢測資料存在" and not "1規則1-3=FGFR2檢測結果為fusion融合或rearrangement")
       or not "1規則1-4=用藥線別非第一線且申請註記及醫令類別符合"
@@ -314,7 +346,7 @@ define function "不符合項目_條件或代碼不符合"():
       or (("FGFR2檢測資料存在" or "FGFR2基因報告資料存在") and not "1規則2=具FGFR2基因資料及基因檢測報告")
     )
     then '<主要規定一：初次使用條件>\n' +
-      (if (Reusable."主要疾病ICD診斷資料存在" or "癌症分期資料存在" or "影像或檢查報告資料存在") and not "1規則1-1=膽管癌疾病分類且符合影像檢查與轉移條件" then '▲ 規則1-1：疾病分類、影像/檢查、轉移狀態、申請註記或醫令類別不符合條件\n' else '') +
+      (if ("主要疾病ICD診斷資料存在" or "癌症分期資料存在" or "影像或檢查報告資料存在") and not "1規則1-1=膽管癌疾病分類且符合影像檢查與轉移條件" then '▲ 規則1-1：疾病分類、影像/檢查、轉移狀態、申請註記或醫令類別不符合條件\n' else '') +
       (if not "1規則1-2=年齡為18歲以上" then '▲ 規則1-2：年齡未滿18歲或生日/本次事前審查申請日期不符合判定條件\n' else '') +
       (if "FGFR2檢測資料存在" and not "1規則1-3=FGFR2檢測結果為fusion融合或rearrangement" then '▲ 規則1-3：FGFR2檢測結果不符合fusion、融合或rearrangement條件\n' else '') +
       (if not "1規則1-4=用藥線別非第一線且申請註記及醫令類別符合" then '▲ 規則1-4：用藥線別、申請註記或醫令類別不符合條件\n' else '') +
@@ -352,7 +384,7 @@ define "肝癌Pemigatinib申請結果":
   then '✖不通過：初次使用－肝癌 Pemigatinib 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－肝癌 Pemigatinib 用藥申請'
-  else '✖不通過：無法判定申請類型－肝癌 Pemigatinib 用藥申請'
+  else '✖不通過：無法判斷申請類型－肝癌 Pemigatinib 用藥申請'
 
 //============================================
 // 審核報告總結

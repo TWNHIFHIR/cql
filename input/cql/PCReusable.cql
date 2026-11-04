@@ -85,7 +85,7 @@ define "申請類型":
   case
     when "續用註記為1" then '初次使用'
     when "續用註記為2" then '續用'
-    else '無法判定申請類型'
+    else '無法判斷申請類型'
   end
 
 define "初次申請":
@@ -579,8 +579,8 @@ define function "HasConcurrentMedicationCoveringPlan"(CurrentDrugCodes List<Stri
 
 // 指定藥物所有申請療程天數加總是否未超過上限
 define function "HasMedicationTotalDurationWithin"(DrugCodes List<String>, MaxDays Integer):
-  Sum(
-    (
+  Coalesce(
+    Sum(
       [MedicationRequest] MR
       where MR.intent = 'plan'
         and (MR.status is null or MR.status in { 'active', 'completed', 'on-hold' })
@@ -589,35 +589,9 @@ define function "HasMedicationTotalDurationWithin"(DrugCodes List<String>, MaxDa
       return
         days between "GetStartTime"(MR)
           and "GetEndTime"(MR)
-    )
+    ),
+    0
   ) <= MaxDays
-
-// 檢核報告用：是否有主要疾病 ICD 診斷資料
-define "主要疾病ICD診斷資料存在":
-  exists (
-    [Claim] C
-      where exists (
-        C.diagnosis D
-          where D.sequence = 1
-            and exists (
-              D.diagnosis.coding Cdg
-                where Cdg in CodeConcept.ICD10CM2023
-                  or Cdg in CodeConcept.ICD10CM2014
-            )
-      )
-  )
-
-// 檢核報告用：是否有癌症分期資料
-define "癌症分期資料存在":
-  exists (
-    [Observation] O
-      where exists (
-        O.code.coding Cdg
-          where Cdg.code = '399390009'
-            and Cdg in CodeConcept.SNOMED
-      )
-        and O.value is not null
-  )
 
 //影像報告
 define function "IsImageReport"(Report DiagnosticReport):

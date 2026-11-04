@@ -896,7 +896,7 @@ define "肺癌PembrolizumabAtezolizumab申請結果":
   then '✖不通過：初次使用－肺癌 Pembrolizumab/Atezolizumab 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－肺癌 Pembrolizumab/Atezolizumab 用藥申請'
-  else '✖不通過：無法判定申請類型－肺癌 Pembrolizumab/Atezolizumab 用藥申請'
+  else '✖不通過：無法判斷申請類型－肺癌 Pembrolizumab/Atezolizumab 用藥申請'
 
 
 //============================================

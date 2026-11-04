@@ -247,6 +247,46 @@ and "3規則2=Talazoparib與Olaparib僅得擇一使用"
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+define "ER檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularER)
+
+define "PR檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularPR)
+
+define "BRCA1或BRCA2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.BRCA1or2)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -316,14 +356,14 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
-    Reusable."癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M>=1" or 
+    "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
+    "癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M>=1" or 
     not "1規則1-2=18歲以上"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
+         (if "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
            then '▲ 1規則1-1-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M>=1" 
+         (if "癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M>=1" 
            then '▲ 1規則1-1-2：癌症分期分數或結果不為M≥1（非轉移性）\n' else '') +
          (if not "1規則1-2=18歲以上" 
            then '▲ 1規則1-2：非18歲以上患者\n' else '') +
@@ -355,8 +395,8 @@ define function "不符合項目_必要資料未填寫"():
     not "1規則1-4=Talazoparib申請" or 
     not ("1規則1-1=3個月內影像報告" or "1規則1-3=3個月內有檢查報告") or 
     not "1規則1-3" or 
-    not Reusable."BRCA1或BRCA2檢測資料存在" or 
-    not Reusable."HER2檢測資料存在"
+    not "BRCA1或BRCA2檢測資料存在" or 
+    not "HER2檢測資料存在"
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "1規則1-4=Talazoparib申請" 
@@ -368,15 +408,15 @@ define function "不符合項目_必要資料未填寫"():
                 (if not "1規則3-1=曾接受前導性化療" and not "1規則3-2=曾接受術後輔助性化療" and not "1規則3-3=曾接受轉移性化療"
                   then '  - 未提供任何化療紀錄\n' else '')
            else '') +
-         (if not Reusable."BRCA1或BRCA2檢測資料存在" 
+         (if not "BRCA1或BRCA2檢測資料存在" 
            then '▲ 1規則1-4：未提供germline BRCA 1/2突變檢測資料\n' else '') +
-         (if not Reusable."HER2檢測資料存在" 
+         (if not "HER2檢測資料存在" 
            then '▲ 1規則1-5：未符合三陰性乳癌條件（需ER陰性、PR陰性、HER2陰性）\n' +
-                (if not Reusable."ER檢測資料存在"
+                (if not "ER檢測資料存在"
                   then '  - ER非陰性或未提供ER檢測資料\n' else '') +
-                (if not Reusable."PR檢測資料存在"
+                (if not "PR檢測資料存在"
                   then '  - PR非陰性或未提供PR檢測資料\n' else '') +
-                (if not Reusable."HER2檢測資料存在"
+                (if not "HER2檢測資料存在"
                   then '  - HER2非陰性或未提供HER2檢測資料\n' else '')
            else '') +
          '\n'
@@ -421,7 +461,7 @@ define "乳癌Talazoparib申請之CQL檢核結果":
   else if Reusable."續用申請"
   then '✖不通過：續用－早期乳癌 Talazoparib 用藥申請'
   
-  else '✖不通過：無法判定申請類型－早期乳癌 Talazoparib 用藥申請'
+  else '✖不通過：無法判斷申請類型－早期乳癌 Talazoparib 用藥申請'
 
 //============================================
 // 報告總結

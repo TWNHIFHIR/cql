@@ -422,6 +422,37 @@ define "主要規定三":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -490,19 +521,19 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
-    Reusable."HER2檢測資料存在" and not "1規則2=具HER2過度表現" or
-    Reusable."癌症分期資料存在" and not "1規則3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)" or
-    Reusable."癌症分期資料存在" and not "1規則4-2=癌症分期分數或結果為M=0"
+    "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
+    "HER2檢測資料存在" and not "1規則2=具HER2過度表現" or
+    "癌症分期資料存在" and not "1規則3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)" or
+    "癌症分期資料存在" and not "1規則4-2=癌症分期分數或結果為M=0"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
+         (if "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
            then '▲ 1規則1-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."HER2檢測資料存在" and not "1規則2=具HER2過度表現"
+         (if "HER2檢測資料存在" and not "1規則2=具HER2過度表現"
            then '▲ 1規則1-條件2：HER2檢測結果不符合過度表現條件（需IHC3+或FISH+）\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "1規則3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)"
+         (if "癌症分期資料存在" and not "1規則3=具腋下淋巴結轉移(癌症分期分數或結果為N>=1)"
            then '▲ 1規則1-條件3：癌症分期不符合（需N≥1，具腋下淋巴結轉移）\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "1規則4-2=癌症分期分數或結果為M=0"
+         (if "癌症分期資料存在" and not "1規則4-2=癌症分期分數或結果為M=0"
            then '▲ 1規則1-條件4：癌症分期不符合（M需為0，無遠處臟器轉移）\n' else '') +
          '\n'
     else '') +
@@ -581,7 +612,7 @@ define "乳癌PertuzumabTrastuzumabSC申請之CQL檢核結果":
   else if Reusable."續用申請"
   then '✖不通過：續用－早期乳癌 PertuzumabTrastuzumabSC 用藥申請'
 
-  else '✖不通過：無法判定申請類型－早期乳癌 PertuzumabTrastuzumabSC 用藥申請'
+  else '✖不通過：無法判斷申請類型－早期乳癌 PertuzumabTrastuzumabSC 用藥申請'
 
 
 //============================================

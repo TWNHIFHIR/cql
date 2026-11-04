@@ -580,6 +580,41 @@ define "主要規定三":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "用藥線別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.modifier M
+              where exists (
+                M.coding Cdg
+                  where Cdg in CodeConcept.NHILOT
+              )
+          )
+      )
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -645,21 +680,21 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
+    "主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
     not "病摘早期三陰性乳癌" or
     not "給付適應症條件P131" or
-    Reusable."用藥線別資料存在" and not Reusable."用藥線別=1" or
+    "用藥線別資料存在" and not Reusable."用藥線別=1" or
     not "1規則2=非轉移性、第II期至第IIIb期（cT1c N1-2 或 T2-4 N0-2）" or
     not "1規則3=成年(>=18y)"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
+         (if "主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
            then '▲ 1條件ICD代碼：主要疾病ICD代碼未使用C50\n' else '') +
          (if not "病摘早期三陰性乳癌"
            then '▲ 1規則1：病摘未記載早期三陰性乳癌\n' else '') +
          (if not "給付適應症條件P131"
            then '▲ 1規則1：給付適應症不符合P131\n' else '') +
-         (if Reusable."用藥線別資料存在" and not Reusable."用藥線別=1"
+         (if "用藥線別資料存在" and not Reusable."用藥線別=1"
            then '▲ 1規則1：用藥線別非第一線\n' else '') +
          (if not "1規則2=非轉移性、第II期至第IIIb期（cT1c N1-2 或 T2-4 N0-2）"
            then '▲ 1規則2：癌症分期不符(非M0、或非cT1c N1-2、或非T2-4 N0-2)\n' else '') +
@@ -729,7 +764,7 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 1規則4-1：未提供疾病影像報告資料\n' else '') +
          (if not "4規則3=使用免疫檢查點抑制劑之治療計畫"
            then '▲ 1規則4-3：未附免疫檢查點抑制劑治療計畫\n' else '') +
-         (if not Reusable."HER2檢測資料存在"
+         (if not "HER2檢測資料存在"
            then '▲ 1規則4-4：未提供ER、PR及HER2陰性之檢測報告\n' else '') +
          '\n'
     else '') +
@@ -783,7 +818,7 @@ define "乳癌Pembrolizumab申請之CQL檢核結果":
   then '✖不通過：初次使用－乳癌 Pembrolizumab 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－乳癌 Pembrolizumab 用藥申請'
-  else '✖不通過：無法判定申請類型－乳癌 Pembrolizumab 用藥申請' 
+  else '✖不通過：無法判斷申請類型－乳癌 Pembrolizumab 用藥申請' 
 
 
 //============================================

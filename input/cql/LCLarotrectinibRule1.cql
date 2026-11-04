@@ -280,6 +280,7 @@ define "2規則1-1=療效評估影像資料存在":
         and Report.effective is not null
   )
 
+
 //============================================
 // 列出檢核項目
 //============================================
@@ -384,7 +385,7 @@ define "肺癌Larotrectinib申請結果":
   then '✖不通過：初次使用－肺癌 Larotrectinib 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－肺癌 Larotrectinib 用藥申請'
-  else '✖不通過：無法判定申請類型－肺癌 Larotrectinib 用藥申請'
+  else '✖不通過：無法判斷申請類型－肺癌 Larotrectinib 用藥申請'
 
 define "報告總結":
   '\n=== 肺癌之 Larotrectinib 申請審核報告 ===\n' +

@@ -236,6 +236,43 @@ define "主要規定三":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+define "ER檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularER)
+
+define "PR檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularPR)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -298,17 +335,17 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
+    "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or 
     not "1規則2-1=無法切除的局部晚期或轉移性的乳癌成年病人" or 
-    Reusable."癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1" or
+    "癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1" or
     not "1規則2-2=先前未接受過trastuzumab deruxtecan治療"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
+         (if "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" 
            then '▲ 1規則1-條件2-0：主要疾病之ICD代碼未使用C50\n' else '') +
          (if not "1規則2-1=無法切除的局部晚期或轉移性的乳癌成年病人" 
            then '▲ 1規則1-條件2-1：非成年患者（<18歲）\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1" 
+         (if "癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1" 
            then '▲ 1規則1-條件2-3：癌症分期分數或結果不為M≥1（非轉移性）\n' else '') +
          (if not "1規則2-2=先前未接受過trastuzumab deruxtecan治療" 
            then '▲ 1規則1-條件5：先前已接受過trastuzumab deruxtecan治療\n' else '') +
@@ -336,9 +373,9 @@ define function "不符合項目_必要資料未填寫"():
   (if Reusable."初次申請" and (
     not "1規則1=適用於治療先前已接受兩次以上全身性治療無效" or 
     not "1規則2-2=病摘應敘明無法切除" or 
-    not Reusable."ER檢測資料存在" or 
-    not Reusable."PR檢測資料存在" or 
-    not Reusable."HER2檢測資料存在" or 
+    not "ER檢測資料存在" or 
+    not "PR檢測資料存在" or 
+    not "HER2檢測資料存在" or 
     not "1規則3=病人身體狀況良好(ECOG≦1)" or 
     not "1規則4=須使用過taxane類藥物至少1個療程"
   )
@@ -349,11 +386,11 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 1規則1-條件2-2：病摘未敘明無法切除\n' else '') +
          (if not ("1規則2-4/2規則1=ER陰性" and "1規則2-5/2規則1=PR陰性" and "1規則2-6/2規則1=HER2陰性") 
            then '▲ 1規則1-條件2-4/2-5/2-6：未符合三陰性乳癌條件或檢測資料非3個月內\n' +
-                (if not Reusable."ER檢測資料存在"
+                (if not "ER檢測資料存在"
                   then '  - ER非陰性或未提供3個月內ER檢測資料\n' else '') +
-                (if not Reusable."PR檢測資料存在"
+                (if not "PR檢測資料存在"
                   then '  - PR非陰性或未提供3個月內PR檢測資料\n' else '') +
-                (if not Reusable."HER2檢測資料存在"
+                (if not "HER2檢測資料存在"
                   then '  - HER2非陰性或未提供3個月內HER2檢測資料\n' else '')
            else '') +
          (if not "1規則3=病人身體狀況良好(ECOG≦1)" 
@@ -402,7 +439,7 @@ define "乳癌Sacituzumab_govitecan申請之CQL檢核結果":
   else if Reusable."續用申請"
   then '✖不通過：續用－乳癌 Sacituzumab govitecan 用藥申請'
   
-  else '✖不通過：無法判定申請類型－乳癌 Sacituzumab govitecan 用藥申請'
+  else '✖不通過：無法判斷申請類型－乳癌 Sacituzumab govitecan 用藥申請'
 
 //============================================
 // 報告總結

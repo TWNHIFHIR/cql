@@ -510,7 +510,7 @@ define "給付適應症資料存在":
   )
 
 define "影像報告資料存在":
-  Reusable."影像或檢查報告資料存在"
+  "影像或檢查報告資料存在"
 
 define "無法切除說明資料存在":
   exists (
@@ -568,7 +568,7 @@ define "治療計畫資料存在":
   )
 
 define "續用療效評估資料存在":
-  Reusable."治療反應評估資料存在"
+  "治療反應評估資料存在"
 
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01FF02)
@@ -576,6 +576,40 @@ define "療程期間資料存在":
 define "併用免疫或標靶藥品資料存在":
   Reusable."HasMedicationRecord"(CodeConcept.L01FF)
   or Reusable."HasMedicationRecord"(CodeConcept."CRCTargetedTherapy")
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "影像或檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Report.effective is not null
+  )
+
+define "治療反應評估資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where (Cdg.code in CodeConcept."IREC疾病狀態評估")
+            and Cdg in CodeConcept.NHITreatmentAst
+      )
+      and O.value is not null
+  )
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -656,7 +690,7 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 代碼條件不符
   (if Reusable."初次申請" and (
-    (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
+    ("主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
     or ("給付適應症資料存在" and not "1規則1-1-3=申請項目")
     or (Patient.birthDate is not null and not "1規則1-6=成年病人第一線治療")
     or ("影像報告資料存在" and not ("1規則1-1-2=三個月內有影像檢查報告" and "1規則4-1=12週內之疾病影像檢查及報告"))
@@ -669,7 +703,7 @@ define function "不符合項目_條件或代碼不符合"():
     or ("治療計畫資料存在" and not "1規則4-2=使用免疫檢查點抑制劑之治療計畫")
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
+         (if "主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '▲ 規則1-1-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
          (if "給付適應症資料存在" and not "1規則1-1-3=申請項目"
            then '▲ 規則1-1-3：申請藥物非 Pembrolizumab，或給付適應症非 P141，或非第一線用藥線別\n' else '') +
@@ -766,7 +800,7 @@ define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "Pembrolizumab申請資料存在"
-    or not Reusable."主要疾病ICD診斷資料存在"
+    or not "主要疾病ICD診斷資料存在"
     or not "給付適應症資料存在"
     or Patient.birthDate is null
     or not "影像報告資料存在"
@@ -780,7 +814,7 @@ define function "不符合項目_必要資料未填寫"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "Pembrolizumab申請資料存在" then '▲ 申請醫令：未提供Pembrolizumab申請醫令資料\n' else '') +
-         (if not Reusable."主要疾病ICD診斷資料存在" then '▲ 規則1-1-1：未提供主要疾病ICD診斷資料\n' else '') +
+         (if not "主要疾病ICD診斷資料存在" then '▲ 規則1-1-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "給付適應症資料存在" then '▲ 規則1-1-3：未提供給付適應症或線別資料\n' else '') +
          (if Patient.birthDate is null then '▲ 規則1-6：未提供出生日期，無法判定是否成年\n' else '') +
          (if not "影像報告資料存在" then '▲ 規則1-1-2/4-1：未提供影像檢查報告\n' else '') +
@@ -848,7 +882,7 @@ define "大腸直腸癌Pembrolizumab申請結果":
   then '✖不通過：初次使用－大腸直腸癌 Pembrolizumab 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－大腸直腸癌 Pembrolizumab 用藥申請'
-  else '✖不通過：無法判定申請類型－大腸直腸癌 Pembrolizumab 用藥申請'
+  else '✖不通過：無法判斷申請類型－大腸直腸癌 Pembrolizumab 用藥申請'
 
 //============================================
 // 審核報告總結

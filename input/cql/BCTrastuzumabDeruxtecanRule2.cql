@@ -295,6 +295,69 @@ and "3規則2=Trastuzumab Deruxtecan和Sacituzumab Govitecan僅能擇一給付�
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "醫令類別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.productOrService.coding PSC
+              where PSC in CodeConcept.NHIOrderType
+          )
+      )
+  )
+
+define "影像報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsImageReport"(Report)
+      and Report.effective is not null
+  )
+
+define "檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Reusable."IsMolecularReport"(Report)
+      and Report.effective is not null
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+define "ER檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularER)
+
+define "PR檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularPR)
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -324,7 +387,7 @@ define function "符合項目"():
            then '● 1規則3(分期)：癌症分期M≥1，確認為局部晚期或轉移性乳癌\n' else '') +
          (if "3個月內影像報告" and "3個月內有檢查報告"
            then '● 1規則3(報告)：已同時提供3個月內影像報告及分子檢查報告\n' else '') +
-         (if not Reusable."影像報告資料存在" and not Reusable."檢查報告資料存在"
+         (if not "影像報告資料存在" and not "檢查報告資料存在"
            then '● 1規則3(報告)：無需附上3個月內影像報告及分子檢查報告\n' else '') +
          (if "2規則1=病人身體狀況良好(ECOG≦1)"
            then '● 1規則4(ECOG)：病人身體狀況良好(ECOG≤1)\n' else '') +
@@ -363,27 +426,27 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."ER檢測資料存在" and not "ER陰性" or
-    Reusable."PR檢測資料存在" and not "PR陰性" or
-    Reusable."HER2檢測資料存在" and not "HER2弱陽性(IHC 1+或IHC 2+/ISH-)表現" or
-    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
-    Reusable."醫令類別資料存在" and not Reusable."醫令類別為1" or
-    Reusable."癌症分期資料存在" and not "癌症分期分數或結果為M>=1" or
+    "ER檢測資料存在" and not "ER陰性" or
+    "PR檢測資料存在" and not "PR陰性" or
+    "HER2檢測資料存在" and not "HER2弱陽性(IHC 1+或IHC 2+/ISH-)表現" or
+    "主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or
+    "醫令類別資料存在" and not Reusable."醫令類別為1" or
+    "癌症分期資料存在" and not "癌症分期分數或結果為M>=1" or
     not "2規則1=病人身體狀況良好(ECOG≦1)" or
     not "2規則2=曾接受過至少一種化學療法治療"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."ER檢測資料存在" and not "ER陰性"
+         (if "ER檢測資料存在" and not "ER陰性"
            then '▲ 1規則1(ER)：ER非陰性，不符合單獨使用條件\n' else '') +
-         (if Reusable."PR檢測資料存在" and not "PR陰性"
+         (if "PR檢測資料存在" and not "PR陰性"
            then '▲ 1規則1(PR)：PR非陰性，不符合單獨使用條件\n' else '') +
-         (if Reusable."HER2檢測資料存在" and not "HER2弱陽性(IHC 1+或IHC 2+/ISH-)表現"
+         (if "HER2檢測資料存在" and not "HER2弱陽性(IHC 1+或IHC 2+/ISH-)表現"
            then '▲ 1規則2(HER2)：HER2非弱陽性(非IHC1+或IHC2+/ISH-)\n' else '') +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
+         (if "主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50"
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."醫令類別資料存在" and not Reusable."醫令類別為1"
+         (if "醫令類別資料存在" and not Reusable."醫令類別為1"
            then '▲ 1規則3(醫令)：醫令類別非1，非事前審查申請\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "癌症分期分數或結果為M>=1"
+         (if "癌症分期資料存在" and not "癌症分期分數或結果為M>=1"
            then '▲ 1規則3(分期)：癌症分期M<1，未確認為局部晚期或轉移性乳癌\n' else '') +
          (if not "2規則1=病人身體狀況良好(ECOG≦1)"
            then '▲ 1規則4(ECOG)：病人身體狀況不佳(ECOG>1)\n' else '') +
@@ -415,24 +478,24 @@ define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
     not "基因檢測報告" or
-    not Reusable."HER2檢測資料存在" or
-    not Reusable."癌症分期資料存在" or
+    not "HER2檢測資料存在" or
+    not "癌症分期資料存在" or
     not "病摘判斷無法切除" or
-    ("3個月內有檢查報告" and not Reusable."影像報告資料存在") or
-    (not Reusable."檢查報告資料存在" and "3個月內影像報告")
+    ("3個月內有檢查報告" and not "影像報告資料存在") or
+    (not "檢查報告資料存在" and "3個月內影像報告")
   )
     then '<主要規定一：初次使用條件>\n' +
          (if not "基因檢測報告"
            then '▲ 1規則1(基因)：未提供基因檢測報告\n' else '') +
-         (if not Reusable."HER2檢測資料存在"
+         (if not "HER2檢測資料存在"
            then '▲ 1規則2(HER2)：未提供HER2弱陽性檢測報告(IHC1+或IHC2+/ISH-)\n' else '') +
-         (if not Reusable."癌症分期資料存在"
+         (if not "癌症分期資料存在"
            then '▲ 1規則3(分期)：未提供癌症分期分數或結果資料\n' else '') +
          (if not "病摘判斷無法切除"
            then '▲ 1規則3(切除)：未於病摘中敘明無法切除\n' else '') +
-         (if "3個月內有檢查報告" and not Reusable."影像報告資料存在"
+         (if "3個月內有檢查報告" and not "影像報告資料存在"
            then '▲ 1規則3(報告)：已提供分子檢查報告但缺少3個月內影像報告，兩者須同時提供\n' else '') +
-         (if not Reusable."檢查報告資料存在" and "3個月內影像報告"
+         (if not "檢查報告資料存在" and "3個月內影像報告"
            then '▲ 1規則3(報告)：已提供影像報告但缺少3個月內分子檢查報告，兩者須同時提供\n' else '') +
          '\n'
     else '') +
@@ -478,7 +541,7 @@ define "乳癌TrastuzumabDeruxtecanHER2弱陽性申請之CQL檢核結果":
   else if Reusable."續用申請"
   then '✖不通過：續用－轉移性乳癌(HER2弱陽性)Trastuzumab Deruxtecan用藥申請'
 
-  else '✖不通過：無法判定申請類型－轉移性乳癌(HER2弱陽性)Trastuzumab Deruxtecan用藥申請'
+  else '✖不通過：無法判斷申請類型－轉移性乳癌(HER2弱陽性)Trastuzumab Deruxtecan用藥申請'
 
 
 //============================================

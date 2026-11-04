@@ -277,20 +277,8 @@ define "化學療法併用資料存在":
   or Reusable."HasMedicationRecord"(CodeConcept.L01FE01)
   or Reusable."HasMedicationRecord"(CodeConcept.L01FE02)
 
-define "RAS基因檢測資料存在":
-  Reusable."RAS基因檢測資料存在"
-
-define "影像或檢查報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
-define "用藥線別資料存在":
-  Reusable."用藥線別資料存在"
-
 define "續用客觀證據資料存在":
-  Reusable."治療反應評估資料存在"
+  "治療反應評估資料存在"
 
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01FG01exceptKC01146219)
@@ -303,6 +291,77 @@ define "劑量資料存在":
       and Reusable."HasMedicationCode"(M, CodeConcept.L01FG01exceptKC01146219)
       and M.dosageInstruction is not null
   )
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "用藥線別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.modifier M
+              where exists (
+                M.coding Cdg
+                  where Cdg in CodeConcept.NHILOT
+              )
+          )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "影像或檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Report.effective is not null
+  )
+
+define "RAS基因檢測資料存在":
+  Reusable."HasObservationCode"(CodeConcept.GeneTest)
+  or exists (
+    [Observation] RasObservation
+    where exists (
+      RasObservation.code.coding Cdg
+      where Cdg.code = '69548-6'
+        and Cdg in CodeConcept.LOINC
+    )
+  )
+
+define "治療反應評估資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where (Cdg.code in CodeConcept."IREC疾病狀態評估")
+            and Cdg in CodeConcept.NHITreatmentAst
+      )
+      and O.value is not null
+  )
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -363,7 +422,7 @@ define function "不符合項目_條件或代碼不符合"():
     ("化學療法併用資料存在" and not "1規則1=化學療法合併使用")
     or "1規則2=曾接受過Bevacizumab治療"
     or ("RAS基因檢測資料存在" and not "1規則3=RAS基因沒有突變")
-    or (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
+    or ("主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
     or ("影像或檢查報告資料存在" and not ("1規則4-2=三個月內有影像檢查報告" or "1規則4-3=三個月內有檢查報告"))
     or ("癌症分期資料存在" and not "1規則4-4=癌症分期分數或結果為M>=1")
     or ("用藥線別資料存在" and not "1規則4-5=用藥線別為第二線")
@@ -375,7 +434,7 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 規則2：曾接受過Bevacizumab治療\n' else '') +
          (if "RAS基因檢測資料存在" and not "1規則3=RAS基因沒有突變" 
            then '▲ 規則3：RAS基因檢測結果不符合（需無突變）\n' else '') +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
+         (if "主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '▲ 規則4-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
          (if "影像或檢查報告資料存在" and not ("1規則4-2=三個月內有影像檢查報告" or "1規則4-3=三個月內有檢查報告")
            then '▲ 規則4-2/4-3：未符合三個月內且代碼正確之影像報告或檢查報告條件\n' else '') +
@@ -417,7 +476,7 @@ define function "不符合項目_必要資料未填寫"():
     not "Bevacizumab第二線申請資料存在"
     or not "化學療法併用資料存在"
     or not "RAS基因檢測資料存在"
-    or not Reusable."主要疾病ICD診斷資料存在"
+    or not "主要疾病ICD診斷資料存在"
     or not "影像或檢查報告資料存在"
     or not "癌症分期資料存在"
     or not "用藥線別資料存在"
@@ -430,7 +489,7 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 規則1：未提供化學療法併用資料（需有 5-fluorouracil/leucovorin/oxaliplatin 之處方，且先前接受過以 fluoropyrimidine 為基礎的化學療法併用 cetuximab 或 panitumumab 無效）（參考資訊）\n' else '') +
          (if not "RAS基因檢測資料存在"
            then '▲ 規則3：未提供RAS基因檢測資料\n' else '') +
-         (if not Reusable."主要疾病ICD診斷資料存在"
+         (if not "主要疾病ICD診斷資料存在"
            then '▲ 規則4-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "影像或檢查報告資料存在"
            then '▲ 規則4-2/4-3：未提供三個月內影像檢查報告或檢查報告\n' else '') +
@@ -487,7 +546,7 @@ define "大腸直腸癌Bevacizumab第二線治療申請結果":
   then '✖不通過：初次使用－大腸直腸癌 Bevacizumab 第二線用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－大腸直腸癌 Bevacizumab 第二線用藥申請'
-  else '✖不通過：無法判定申請類型－大腸直腸癌 Bevacizumab 第二線用藥申請'
+  else '✖不通過：無法判斷申請類型－大腸直腸癌 Bevacizumab 第二線用藥申請'
 
 
 //============================================

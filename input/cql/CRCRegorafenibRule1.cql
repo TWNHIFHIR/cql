@@ -206,10 +206,7 @@ define "Regorafenib申請資料存在":
   Reusable."HasMedicationPlanRecord"(CodeConcept.L01EX05)
 
 define "影像報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
+  "影像或檢查報告資料存在"
 
 define "先前化療資料存在":
   Reusable."HasMedicationRecord"(CodeConcept."FluoropyrimidineBase")
@@ -220,16 +217,61 @@ define "AntiVEGF療法資料存在":
   Reusable."HasMedicationRecord"(CodeConcept.AntiVEGF)
 
 define "KRAS檢測資料存在":
-  Reusable."RAS基因檢測資料存在"
-
-define "AntiEGFR療法資料存在":
-  Reusable."AntiEGFR療法資料存在"
+  "RAS基因檢測資料存在"
 
 define "續用客觀證據資料存在":
-  Reusable."影像或檢查報告資料存在"
+  "影像或檢查報告資料存在"
 
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01EX05)
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "影像或檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Report.effective is not null
+  )
+
+define "RAS基因檢測資料存在":
+  Reusable."HasObservationCode"(CodeConcept.GeneTest)
+  or exists (
+    [Observation] RasObservation
+    where exists (
+      RasObservation.code.coding Cdg
+      where Cdg.code = '69548-6'
+        and Cdg in CodeConcept.LOINC
+    )
+  )
+
+define "AntiEGFR療法資料存在":
+  Reusable."HasMedicationRecord"(CodeConcept.AntiEGFR)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -284,7 +326,7 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 代碼條件不符
   (if Reusable."初次申請" and (
-      (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21") or 
+      ("主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21") or 
       ("癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M>=1") or 
       ("影像報告資料存在" and not "1規則1-3=三個月內有影像檢查報告") or
       ("先前化療資料存在" and not "1規則2-1=曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療") or
@@ -292,7 +334,7 @@ define function "不符合項目_條件或代碼不符合"():
       ("KRAS檢測資料存在" and "1規則3-1=K-ras為原生型(wild type)" and "AntiEGFR療法資料存在" and not "1規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法")
     )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
+         (if "主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
           then '▲ 規則1-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
          (if "癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M>=1" 
           then '▲ 規則1-2：癌症分期分數或結果不為M≥1\n' else '') +
@@ -331,7 +373,7 @@ define function "不符合項目_必要資料未填寫"():
   // 主要規定一：初次使用條件 - 必要資料未填寫
   (if Reusable."初次申請" and (
       not "Regorafenib申請資料存在"
-      or not Reusable."主要疾病ICD診斷資料存在"
+      or not "主要疾病ICD診斷資料存在"
       or not "癌症分期資料存在"
       or not "影像報告資料存在"
       or not "先前化療資料存在"
@@ -342,7 +384,7 @@ define function "不符合項目_必要資料未填寫"():
     then '<主要規定一：初次使用條件>\n' +
          (if not "Regorafenib申請資料存在"
            then '▲ 申請醫令：未提供Regorafenib申請醫令資料\n' else '') +
-         (if not Reusable."主要疾病ICD診斷資料存在"
+         (if not "主要疾病ICD診斷資料存在"
            then '▲ 規則1-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "癌症分期資料存在"
            then '▲ 規則1-2：未提供癌症分期分數或結果資料\n' else '') +
@@ -408,7 +450,7 @@ define "大腸直腸癌Regorafenib申請結果":
   then '✖不通過：初次使用－大腸直腸癌 Regorafenib 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－大腸直腸癌 Regorafenib 用藥申請'
-  else '✖不通過：無法判定申請類型－大腸直腸癌 Regorafenib 用藥申請'
+  else '✖不通過：無法判斷申請類型－大腸直腸癌 Regorafenib 用藥申請'
 
 //============================================
 // 審核報告總結

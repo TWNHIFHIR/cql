@@ -211,20 +211,13 @@ define "3規則2":
   else "3規則2-2-2"  
 
 /*規則3*/
-//條件3
-define "useSdate":
-  "本次事前審查申請品項預定起始日期"
-
-define "useEdate":
-  "本次事前審查申請品項預定終止日期"
-
 define "3規則3":
   not exists (
     [MedicationRequest] MR
       where Reusable."HasMedicationCode"(MR, CodeConcept."V10XX03")
         and Reusable."HasValidTiming"(MR)
-        and "useSdate" <= Reusable."GetEndTime"(MR)
-        and "useEdate" >= Reusable."GetStartTime"(MR)
+        and "本次事前審查申請品項預定起始日期" <= Reusable."GetEndTime"(MR)
+        and "本次事前審查申請品項預定終止日期" >= Reusable."GetStartTime"(MR)
   )
 
 define "主要規定三":
@@ -242,7 +235,7 @@ define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept."L02BB04")
 
 define "攝護腺癌ICD診斷資料存在":
-  Reusable."主要疾病ICD診斷資料存在"
+  "主要疾病ICD診斷資料存在"
 
 define "簡要病摘資料存在":
   exists (
@@ -354,6 +347,21 @@ define "V10XX03處方資料存在":
       where Reusable."HasMedicationCode"(MR, CodeConcept."V10XX03")
   )
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -430,7 +438,7 @@ define function "不符合項目_條件或代碼不符合"():
 
 define function "不符合項目_必要資料未填寫"():
   // 申請類型無法判定
-  (if Reusable."申請類型" = '無法判定申請類型'
+  (if Reusable."申請類型" = '無法判斷申請類型'
     then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
     else '') +
 
@@ -499,7 +507,7 @@ define "攝護腺癌Enzalutamide申請結果":
   then '✖不通過：初次使用－攝護腺癌 Enzalutamide 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－攝護腺癌 Enzalutamide 用藥申請'
-  else '✖不通過：無法判定申請類型－攝護腺癌 Enzalutamide 用藥申請'
+  else '✖不通過：無法判斷申請類型－攝護腺癌 Enzalutamide 用藥申請'
 
 //============================================
 // 審核報告總結

@@ -581,14 +581,14 @@ define function "HasGeneInfoObservationWithTextPattern"(MarkerCodes List<String>
   )
 
 define function "HasMarkerNegative"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative|wild type|原生型).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative|wild type|原生型).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerNegativeTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative|wild type|原生型).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerNegativeGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*([-−]|0|陰性|negative|wild type|原生型).*')
+  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
 
 define function "HasMarkerPositive"(MarkerCodes List<String>):
   "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
@@ -1005,8 +1005,8 @@ define function "HasConcurrentDailyDoseAtMost"(DrugCodes List<String>, MaxValue 
 
 // 指定藥物所有申請療程天數加總是否未超過上限
 define function "HasMedicationTotalDurationWithin"(DrugCodes List<String>, MaxDays Integer):
-  Sum(
-    (
+  Coalesce(
+    Sum(
       [MedicationRequest] MR
       where MR.intent = 'plan'
         and (MR.status is null or MR.status in { 'active', 'completed', 'on-hold' })
@@ -1015,7 +1015,8 @@ define function "HasMedicationTotalDurationWithin"(DrugCodes List<String>, MaxDa
       return
         days between "GetStartTime"(MR)
           and "GetEndTime"(MR)
-    )
+    ),
+    0
   ) <= MaxDays
 
 // 是否有同藥物先前療程與本次療程間隔超過指定天數

@@ -524,7 +524,8 @@ define "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可
 
 //條件4
 define "3規則4=使用總療程合併計算，以每人終生給付24個月為上限":
-  Reusable."HasMedicationTotalDurationWithin"(CodeConcept."CDK46抑制劑", 720)
+  "3規則4-1=療程期間資料存在"
+  and Reusable."HasMedicationTotalDurationWithin"(CodeConcept."CDK46抑制劑", 720)
 
 //條件5:everolimus無效，不得再申請CDK4/6抑制劑
 define "3規則5=未註記everolimus無效":
@@ -565,6 +566,32 @@ and "3規則6=未註記abemaciclib無效"
 //============================================
 // 檢核結果用：必要資料存在判斷
 //============================================
+
+define "3規則4-1=療程期間資料存在":
+  Reusable."HasMedicationPlanTiming"(CodeConcept."CDK46抑制劑")
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "HER2檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.HER2)
+
+define "ER檢測資料存在":
+  Reusable."HasMarkerData"(CodeConcept.MolecularER)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -664,11 +691,11 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or 
+    "主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" or 
     not "1規則1-2=女性"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" 
+         (if "主要疾病ICD診斷資料存在" and not Reusable."ICD-10使用C50" 
            then '▲ 1條件ICD代碼檢核：主要疾病之ICD代碼未使用C50\n' else '') +
          (if not "1規則1-2=女性" 
            then '▲ 1條件1-2：非女性\n' else '') +
@@ -678,7 +705,7 @@ define function "不符合項目_條件或代碼不符合"():
   // 主要規定三：藥品使用規則 - 條件或代碼不符合
   (if (not "3規則1=ribociclib每日最多處方3粒" and not "3規則2=palbociclib每日最多處方1粒") or
       not "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用" or
-      not "3規則4=使用總療程合併計算，以每人終生給付24個月為上限" or
+      ("3規則4-1=療程期間資料存在" and not "3規則4=使用總療程合併計算，以每人終生給付24個月為上限") or
       not "3規則5=未註記everolimus無效" or
       not "3規則6=未註記abemaciclib無效"
     then '<主要規定三：藥品使用規則>\n' +
@@ -687,7 +714,7 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 3條件1/2：未申請CDK46抑制劑或劑量超標（參考資訊）\n' else '') +
          (if not "3規則3=本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用"
            then '▲ 條件：藥品使用不符規定(本類藥品僅得擇一使用，唯有在耐受不良時方可轉換使用)（參考資訊）\n' else '') +
-         (if not "3規則4=使用總療程合併計算，以每人終生給付24個月為上限"
+         (if "3規則4-1=療程期間資料存在" and not "3規則4=使用總療程合併計算，以每人終生給付24個月為上限"
            then '▲ 3條件4：使用總療程超過24個月(720天)（參考資訊）\n' else '') +
          (if not "3規則5=未註記everolimus無效"
            then '▲ 3條件5：病歷註記everolimus無效（參考資訊）\n' else '') +
@@ -708,8 +735,8 @@ define function "不符合項目_必要資料未填寫"():
     not "1規則1-1=簡要病摘含有停經字樣" or 
     not "1規則1-3=CDK46抑制劑申請" or 
     not "1規則1-2=遠端轉移" or 
-    not Reusable."HER2檢測資料存在" or 
-    not Reusable."ER檢測資料存在" or 
+    not "HER2檢測資料存在" or 
+    not "ER檢測資料存在" or 
     not "1規則5=經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移" or 
     not "1規則6=骨轉移不可為唯一轉移部位" or 
     not "1規則7"
@@ -721,9 +748,9 @@ define function "不符合項目_必要資料未填寫"():
            then '▲ 1條件1-3：未提供CDK46抑制劑申請資料\n' else '') +
          (if not "1規則1-2=遠端轉移" 
            then '▲ 1條件1-2：未提供遠端轉移證據資料\n' else '') +
-         (if not Reusable."HER2檢測資料存在" 
+         (if not "HER2檢測資料存在" 
            then '▲ 1條件3：未提供荷爾蒙受體檢測資料\n' else '') +
-         (if not Reusable."ER檢測資料存在" 
+         (if not "ER檢測資料存在" 
            then '▲ 1條件4：未提供HER-2檢測資料\n' else '') +
          (if not "1規則5-1=未出現器官轉移危急症狀 (visceral crisis)"
            then '▲ 1條件5-1：有visceral crisis或未提供評估資料\n' else '') +
@@ -748,8 +775,15 @@ define function "不符合項目_必要資料未填寫"():
     then '<主要規定二：續用條件－治療持續給付>\n' +
          (if not "2規則1=每24週須再次申請並檢附療效評估資料" 
            then '▲ 2條件1：未於24週內再次申請或未檢附療效評估資料\n' else '') +
-         (if not "2規則2=疾病有惡化情形須停止使用" 
+         (if not "2規則2=疾病有惡化情形須停止使用"
            then '▲ 2條件2：未提供前次治療後影像學報告資料\n' else '') +
+         '\n'
+    else '') +
+
+  // 主要規定三：藥品使用規則 - 必要資料未填寫
+  (if not "3規則4-1=療程期間資料存在"
+    then '<主要規定三：藥品使用規則>\n' +
+         '▲ 3條件4：未提供療程起迄日期資料（參考資訊）\n' +
          '\n'
     else '')
 
@@ -778,7 +812,7 @@ define "乳癌CDK46抑制劑申請之CQL檢核結果":
   then '✖不通過：初次使用－乳癌 CDK46抑制劑 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－乳癌 CDK46抑制劑 用藥申請'
-  else '✖不通過：無法判定申請類型－乳癌 CDK46抑制劑 用藥申請'
+  else '✖不通過：無法判斷申請類型－乳癌 CDK46抑制劑 用藥申請'
 
 //============================================
 // 報告總結

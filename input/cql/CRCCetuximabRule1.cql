@@ -254,25 +254,19 @@ define "Cetuximab申請資料存在":
   Reusable."HasMedicationPlanRecord"(CodeConcept.L01FE01)
 
 define "化學療法併用資料存在":
-  Reusable."FOLFIRI或FOLFOX化學療法資料存在"
+  "FOLFIRI或FOLFOX化學療法資料存在"
 
 define "EGFR檢測資料存在":
   Reusable."HasObservationCode"(CodeConcept.GeneTestEGFRexpressing)
 
 define "KRAS檢測資料存在":
-  Reusable."RAS基因檢測資料存在"
+  "RAS基因檢測資料存在"
 
 define "影像檢查報告資料存在":
-  Reusable."影像或檢查報告資料存在"
-
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
-define "用藥線別資料存在":
-  Reusable."用藥線別資料存在"
+  "影像或檢查報告資料存在"
 
 define "續用客觀證據資料存在":
-  Reusable."影像或檢查報告資料存在"
+  "影像或檢查報告資料存在"
 
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01FE01)
@@ -284,6 +278,71 @@ define "Panitumumab併用資料存在":
 define "Bevacizumab併用資料存在":
   Reusable."HasMedicationRecord"(CodeConcept.L01FE01)
   or Reusable."HasMedicationRecord"(CodeConcept.L01FG01)
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "用藥線別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.modifier M
+              where exists (
+                M.coding Cdg
+                  where Cdg in CodeConcept.NHILOT
+              )
+          )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+define "影像或檢查報告資料存在":
+  exists (
+    [DiagnosticReport] Report
+    where Report.effective is not null
+  )
+
+define "RAS基因檢測資料存在":
+  Reusable."HasObservationCode"(CodeConcept.GeneTest)
+  or exists (
+    [Observation] RasObservation
+    where exists (
+      RasObservation.code.coding Cdg
+      where Cdg.code = '69548-6'
+        and Cdg in CodeConcept.LOINC
+    )
+  )
+
+define "FOLFIRI或FOLFOX化學療法資料存在":
+  Reusable."HasMedicationRecord"(CodeConcept.L01BC02)
+  or Reusable."HasMedicationRecord"(CodeConcept.L01XA03)
+  or Reusable."HasMedicationRecord"(CodeConcept.L01CE02)
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -347,7 +406,7 @@ define function "不符合項目_條件或代碼不符合"():
     ("化學療法併用資料存在" and not ("1規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用" or "1規則1-2=初次使用Cetuximab與FOLFOX(Folinic acid/ 5-fluorouracil/oxaliplatin)合併使用"))
     or ("EGFR檢測資料存在" and not "1規則1-3=用於治療具表皮生長因子受體表現型(EGFR expressing)")
     or ("KRAS檢測資料存在" and not "1規則2-1=K-ras為原生型(wild type)")
-    or (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
+    or ("主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
     or ("影像檢查報告資料存在" and not "1規則2-2=三個月內有影像檢查報告")
     or ("癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1")
     or ("用藥線別資料存在" and not "1規則2-4=用藥線別為第一線")
@@ -359,7 +418,7 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 規則1-3：EGFR expressing檢測結果不符合\n' else '') +
          (if "KRAS檢測資料存在" and not "1規則2-1=K-ras為原生型(wild type)" 
            then '▲ 規則2-1：K-ras檢測結果不符合原生型（wild type）\n' else '') +
-         (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
+         (if "主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '▲ 規則2-2-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
          (if "影像檢查報告資料存在" and not "1規則2-2=三個月內有影像檢查報告"
            then '▲ 規則2-2-2：影像檢查報告不在三個月內或代碼不符合\n' else '') +
@@ -410,7 +469,7 @@ define function "不符合項目_必要資料未填寫"():
     or not "化學療法併用資料存在"
     or not "EGFR檢測資料存在"
     or not "KRAS檢測資料存在"
-    or not Reusable."主要疾病ICD診斷資料存在"
+    or not "主要疾病ICD診斷資料存在"
     or not "影像檢查報告資料存在"
     or not "癌症分期資料存在"
     or not "用藥線別資料存在"
@@ -420,7 +479,7 @@ define function "不符合項目_必要資料未填寫"():
          (if not "化學療法併用資料存在" then '▲ 規則1-1/1-2：未提供FOLFIRI或FOLFOX處方（參考資訊）\n' else '') +
          (if not "EGFR檢測資料存在" then '▲ 規則1-3：未提供EGFR expressing檢測結果\n' else '') +
          (if not "KRAS檢測資料存在" then '▲ 規則2-1：未提供K-ras檢測資料\n' else '') +
-         (if not Reusable."主要疾病ICD診斷資料存在" then '▲ 規則2-2-1：未提供主要疾病ICD診斷資料\n' else '') +
+         (if not "主要疾病ICD診斷資料存在" then '▲ 規則2-2-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "影像檢查報告資料存在"
            then '▲ 規則2-2-2：未提供三個月內影像檢查報告\n' else '') +
          (if not "癌症分期資料存在" then '▲ 規則2-2-3：未提供癌症分期分數或結果資料\n' else '') +
@@ -469,7 +528,7 @@ define "大腸直腸癌Cetuximab第一線治療申請結果":
   then '✖不通過：初次使用－大腸直腸癌 Cetuximab 第一線用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－大腸直腸癌 Cetuximab 第一線用藥申請'
-  else '✖不通過：無法判定申請類型－大腸直腸癌 Cetuximab 第一線用藥申請'
+  else '✖不通過：無法判斷申請類型－大腸直腸癌 Cetuximab 第一線用藥申請'
 
 
 //============================================

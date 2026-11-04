@@ -208,13 +208,6 @@ define "3規則1=每次申請之療程以3個月為限":
 
 /*規則2*/
 //Start 到 End 的使用期間有重疊到同一天，且該筆有 QD 劑量資料，才會被加總進每日劑量。
-define "3規則2-1=每日劑量資料存在":
-  exists (
-    [MedicationRequest] MR
-    where Reusable."IsMedicationPlan"(MR, CodeConcept.L01ED01)
-      and Reusable."HasDailyDoseData"(MR)
-  )
-
 define "3規則2-2=每日最大劑量限500mg":
   Reusable."HasConcurrentDailyDoseAtMost"(CodeConcept.L01ED01, 500.0)
 
@@ -515,6 +508,13 @@ define "3規則3-2-2=不良反應或耐受不良資料存在":
       )
   )
 
+define "3規則2-1=每日劑量資料存在":
+  exists (
+    [MedicationRequest] MR
+    where Reusable."IsMedicationPlan"(MR, CodeConcept.L01ED01)
+      and Reusable."HasDailyDoseData"(MR)
+  )
+
 
 //============================================
 // 列出「符合」項目判斷式
@@ -700,7 +700,7 @@ define "肺癌Crizotinib申請結果":
   then '✖不通過：初次使用－肺癌 Crizotinib 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－肺癌 Crizotinib 用藥申請'
-  else '✖不通過：無法判定申請類型－肺癌 Crizotinib 用藥申請'
+  else '✖不通過：無法判斷申請類型－肺癌 Crizotinib 用藥申請'
 
 
 //============================================

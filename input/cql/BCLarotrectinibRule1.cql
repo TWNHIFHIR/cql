@@ -244,6 +244,34 @@ define "主要規定三=每次申請之療程以12週為限":
 // 檢核結果用：必要資料存在判斷
 //============================================
 
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where (
+                  Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+                )
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
+  )
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -299,13 +327,13 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 條件或代碼不符合
   (if Reusable."初次申請" and (
-    Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
-    Reusable."癌症分期資料存在" and not "癌症分期分數或結果為M>=1"
+    "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值" or
+    "癌症分期資料存在" and not "癌症分期分數或結果為M>=1"
   )
     then '<主要規定一：初次使用條件>\n' +
-         (if Reusable."主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
+         (if "主要疾病ICD診斷資料存在" and not "ICD代碼檢核_布林值"
            then '▲ 1規則2-0：主要疾病之ICD代碼未使用C50\n' else '') +
-         (if Reusable."癌症分期資料存在" and not "癌症分期分數或結果為M>=1"
+         (if "癌症分期資料存在" and not "癌症分期分數或結果為M>=1"
            then '▲ 1規則2-1：癌症分期結果不為M≥1（非轉移性）\n' else '') +
          '\n'
     else '') +
@@ -386,7 +414,7 @@ define "乳癌Larotrectinib申請之CQL檢核結果":
   else if Reusable."續用申請"
   then '✖不通過：續用－乳癌 Larotrectinib 用藥申請'
 
-  else '✖不通過：無法判定申請類型－乳癌 Larotrectinib 用藥申請'
+  else '✖不通過：無法判斷申請類型－乳癌 Larotrectinib 用藥申請'
 
 //============================================
 // 報告總結

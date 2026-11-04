@@ -212,12 +212,6 @@ define "影像或檢查報告資料存在":
       )
   )
 
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
-
-define "用藥線別資料存在":
-  Reusable."用藥線別資料存在"
-
 define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept.L01FG01)
 
@@ -240,6 +234,32 @@ define "續用客觀證據資料存在":
         )
         and Cdg.code in CodeConcept.ImageReportCode
       )
+  )
+
+define "用藥線別資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.item I
+          where exists (
+            I.modifier M
+              where exists (
+                M.coding Cdg
+                  where Cdg in CodeConcept.NHILOT
+              )
+          )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+    where exists (
+      O.code.coding Cdg
+      where Cdg.code = '399390009'
+        and Cdg in CodeConcept.SNOMED
+    )
+    and O.value is not null
   )
 
 
@@ -416,7 +436,7 @@ define "大腸直腸癌Bevacizumab第一線治療申請結果":
   then '✖不通過：初次使用－大腸直腸癌 Bevacizumab 第一線用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－大腸直腸癌 Bevacizumab 第一線用藥申請'
-  else '✖不通過：無法判定申請類型－大腸直腸癌 Bevacizumab 第一線用藥申請'
+  else '✖不通過：無法判斷申請類型－大腸直腸癌 Bevacizumab 第一線用藥申請'
 
 //============================================
 // 審核報告總結

@@ -173,9 +173,6 @@ define "檢查報告66117-3":
           and Cdg.code = '66117-3'
     )
 
-define "檢查報告資料存在":
-  exists ("檢查報告66117-3")
-
 define "1規則2":
 (
   (not "3個月內有影像檢查報告" and not "3個月內有檢查報告")
@@ -480,7 +477,7 @@ define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept."L02BB06")
 
 define "攝護腺癌ICD診斷資料存在":
-  Reusable."主要疾病ICD診斷資料存在"
+  "主要疾病ICD診斷資料存在"
 
 define "Gleason score資料存在":
   exists (
@@ -587,6 +584,24 @@ define "ECOG資料存在":
         )
   )
 
+define "檢查報告資料存在":
+  exists ("檢查報告66117-3")
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -666,7 +681,7 @@ define function "不符合項目_條件或代碼不符合"():
 
 define function "不符合項目_必要資料未填寫"():
   // 申請類型無法判定
-  (if Reusable."申請類型" = '無法判定申請類型'
+  (if Reusable."申請類型" = '無法判斷申請類型'
     then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
     else '') +
 
@@ -733,7 +748,7 @@ define "攝護腺癌Darolutamide申請結果":
   then '✖不通過：初次使用－攝護腺癌 Darolutamide 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－攝護腺癌 Darolutamide 用藥申請'
-  else '✖不通過：無法判定申請類型－攝護腺癌 Darolutamide 用藥申請'
+  else '✖不通過：無法判斷申請類型－攝護腺癌 Darolutamide 用藥申請'
 
 //============================================
 // 審核報告總結

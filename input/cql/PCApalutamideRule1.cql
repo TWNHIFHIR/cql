@@ -122,13 +122,6 @@ define "1規則1-3":
 Patient.gender.value = 'male'
 
 //條件4
-define "照護計畫文件資料存在":
-  Reusable."HasCarePlanDocument"
-  and (
-    Reusable."HasMedicationRecord"("mCRPC藥物代碼")
-    or "手術項目"
-  )
-
 define "1規則1-4":
 "3個月內有檢查報告"
 and "PSAExtended檢驗代碼"
@@ -451,7 +444,7 @@ define "療程期間資料存在":
   Reusable."HasMedicationPlanTiming"(CodeConcept."L02BB05")
 
 define "攝護腺癌ICD診斷資料存在":
-  Reusable."主要疾病ICD診斷資料存在"
+  "主要疾病ICD診斷資料存在"
 
 define "簡要病摘資料存在":
   exists (
@@ -477,8 +470,23 @@ define "分子檢查報告資料存在":
       where Reusable."IsMolecularReport"(Report)
   )
 
-define "癌症分期資料存在":
-  Reusable."癌症分期資料存在"
+define "PSAExtended檢驗資料存在":
+  exists (
+    [Observation] OBs
+      where exists (
+        OBs.category C
+          where exists (
+            C.coding Cdg
+              where Cdg in CodeConcept.NHIPASSupportingInfoType
+                and Cdg.code = 'tests'
+          )
+      )
+        and exists (
+          OBs.code.coding Cdg
+          where Cdg in CodeConcept.LOINC
+            and Cdg.code in CodeConcept."PSALabTestCodeExtended"
+        )
+  )
 
 define "PSA檢驗資料存在":
   exists (
@@ -494,6 +502,7 @@ define "PSA檢驗資料存在":
         and exists (
           OBs.code.coding Cdg
           where Cdg in CodeConcept.LOINC
+            and Cdg.code in CodeConcept."PSALabTestCodeBasic"
         )
   )
 
@@ -560,6 +569,39 @@ define "內臟轉移影像報告資料存在":
       )
   )
 
+define "照護計畫文件資料存在":
+  Reusable."HasCarePlanDocument"
+  and (
+    Reusable."HasMedicationRecord"("mCRPC藥物代碼")
+    or "手術項目"
+  )
+
+define "主要疾病ICD診斷資料存在":
+  exists (
+    [Claim] C
+      where exists (
+        C.diagnosis D
+          where D.sequence = 1
+            and exists (
+              D.diagnosis.coding Cdg
+                where Cdg in CodeConcept.ICD10CM2023
+                  or Cdg in CodeConcept.ICD10CM2014
+            )
+      )
+  )
+
+define "癌症分期資料存在":
+  exists (
+    [Observation] O
+      where exists (
+        O.code.coding Cdg
+          where Cdg.code = '399390009'
+            and Cdg in CodeConcept.SNOMED
+      )
+        and O.value is not null
+  )
+
+
 //============================================
 // 列出「符合」項目判斷式
 //============================================
@@ -617,7 +659,7 @@ define function "不符合項目_條件或代碼不符合"():
       (("攝護腺癌ICD診斷資料存在" and "簡要病摘資料存在") and not "1規則1-1")
       or (Patient.birthDate is not null and not "1規則1-2")
       or (Patient.gender.value is not null and not "1規則1-3")
-      or (("分子檢查報告資料存在" or "PSA檢驗資料存在" or "去勢用藥處方資料存在" or "手術去勢處置資料存在") and not "1規則1-4")
+      or (("分子檢查報告資料存在" or "PSAExtended檢驗資料存在" or "去勢用藥處方資料存在" or "手術去勢處置資料存在") and not "1規則1-4")
       or ("影像檢查報告資料存在" and not "1規則1-5")
       or ("ECOG資料存在" and not "1規則1-6")
       or ("PSA檢驗資料存在" and not "1規則1-7")
@@ -628,10 +670,10 @@ define function "不符合項目_條件或代碼不符合"():
          (if ("攝護腺癌ICD診斷資料存在" and "簡要病摘資料存在") and not "1規則1-1" then '▲ 規則1-1：ICD代碼、病摘、影像/檢查報告、分期、PSA、處方或手術紀錄不符合去勢抗性攝護腺癌初次使用條件\n' else '') +
          (if Patient.birthDate is not null and not "1規則1-2" then '▲ 規則1-2：年齡未滿18歲\n' else '') +
          (if Patient.gender.value is not null and not "1規則1-3" then '▲ 規則1-3：性別非男性\n' else '') +
-         (if ("分子檢查報告資料存在" or "PSA檢驗資料存在" or "去勢用藥處方資料存在" or "手術去勢處置資料存在") and not "1規則1-4" then '▲ 規則1-4：檢查報告、PSA、處方、手術或照護計畫文件不符合條件\n' else '') +
+         (if ("分子檢查報告資料存在" or "PSAExtended檢驗資料存在" or "去勢用藥處方資料存在" or "手術去勢處置資料存在") and not "1規則1-4" then '▲ 規則1-4：檢查報告、PSA、處方、手術或照護計畫文件不符合條件\n' else '') +
          (if "影像檢查報告資料存在" and not "1規則1-5" then '▲ 規則1-5：影像檢查報告日期不在本次事前審查申請日前三個月內\n' else '') +
          (if "ECOG資料存在" and not "1規則1-6" then '▲ 規則1-6：ECOG評估結果不符合≦1條件\n' else '') +
-         (if "PSA檢驗資料存在" and not "1規則1-7" then '▲ 規則1-7：PSA檢驗代碼不符合指定清單\n' else '') +
+         (if "PSA檢驗資料存在" and not "1規則1-7" then '▲ 規則1-7：PSA檢驗資料不符合條件\n' else '') +
          (if ("攝護腺癌ICD診斷資料存在" and "簡要病摘資料存在") and not "1規則2-1" then '▲ 規則2-1：ICD代碼、病摘、影像/檢查報告、分期、PSA、處方或手術紀錄不符合去勢敏感攝護腺癌初次使用條件\n' else '') +
          (if ("Gleason score資料存在" or "26029B影像報告資料存在" or "內臟轉移影像報告資料存在") and not "1規則2-2" then '▲ 規則2-2：Gleason score或影像報告不符合條件\n' else '') +
          '\n'
@@ -674,7 +716,7 @@ define function "不符合項目_條件或代碼不符合"():
 
 define function "不符合項目_必要資料未填寫"():
   // 申請類型無法判定
-  (if Reusable."申請類型" = '無法判定申請類型'
+  (if Reusable."申請類型" = '無法判斷申請類型'
     then '▲ 申請類型：未提供可判定初次使用或續用之申請註記\n\n'
     else '') +
 
@@ -684,6 +726,7 @@ define function "不符合項目_必要資料未填寫"():
       or not "醫令類別資料存在"
       or not "攝護腺癌ICD診斷資料存在"
       or not "簡要病摘資料存在"
+      or not "PSAExtended檢驗資料存在"
       or not "PSA檢驗資料存在"
       or (not "去勢用藥處方資料存在" and not "手術去勢處置資料存在")
       or not "影像檢查報告資料存在"
@@ -695,7 +738,8 @@ define function "不符合項目_必要資料未填寫"():
          (if not "醫令類別資料存在" then '▲ 申請醫令：未提供醫令類別資料\n' else '') +
          (if not "攝護腺癌ICD診斷資料存在" then '▲ 規則1-1/2-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "簡要病摘資料存在" then '▲ 規則1-1/2-1：未提供簡要病摘資料\n' else '') +
-         (if not "PSA檢驗資料存在" then '▲ 規則1-1/1-7/2-1：未提供PSA檢驗資料\n' else '') +
+         (if not "PSAExtended檢驗資料存在" then '▲ 規則1-1/1-4/2-1：未提供PSA及睪固酮相關檢驗資料（擴充清單）\n' else '') +
+         (if not "PSA檢驗資料存在" then '▲ 規則1-7：未提供PSA檢驗資料（基本清單）\n' else '') +
          (if not "去勢用藥處方資料存在" and not "手術去勢處置資料存在" then '▲ 規則1-1/2-1：未提供去勢用藥處方或手術去勢處置資料\n' else '') +
          (if not "影像檢查報告資料存在" then '▲ 規則1-5：未提供三個月內影像檢查報告資料\n' else '') +
          (if not "ECOG資料存在" then '▲ 規則1-6：未提供ECOG評估資料\n' else '') +
@@ -709,6 +753,7 @@ define function "不符合項目_必要資料未填寫"():
       or not "醫令類別資料存在"
       or not "攝護腺癌ICD診斷資料存在"
       or not "簡要病摘資料存在"
+      or not "PSAExtended檢驗資料存在"
       or not "PSA檢驗資料存在"
       or (not "去勢用藥處方資料存在" and not "手術去勢處置資料存在")
     )
@@ -717,6 +762,7 @@ define function "不符合項目_必要資料未填寫"():
          (if not "醫令類別資料存在" then '▲ 申請醫令：未提供醫令類別資料\n' else '') +
          (if not "攝護腺癌ICD診斷資料存在" then '▲ 規則1-1/2-1：未提供主要疾病ICD診斷資料\n' else '') +
          (if not "簡要病摘資料存在" then '▲ 規則1-1/2-1：未提供簡要病摘資料\n' else '') +
+         (if not "PSAExtended檢驗資料存在" then '▲ 規則1-1/2-1：未提供PSA及睪固酮相關檢驗資料（擴充清單）\n' else '') +
          (if not "PSA檢驗資料存在" then '▲ 規則1-4/2-2：未提供PSA檢驗資料\n' else '') +
          (if not "去勢用藥處方資料存在" and not "手術去勢處置資料存在" then '▲ 規則1-1/2-1：未提供去勢用藥處方或手術去勢處置資料\n' else '') +
          '\n'
@@ -749,7 +795,7 @@ define "攝護腺癌Apalutamide申請結果":
   then '✖不通過：初次使用－攝護腺癌 Apalutamide 用藥申請'
   else if Reusable."續用申請"
   then '✖不通過：續用－攝護腺癌 Apalutamide 用藥申請'
-  else '✖不通過：無法判定申請類型－攝護腺癌 Apalutamide 用藥申請'
+  else '✖不通過：無法判斷申請類型－攝護腺癌 Apalutamide 用藥申請'
 
 //============================================
 // 審核報告總結
