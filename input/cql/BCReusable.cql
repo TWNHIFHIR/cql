@@ -734,10 +734,6 @@ define function "HasCancerStageValue"(ValuePattern String):
         and Matches((O.value as FHIR.string).value, ValuePattern)
   )
 
-//癌症分期分數或結果為 M1-M9
-define "癌症分期分數或結果為M≠0":
-  "HasCancerStageValue"('.*M[1-9].*')
-
 //癌症分期分數或結果為 M0
 define "癌症分期分數或結果為M=0":
   "HasCancerStageValue"('.*M0.*')

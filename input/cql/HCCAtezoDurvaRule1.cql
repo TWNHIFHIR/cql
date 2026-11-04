@@ -62,8 +62,8 @@ define "12周內有影像檢查報告":
     and Reusable."HasRecentImageReport"("本次事前審查申請日期", 84)
   )
 
-define "癌症分期分數或結果為M≠0":
-  Reusable."癌症分期分數或結果為M≠0"
+define "癌症分期分數或結果為M>=1":
+  Reusable."癌症分期分數或結果為M>=1"
 
 define "癌症分期分數或結果為N≠0":
   Reusable."癌症分期分數或結果為N≠0"
@@ -128,7 +128,7 @@ and (
 define "1規則1-2-4":
 "ICD代碼檢核"
 and "12周內有影像檢查報告"
-and "癌症分期分數或結果為M≠0"
+and "癌症分期分數或結果為M>=1"
 
 define "1規則1-2-5-1":
 exists (
@@ -212,7 +212,7 @@ define "1規則1-3-1":
 "ICD代碼檢核"
 and "12周內有影像檢查報告"
 and (
-  "癌症分期分數或結果為M≠0"
+  "癌症分期分數或結果為M>=1"
   or Reusable."癌症分期分數或結果為N≠0"
 )
 

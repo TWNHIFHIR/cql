@@ -49,8 +49,8 @@ define "本次事前審查申請日期":
 define "ICD代碼檢核_布林值": Reusable."主要疾病之ICD-10使用C18、C19、C20、C21"
 
 //條件2
-define "1規則1-2=癌症分期分數或結果為M≠1":
-  Reusable."癌症分期分數或結果為M≠1"
+define "1規則1-2=癌症分期分數或結果為M>=1":
+  Reusable."癌症分期分數或結果為M>=1"
 
 //條件3
 define "1規則1-3=三個月內有影像檢查報告":
@@ -58,7 +58,7 @@ define "1規則1-3=三個月內有影像檢查報告":
 
 define "1規則1=轉移性大腸直腸癌（mCRC）":
   Reusable."主要疾病之ICD-10使用C18、C19、C20、C21"
-  and "1規則1-2=癌症分期分數或結果為M≠1"
+  and "1規則1-2=癌症分期分數或結果為M>=1"
   and "1規則1-3=三個月內有影像檢查報告"
 
 /*規則2*/
@@ -237,12 +237,12 @@ define "療程期間資料存在":
 
 define function "符合項目"():
   // 主要規定一：初次使用條件
-  (if Reusable."初次申請" and (Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" or "1規則1-2=癌症分期分數或結果為M≠1" or "1規則1-3=三個月內有影像檢查報告" or "1規則2-1-1=曾接受fluoropyrimidine為基礎的化療" or "1規則2-1-2=曾接受oxaliplatin為基礎的化療" or "1規則2-1-3=曾接受irinotecan為基礎的化療" or "1規則2-2=曾接受抗血管內皮生長因子(anti-VEGF)等療法" or "1規則3-1=K-ras為原生型(wild type)" or "1規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法")
+  (if Reusable."初次申請" and (Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" or "1規則1-2=癌症分期分數或結果為M>=1" or "1規則1-3=三個月內有影像檢查報告" or "1規則2-1-1=曾接受fluoropyrimidine為基礎的化療" or "1規則2-1-2=曾接受oxaliplatin為基礎的化療" or "1規則2-1-3=曾接受irinotecan為基礎的化療" or "1規則2-2=曾接受抗血管內皮生長因子(anti-VEGF)等療法" or "1規則3-1=K-ras為原生型(wild type)" or "1規則3-2=需再加上接受過抗表皮生長因子受體(anti-EGFR)療法")
     then '<主要規定一：初次使用條件>\n' +
          (if Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
            then '● 規則1-1：主要疾病之ICD代碼為C18、C19、C20、C21\n' else '') +
-         (if "1規則1-2=癌症分期分數或結果為M≠1" 
-           then '● 規則1-2：癌症分期分數或結果為M≠1\n' else '') +
+         (if "1規則1-2=癌症分期分數或結果為M>=1" 
+           then '● 規則1-2：癌症分期分數或結果為M≥1\n' else '') +
          (if "1規則1-3=三個月內有影像檢查報告"
            then '● 規則1-3：三個月內有影像檢查報告\n' else '') +
          (if "1規則2-1-1=曾接受fluoropyrimidine為基礎的化療"
@@ -285,7 +285,7 @@ define function "不符合項目_條件或代碼不符合"():
   // 主要規定一：初次使用條件 - 代碼條件不符
   (if Reusable."初次申請" and (
       (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21") or 
-      ("癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M≠1") or 
+      ("癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M>=1") or 
       ("影像報告資料存在" and not "1規則1-3=三個月內有影像檢查報告") or
       ("先前化療資料存在" and not "1規則2-1=曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療") or
       ("AntiVEGF療法資料存在" and not "1規則2-2=曾接受抗血管內皮生長因子(anti-VEGF)等療法") or
@@ -294,8 +294,8 @@ define function "不符合項目_條件或代碼不符合"():
     then '<主要規定一：初次使用條件>\n' +
          (if Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21" 
           then '▲ 規則1-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
-         (if "癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M≠1" 
-          then '▲ 規則1-2：癌症分期分數或結果不為M≠1\n' else '') +
+         (if "癌症分期資料存在" and not "1規則1-2=癌症分期分數或結果為M>=1" 
+          then '▲ 規則1-2：癌症分期分數或結果不為M≥1\n' else '') +
          (if "影像報告資料存在" and not "1規則1-3=三個月內有影像檢查報告"
           then '▲ 規則1-3：影像檢查報告不在三個月內或代碼不符合\n' else '') +
          (if "先前化療資料存在" and not "1規則2-1=曾接受fluoropyrimidine、oxaliplatin、irinotecan為基礎的化療"

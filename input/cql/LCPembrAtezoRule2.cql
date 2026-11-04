@@ -146,7 +146,7 @@ define "給付適應症條件P014":
 define "1規則1-1=轉移性非小細胞肺癌第一線用藥":
 "ICD代碼檢核_布林值"
 and "疾病資訊"
-and Reusable."癌症分期分數或結果為M≠0"
+and Reusable."癌症分期分數或結果為M>=1"
 and "有檢查報告"
 and "給付適應症條件P014"
 and Reusable."用藥線別=1"
@@ -621,7 +621,7 @@ define function "符合項目"():
 define function "不符合項目_條件或代碼不符合"():
   (if Reusable."初次申請" and not "主要規定一" and (
     ("主要疾病ICD資料存在" and not "ICD代碼檢核_布林值")
-    or ("癌症分期資料存在" and not Reusable."癌症分期分數或結果為M≠0")
+    or ("癌症分期資料存在" and not Reusable."癌症分期分數或結果為M>=1")
     or ("NSCLC及非鱗狀註記資料存在" and not "疾病資訊")
     or ("用藥線別資料存在" and not Reusable."用藥線別=1")
     or ("給付適應症資料存在" and not "給付適應症條件P014")
@@ -636,7 +636,7 @@ define function "不符合項目_條件或代碼不符合"():
   )
     then '<主要規定一：初次使用條件>\n' +
          (if "主要疾病ICD資料存在" and not "ICD代碼檢核_布林值" then '▲ 1規則1-1：未符合主要疾病ICD代碼C34條件\n' else '') +
-         (if "癌症分期資料存在" and not Reusable."癌症分期分數或結果為M≠0" then '▲ 1規則1-1：未符合轉移性分期M≠0條件\n' else '') +
+         (if "癌症分期資料存在" and not Reusable."癌症分期分數或結果為M>=1" then '▲ 1規則1-1：未符合轉移性分期M≥1條件\n' else '') +
          (if "NSCLC及非鱗狀註記資料存在" and not "疾病資訊" then '▲ 1規則1-1：未符合NSCLC及非鱗狀診斷條件\n' else '') +
          (if "用藥線別資料存在" and not Reusable."用藥線別=1" then '▲ 1規則1-1：未符合第一線用藥條件\n' else '') +
          (if "給付適應症資料存在" and not "給付適應症條件P014" then '▲ 1規則1-1：未符合給付適應症P014條件\n' else '') +

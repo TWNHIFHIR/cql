@@ -269,7 +269,7 @@ define function "HasRecentDiagnosticReport"(ReportCodes List<String>, ReferenceD
 
 //============================================
 // 共用邏輯：癌症分期 M 值檢核
-// 適用於各 Library 的 M>=1、M≠0、M≠1 規則
+// 適用於各 Library 的 M>=1 規則
 // 目前採 strict 格式，只接受 M 後面緊接數字，例如 M1、T3N1M1
 //============================================
 
@@ -289,14 +289,6 @@ define function "HasCancerStageMValue"(MValuePattern String):
 
 define "癌症分期分數或結果為M>=1":
   "HasCancerStageMValue"('.*M[1-9].*')
-
-// M≠0 在現行規則中等同要求 M1-M9
-define "癌症分期分數或結果為M≠0":
-  "HasCancerStageMValue"('.*M[1-9].*')
-
-// M≠1 在 strict 格式下接受 M0 或 M2-M9，排除 M1
-define "癌症分期分數或結果為M≠1":
-  "HasCancerStageMValue"('.*M[02-9].*')
 
 //============================================
 // 共用邏輯：用藥線別檢核

@@ -132,8 +132,8 @@ define "1規則2-2=三個月內有影像檢查報告":
   Reusable."HasRecentImageReport"(CodeConcept.CetuximabRegorafenibImageReportCode, "本次事前審查申請日期", 90)
 
 //條件2-3
-define "1規則2-3=癌症分期分數或結果為M≠1":
-  Reusable."癌症分期分數或結果為M≠1"
+define "1規則2-3=癌症分期分數或結果為M>=1":
+  Reusable."癌症分期分數或結果為M>=1"
 
 //條件2-4
 define "1規則2-4=用藥線別為第一線":
@@ -142,7 +142,7 @@ define "1規則2-4=用藥線別為第一線":
 define "1規則2=轉移性直腸結腸癌病患之第一線治療":
   Reusable."主要疾病之ICD-10使用C18、C19、C20、C21"
   and "1規則2-2=三個月內有影像檢查報告"
-  and "1規則2-3=癌症分期分數或結果為M≠1"
+  and "1規則2-3=癌症分期分數或結果為M>=1"
   and "1規則2-4=用藥線別為第一線"
 
 define "主要規定一":
@@ -291,7 +291,7 @@ define "Bevacizumab併用資料存在":
 
 define function "符合項目"():
   // 主要規定一：初次使用條件
-  (if Reusable."初次申請" and ("1規則1" or "1規則2-1=K-ras為原生型(wild type)" or "1規則2-2=三個月內有影像檢查報告" or "1規則2-3=癌症分期分數或結果為M≠1" or "1規則2-4=用藥線別為第一線")
+  (if Reusable."初次申請" and ("1規則1" or "1規則2-1=K-ras為原生型(wild type)" or "1規則2-2=三個月內有影像檢查報告" or "1規則2-3=癌症分期分數或結果為M>=1" or "1規則2-4=用藥線別為第一線")
     then '<主要規定一：初次使用條件>\n' +
          (if "1規則1-1=初次使用Cetuximab與FOLFIRI（Folinic acid/ 5-fluorouracil/irinotecan）合併使用" 
            then '● 規則1-1：Cetuximab與FOLFIRI（Folinic acid/5-fluorouracil/irinotecan）合併使用（參考資訊）\n' else '') +
@@ -305,8 +305,8 @@ define function "符合項目"():
            then '● 規則2-2-1：主要疾病之ICD代碼為C18、C19、C20、C21\n' else '') +
          (if "1規則2-2=三個月內有影像檢查報告"
            then '● 規則2-2-2：三個月內有影像檢查報告\n' else '') +
-         (if "1規則2-3=癌症分期分數或結果為M≠1" 
-           then '● 規則2-2-3：癌症分期分數或結果為M≠1\n' else '') +
+         (if "1規則2-3=癌症分期分數或結果為M>=1" 
+           then '● 規則2-2-3：癌症分期分數或結果為M≥1\n' else '') +
          (if "1規則2-4=用藥線別為第一線" 
            then '● 規則2-2-4：用藥線別為第一線\n' else '') +
          '\n'  
@@ -349,7 +349,7 @@ define function "不符合項目_條件或代碼不符合"():
     or ("KRAS檢測資料存在" and not "1規則2-1=K-ras為原生型(wild type)")
     or (Reusable."主要疾病ICD診斷資料存在" and not Reusable."主要疾病之ICD-10使用C18、C19、C20、C21")
     or ("影像檢查報告資料存在" and not "1規則2-2=三個月內有影像檢查報告")
-    or ("癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M≠1")
+    or ("癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1")
     or ("用藥線別資料存在" and not "1規則2-4=用藥線別為第一線")
   )
     then '<主要規定一：初次使用條件>\n' +
@@ -363,8 +363,8 @@ define function "不符合項目_條件或代碼不符合"():
            then '▲ 規則2-2-1：主要疾病之ICD代碼未使用C18、C19、C20、C21\n' else '') +
          (if "影像檢查報告資料存在" and not "1規則2-2=三個月內有影像檢查報告"
            then '▲ 規則2-2-2：影像檢查報告不在三個月內或代碼不符合\n' else '') +
-         (if "癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M≠1" 
-           then '▲ 規則2-2-3：癌症分期分數或結果不為M≠1\n' else '') +
+         (if "癌症分期資料存在" and not "1規則2-3=癌症分期分數或結果為M>=1" 
+           then '▲ 規則2-2-3：癌症分期分數或結果不為M≥1\n' else '') +
          (if "用藥線別資料存在" and not "1規則2-4=用藥線別為第一線" 
            then '▲ 規則2-2-4：用藥線別不為第一線\n' else '') +
          '\n'

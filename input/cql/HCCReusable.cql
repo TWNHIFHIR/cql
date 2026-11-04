@@ -435,6 +435,10 @@ define "癌症分期分數或結果為M≠0":
         and Matches((O.value as FHIR.string).value, '.*M[1-9].*')
   )
 
+//癌症分期分數或結果為 M1-M9
+define "癌症分期分數或結果為M>=1":
+  "癌症分期分數或結果為M≠0"
+
 //癌症分期分數或結果為 N1-N9
 define "癌症分期分數或結果為N≠0":
   exists (
