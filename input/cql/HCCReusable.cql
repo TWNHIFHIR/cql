@@ -313,21 +313,12 @@ define function "IsReportWithinDaysBefore"(Report DiagnosticReport, ReferenceDat
   and FHIRHelpers.ToDateTime(Report.effective) <= ReferenceDate
   and (days between FHIRHelpers.ToDateTime(Report.effective) and ReferenceDate) <= LookbackDays
 
-//將 effective[x] 這類 Choice 型別（dateTime/Period/Timing/instant）轉為單一 DateTime，避免 ToDateTime 多載歧義
-define function "EffectiveDateTime"(Effective Choice<FHIR.dateTime, FHIR.Period, FHIR.Timing, FHIR.instant>):
-  case
-    when Effective is FHIR.dateTime then FHIRHelpers.ToDateTime(Effective as FHIR.dateTime)
-    when Effective is FHIR.instant then FHIRHelpers.ToDateTime(Effective as FHIR.instant)
-    when Effective is FHIR.Period then FHIRHelpers.ToDateTime((Effective as FHIR.Period).start)
-    else null
-  end
-
 //檢驗(查)報告日期是否落在參考日期前指定天數內
 define function "IsObservationWithinDaysBefore"(Obs Observation, ReferenceDate DateTime, LookbackDays Integer):
   Obs.effective is not null
   and ReferenceDate is not null
-  and "EffectiveDateTime"(Obs.effective) <= ReferenceDate
-  and (days between "EffectiveDateTime"(Obs.effective) and ReferenceDate) <= LookbackDays
+  and FHIRHelpers.ToDateTime(Obs.effective) <= ReferenceDate
+  and (days between FHIRHelpers.ToDateTime(Obs.effective) and ReferenceDate) <= LookbackDays
 
 define function "HasRecentImageReport"(ReferenceDate DateTime, LookbackDays Integer):
   exists (

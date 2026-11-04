@@ -4,7 +4,7 @@
   "url": "https://nhicore.nhi.gov.tw/cql/Library/HCCCodeConcept",
   "version": "1.0.0",
   "name": "HCCCodeConcept",
-  "title": "肝癌代碼集",
+  "title": "肝癌代碼集-HCCCodeConcept",
   "status": "draft",
   "type": {
     "coding": [

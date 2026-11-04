@@ -4,7 +4,7 @@
   "url": "https://nhicore.nhi.gov.tw/cql/Library/LCCodeConcept",
   "version": "1.0.0",
   "name": "LCCodeConcept",
-  "title": "肺癌代碼集",
+  "title": "肺癌代碼集-LCCodeConcept",
   "status": "draft",
   "type": {
     "coding": [

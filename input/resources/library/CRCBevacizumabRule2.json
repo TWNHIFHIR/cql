@@ -4,7 +4,7 @@
   "url": "https://nhicore.nhi.gov.tw/cql/Library/CRCBevacizumabRule2",
   "version": "1.0.0",
   "name": "CRCBevacizumabRule2",
-  "title": "大腸直腸癌_Bevacizumab給付規定(轉移性大腸或直腸癌病人的第二線治療)",
+  "title": "Bevacizumab給付規定(RAS基因沒有突變的轉移性大腸或直腸癌病人的第二線治療)-CRC Bevacizumab Rule2",
   "status": "draft",
   "type": {
     "coding": [

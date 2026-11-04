@@ -4,7 +4,7 @@
   "url": "https://nhicore.nhi.gov.tw/cql/Library/BCPembrolizumabRule",
   "version": "1.0.0",
   "name": "BCPembrolizumabRule",
-  "title": "Pembrolizumab給付規定",
+  "title": "Pembrolizumab給付規定(早期三陰性乳癌)-BC Pembrolizumab Rule",
   "status": "draft",
   "type": {
     "coding": [

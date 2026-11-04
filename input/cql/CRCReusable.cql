@@ -47,7 +47,7 @@ define "主要疾病之ICD-10使用C18、C19、C20、C21":
   )
 
 //註記判斷
-define "註記為1":
+define "續用註記為1":
   exists (
     [Claim] C
       where exists (
@@ -65,7 +65,7 @@ define "註記為1":
 
 
 //註記判斷
-define "註記為2":
+define "續用註記為2":
   exists (
     [Claim] C
       where exists (
@@ -84,8 +84,8 @@ define "註記為2":
 //申請類型判斷
 define "申請類型":
   case
-    when "註記為1" then '初次使用'
-    when "註記為2" then '續用'
+    when "續用註記為1" then '初次使用'
+    when "續用註記為2" then '續用'
     else '無法判斷申請類型'
   end
 

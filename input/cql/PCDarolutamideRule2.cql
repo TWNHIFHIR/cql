@@ -220,7 +220,7 @@ define "PSA檢驗清單":
       )
       and OBs.value is FHIR.Quantity
       and OBs.effective is not null
-      and Reusable."EffectiveDateTime"(OBs.effective) <= "本次事前審查申請品項預定起始日期"
+      and FHIRHelpers.ToDateTime(OBs.effective) <= "本次事前審查申請品項預定起始日期"
 
 //報告時效:至少要有3筆PSA數值
 define "PSA檢驗數值至少3筆":
@@ -230,7 +230,7 @@ define "PSA檢驗數值至少3筆":
 define "PSA檢驗日期清單":
   distinct (
     "PSA檢驗清單" OBs
-      return date from Reusable."EffectiveDateTime"(OBs.effective)
+      return date from FHIRHelpers.ToDateTime(OBs.effective)
   )
 
 //檢驗(查)報告日期:至少要有3個不同的檢驗日期
@@ -247,7 +247,7 @@ define "PSA依日期排序清單":
   ("PSA日期舊到新清單") D
     return Max(
       "PSA檢驗清單" OBs
-        where date from Reusable."EffectiveDateTime"(OBs.effective) = D
+        where date from FHIRHelpers.ToDateTime(OBs.effective) = D
         return (OBs.value as FHIR.Quantity).value
     )
 
@@ -381,8 +381,8 @@ define "本次用藥期間PSA檢驗清單":
             and Cdg.code in CodeConcept."PSACode"
       )
       and OBs.effective is not null
-      and Reusable."EffectiveDateTime"(OBs.effective) >= "本次事前審查申請品項預定起始日期"
-      and Reusable."EffectiveDateTime"(OBs.effective) <= "本次事前審查申請品項預定終止日期"
+      and FHIRHelpers.ToDateTime(OBs.effective) >= "本次事前審查申請品項預定起始日期"
+      and FHIRHelpers.ToDateTime(OBs.effective) <= "本次事前審查申請品項預定終止日期"
 
 define "3規則2-3":
 exists ("本次用藥期間PSA檢驗清單")

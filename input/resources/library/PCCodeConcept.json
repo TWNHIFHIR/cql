@@ -4,7 +4,7 @@
   "url": "https://nhicore.nhi.gov.tw/cql/Library/PCCodeConcept",
   "version": "1.0.0",
   "name": "PCCodeConcept",
-  "title": "攝護腺癌代碼集",
+  "title": "攝護腺癌代碼集-PCCodeConcept",
   "status": "draft",
   "type": {
     "coding": [

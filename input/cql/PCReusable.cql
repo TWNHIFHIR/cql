@@ -160,34 +160,25 @@ define "用藥線別=1":
       )
   )
 
-//將 effective[x] 這類 Choice 型別（dateTime/Period/Timing/instant）轉為單一 DateTime，避免 ToDateTime 多載歧義
-define function "EffectiveDateTime"(Effective Choice<FHIR.dateTime, FHIR.Period, FHIR.Timing, FHIR.instant>):
-  case
-    when Effective is FHIR.dateTime then FHIRHelpers.ToDateTime(Effective as FHIR.dateTime)
-    when Effective is FHIR.instant then FHIRHelpers.ToDateTime(Effective as FHIR.instant)
-    when Effective is FHIR.Period then FHIRHelpers.ToDateTime((Effective as FHIR.Period).start)
-    else null
-  end
-
 //報告日期是否落在參考日期前指定天數內
 define function "IsReportWithinDaysBefore"(Report DiagnosticReport, ReferenceDate DateTime, LookbackDays Integer):
   Report.effective is not null
   and ReferenceDate is not null
-  and "EffectiveDateTime"(Report.effective) <= ReferenceDate
-  and (days between "EffectiveDateTime"(Report.effective) and ReferenceDate) <= LookbackDays
+  and FHIRHelpers.ToDateTime(Report.effective) <= ReferenceDate
+  and (days between FHIRHelpers.ToDateTime(Report.effective) and ReferenceDate) <= LookbackDays
 
 //檢驗(查)報告日期是否落在參考日期前指定天數內
 define function "IsObservationWithinDaysBefore"(Obs Observation, ReferenceDate DateTime, LookbackDays Integer):
   Obs.effective is not null
   and ReferenceDate is not null
-  and "EffectiveDateTime"(Obs.effective) <= ReferenceDate
-  and (days between "EffectiveDateTime"(Obs.effective) and ReferenceDate) <= LookbackDays
+  and FHIRHelpers.ToDateTime(Obs.effective) <= ReferenceDate
+  and (days between FHIRHelpers.ToDateTime(Obs.effective) and ReferenceDate) <= LookbackDays
 
 //檢驗(查)報告日期是否晚於（在）參考日期之後
 define function "IsObservationAfter"(Obs Observation, ReferenceDate DateTime):
   Obs.effective is not null
   and ReferenceDate is not null
-  and "EffectiveDateTime"(Obs.effective) > ReferenceDate
+  and FHIRHelpers.ToDateTime(Obs.effective) > ReferenceDate
 
 define function "HasRecentImageReportWithCodes"(ReportCodes List<String>, ReferenceDate DateTime, LookbackDays Integer):
   exists (
@@ -632,7 +623,7 @@ define function "HasRecentMolecularReport"(ReferenceDate DateTime, LookbackDays 
 define function "IsReportAfter"(Report DiagnosticReport, ReferenceDate DateTime):
   Report.effective is not null
   and ReferenceDate is not null
-  and "EffectiveDateTime"(Report.effective) > ReferenceDate
+  and FHIRHelpers.ToDateTime(Report.effective) > ReferenceDate
 
 //參考日期後是否有影像檢查報告
 define function "HasImageReportAfter"(ReferenceDate DateTime):
