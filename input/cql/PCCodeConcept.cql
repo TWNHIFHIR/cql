@@ -11,12 +11,12 @@ codesystem "InterpretationCodes": 'http://terminology.hl7.org/CodeSystem/v3-Obse
 
 /*TWNHI Pas*/
 codesystem "NHILOT": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-line-of-therapy'
-codesystem "NHIMedication": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-medication'
+codesystem "NHIMedication": 'https://fhir.nhi.gov.tw/nhi_tsfhir/CodeSystem/nhi-medication'
 codesystem "NHIOrderType": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-order-type'
 codesystem "NHIContinuationStatus": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-continuation-status'
 codesystem "NHITreatmentAst": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-tx-ast'
-codesystem "NHIPASSupportingInfoType": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-supporting-info-type'
-codesystem "NHIApplyReason": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-apply-reason'
+codesystem "NHIPASSupportingInfoType": 'https://fhir.nhi.gov.tw/nhi_tsfhir/CodeSystem/nhi-supporting-info-type'
+codesystem "NHIApplyReason": 'https://fhir.nhi.gov.tw/nhi_tsfhir/CodeSystem/nhi-apply-reason'
 
 
 /*TW Core*/

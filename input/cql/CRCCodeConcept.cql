@@ -11,11 +11,11 @@ codesystem "LOINC": 'http://loinc.org'
 
 /*TWNHI Pas*/
 codesystem "NHILOT": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-line-of-therapy'
-codesystem "NHIMedication": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-medication'
+codesystem "NHIMedication": 'https://fhir.nhi.gov.tw/nhi_tsfhir/CodeSystem/nhi-medication'
 codesystem "NHIOrderType": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-order-type'
 codesystem "NHIContinuationStatus": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-continuation-status'
 codesystem "NHITreatmentAst": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-tx-ast'
-codesystem "NHIPASSupportingInfoType": 'https://nhicore.nhi.gov.tw/pas/CodeSystem/nhi-supporting-info-type'
+codesystem "NHIPASSupportingInfoType": 'https://fhir.nhi.gov.tw/nhi_tsfhir/CodeSystem/nhi-supporting-info-type'
 
 /*TW Core*/
 codesystem "ICD10CM2023": 'https://twcore.mohw.gov.tw/ig/twcore/CodeSystem/icd-10-cm-2023-tw'
