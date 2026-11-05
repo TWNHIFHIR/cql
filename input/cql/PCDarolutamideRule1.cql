@@ -202,7 +202,7 @@ define "PSA檢驗清單":
       )
       and OBs.value is FHIR.Quantity
       and OBs.effective is not null
-      and FHIRHelpers.ToDateTime(OBs.effective) <= "本次事前審查申請品項預定起始日期"
+      and FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime) <= "本次事前審查申請品項預定起始日期"
 
 //檢驗(查)結果:至少要有2筆PSA數值
 define "PSA檢驗數值至少2筆":
@@ -212,7 +212,7 @@ define "PSA檢驗數值至少2筆":
 define "PSA檢驗日期清單":
   distinct (
     "PSA檢驗清單" OBs
-      return date from FHIRHelpers.ToDateTime(OBs.effective)
+      return date from FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime)
   )
 
 //檢驗(查)報告日期:至少要有2個不同的檢驗日期
@@ -229,7 +229,7 @@ define "PSA依日期排序清單":
   ("PSA日期新到舊清單") D
     return Max(
       "PSA檢驗清單" OBs
-        where date from FHIRHelpers.ToDateTime(OBs.effective) = D
+        where date from FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime) = D
         return (OBs.value as FHIR.Quantity).value
     )
 
@@ -432,7 +432,7 @@ define "GPT檢驗清單":
 define "GPT檢驗日期清單":
   distinct (
     "GPT檢驗清單" OBs
-      return date from FHIRHelpers.ToDateTime(OBs.effective)
+      return date from FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime)
   )
 
 //依日期由新到舊排序之GPT檢驗日期清單
@@ -445,7 +445,7 @@ define "GPT依日期排序清單":
   ("GPT日期新到舊清單") D
     return Max(
       "GPT檢驗清單" OBs
-        where date from FHIRHelpers.ToDateTime(OBs.effective) = D
+        where date from FHIRHelpers.ToDateTime(OBs.effective as FHIR.dateTime) = D
         return (OBs.value as FHIR.Quantity).value
     )
 

@@ -317,8 +317,8 @@ define function "IsReportWithinDaysBefore"(Report DiagnosticReport, ReferenceDat
 define function "IsObservationWithinDaysBefore"(Obs Observation, ReferenceDate DateTime, LookbackDays Integer):
   Obs.effective is not null
   and ReferenceDate is not null
-  and FHIRHelpers.ToDateTime(Obs.effective) <= ReferenceDate
-  and (days between FHIRHelpers.ToDateTime(Obs.effective) and ReferenceDate) <= LookbackDays
+  and FHIRHelpers.ToDateTime(Obs.effective as FHIR.dateTime) <= ReferenceDate
+  and (days between FHIRHelpers.ToDateTime(Obs.effective as FHIR.dateTime) and ReferenceDate) <= LookbackDays
 
 define function "HasRecentImageReport"(ReferenceDate DateTime, LookbackDays Integer):
   exists (
