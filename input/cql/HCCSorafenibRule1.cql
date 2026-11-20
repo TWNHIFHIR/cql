@@ -51,7 +51,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法手術切除.*')
+              where Matches(T.value, '(?is).*無法手術切除.*')
           )
       )
   )
@@ -67,7 +67,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*不適合局部治療.*')
+              where Matches(T.value, '(?is).*不適合局部治療.*')
           )
       )
   )
@@ -79,7 +79,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*局部治療失敗.*')
+              where Matches(T.value, '(?is).*局部治療失敗.*')
           )
       )
   )
@@ -235,10 +235,10 @@ define "手術相關資料存在":
   or exists ([Claim] C where exists (C.procedure P where P.procedure is FHIR.CodeableConcept))
 
 define "局部治療說明資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*(不適合局部治療|局部治療失敗).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(不適合局部治療|局部治療失敗).*')
 
 define "無法手術切除資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*無法手術切除.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*無法手術切除.*')
 
 define "劑量資料存在":
   exists (

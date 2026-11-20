@@ -58,7 +58,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*去勢敏感.*')
+              where Matches(T.value, '(?is).*去勢敏感.*')
           )
       )
   )
@@ -209,7 +209,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*去勢抗性.*')
+              where Matches(T.value, '(?is).*去勢抗性.*')
           )
       )
   )
@@ -249,7 +249,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*未接受過化療.*')
+              where Matches(T.value, '(?is).*未接受過化療.*')
           )
       )
   )
@@ -269,7 +269,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*先前接受雄性素去除療法時，在小於12個月的時間內演化成去勢抗性前列腺癌(CRPC).*')
+              where Matches(T.value, '(?is).*先前接受雄性素去除療法時，在小於12個月的時間內演化成去勢抗性前列腺癌(CRPC).*')
           )
       )
   )
@@ -284,7 +284,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*使用過化學治療.*')
+              where Matches(T.value, '(?is).*使用過化學治療.*')
           )
       )
   )
@@ -430,7 +430,7 @@ define "1規則4-4":
         )
         and ComponentRecord.value is not null
         and ComponentRecord.value is FHIR.string
-        and Matches((ComponentRecord.value as FHIR.string).value, '(?i).*(Positive|Pathogenic|Likely Pathogenic|mutation|deletion).*')
+        and Matches((ComponentRecord.value as FHIR.string).value, '(?is).*(Positive|Pathogenic|Likely Pathogenic|mutation|deletion).*')
       )
   )
 
@@ -575,7 +575,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*化學治療未失敗.*')
+              where Matches(T.value, '(?is).*化學治療未失敗.*')
           )
       )
   )

@@ -270,7 +270,7 @@ define "3個月內影像報告顯示無疾病進展":
       )
         and Reusable."IsReportWithinDaysBefore"(Report, "本次事前審查申請日期", 90)
         and Report.conclusion is not null
-        and Matches(Report.conclusion.value, '(?i).*(無.{0,10}疾病進展|疾病穩定|stable disease|no.{0,10}progression).*')
+        and Matches(Report.conclusion.value, '(?is).*(無.{0,10}疾病進展|疾病穩定|stable disease|no.{0,10}progression).*')
   )
 
 //本次事前審查申請品項預定起始日期(含)以前,符合套組代碼之PSA最低數值(治療期間PSA最低點)
@@ -371,7 +371,7 @@ define "3規則3-3":
             and (
               (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
                 and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) >= 1500)
-              or Matches((OBs.value as FHIR.string).value, '(?i).*(>=|≧)\s*1,?500.*')
+              or Matches((OBs.value as FHIR.string).value, '(?is).*(>=|≧)\s*1,?500.*')
             )
           )
         )
@@ -402,7 +402,7 @@ define "3規則4-4":
             and (
               (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
                 and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) >= 100000)
-              or Matches((OBs.value as FHIR.string).value, '(?i).*(>=|≧)\s*100,?000.*')
+              or Matches((OBs.value as FHIR.string).value, '(?is).*(>=|≧)\s*100,?000.*')
             )
           )
         )
@@ -483,7 +483,7 @@ define "3規則6-6":
             and (
               (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
                 and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) <= 1.2)
-              or Matches((OBs.value as FHIR.string).value, '(?i).*(<=|≦)\s*1\.?2(?!\d).*')
+              or Matches((OBs.value as FHIR.string).value, '(?is).*(<=|≦)\s*1\.?2(?!\d).*')
             )
           )
           //定性結果時,退回檢查該筆檢驗自帶的參考範圍上限 <= 1.2 mg/dL
@@ -522,7 +522,7 @@ define "3規則7-7":
             and (
               (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
                 and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) >= 30)
-              or Matches((OBs.value as FHIR.string).value, '(?i).*(>=|≧)\s*30(?!\d).*')
+              or Matches((OBs.value as FHIR.string).value, '(?is).*(>=|≧)\s*30(?!\d).*')
             )
           )
           //定性結果時,退回檢查該筆檢驗自帶的參考範圍下限 >= 30 mL/min/1.73m2

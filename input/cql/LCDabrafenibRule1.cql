@@ -97,7 +97,7 @@ define "NSCLC註記":
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*NSCLC.*')
+              where Matches(T.value, '(?is).*NSCLC.*')
           )
       )
   )
@@ -138,8 +138,8 @@ define "1規則1-4=成年":
 
 //條件5:非小細胞肺癌之病理或細胞檢查報告以及BRAF V600E突變檢測報告
 define "1規則1-5=BRAF V600E突變陽性":
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.BRAF, { 'POS' }, '(?i).*(陽性|positive|mutation|突變).*')
-  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.BRAF, { 'POS' }, '(?i).*(陽性|positive|mutation|突變).*')
+  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.BRAF, { 'POS' }, '(?is).*(陽性|positive|mutation|突變).*')
+  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.BRAF, { 'POS' }, '(?is).*(陽性|positive|mutation|突變).*')
 
 define "1規則1-5=病理或細胞檢查報告以及BRAF V600E突變檢測報告":
   "有檢查報告"

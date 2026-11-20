@@ -51,7 +51,7 @@ define "1規則1=適用於治療先前已接受兩次以上全身性治療無效
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(待諮詢醫師\\+).*')
+                where Matches(T.value, '(?is).*(待諮詢醫師\\+).*')
             )
         )
     )
@@ -75,7 +75,7 @@ define "1規則2-2=病摘應敘明無法切除":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(無法切除\\+).*')
+                where Matches(T.value, '(?is).*(無法切除\\+).*')
             )
         )
     )
@@ -88,32 +88,32 @@ define "1規則2-3=癌症分期分數或結果為M>=1":
 
 //1規則2-4
 define "檢查報告-1規則2-4/2規則1=ER陰性":
-  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
 
 define "1規則2-4/2規則1=ER陰性":
-  Reusable."HasRecentTestObservationResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
-  or Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  Reusable."HasRecentTestObservationResult"(CodeConcept.MolecularER, { 'NEG' }, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  or Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.MolecularER, { 'NEG' }, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
   or "檢查報告-1規則2-4/2規則1=ER陰性"
 
 //1規則2-5
 define "檢查報告-1規則2-5/2規則1=PR陰性":
-  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.MolecularPR, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
 
 define "1規則2-5/2規則1=PR陰性":
-  Reusable."HasRecentTestObservationResult"(CodeConcept.MolecularPR, { 'NEG' }, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
-  or Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.MolecularPR, { 'NEG' }, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  Reusable."HasRecentTestObservationResult"(CodeConcept.MolecularPR, { 'NEG' }, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  or Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.MolecularPR, { 'NEG' }, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
   or "檢查報告-1規則2-5/2規則1=PR陰性"
 
 
 //1規則2-6
 define "1規則2-6/2規則1=檢驗檢查-HER2陰性":
-  Reusable."HasRecentTestObservationResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  Reusable."HasRecentTestObservationResult"(CodeConcept.HER2, { 'NEG' }, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
 
 define "1規則2-6/2規則1=基因檢測-HER2陰性":
-  Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  Reusable."HasRecentGeneInfoComponentResult"(CodeConcept.HER2, { 'NEG' }, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
 
 define "檢查報告-1規則2-6/2規則1=HER2陰性":
-  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative).*', "本次事前審查申請日期", 90)
+  Reusable."HasRecentDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(陰性|negative).*', "本次事前審查申請日期", 90)
 
 define "1規則2-6/2規則1=HER2陰性":
   "1規則2-6/2規則1=檢驗檢查-HER2陰性" or "1規則2-6/2規則1=基因檢測-HER2陰性"

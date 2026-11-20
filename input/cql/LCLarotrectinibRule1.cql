@@ -75,7 +75,7 @@ define "1規則1-1=NTRK 基因融合且無已知的後天阻抗性突變":
       )
       and RasO.value is not null
       and RasO.value is FHIR.string
-      and Matches((RasO.value as FHIR.string).value, '(?i).*fusion且無後天阻抗性突變.*')
+      and Matches((RasO.value as FHIR.string).value, '(?is).*fusion且無後天阻抗性突變.*')
   )
 
 define "1規則1-2-1=轉移性實體腫瘤":
@@ -89,14 +89,14 @@ define "1規則1-2-1=轉移性實體腫瘤":
 
 define "1規則1-2-2=手術切除極可能造成嚴重病症":
   Reusable."ICD-10使用C34"
-  and Reusable."HasClaimDiagnosisText"('(?i).*手術切除.*(嚴重病症|severe morbidity).*')
+  and Reusable."HasClaimDiagnosisText"('(?is).*手術切除.*(嚴重病症|severe morbidity).*')
 
 define "1規則1-2=轉移性實體腫瘤或手術切除極可能造成嚴重病症":
   "1規則1-2-1=轉移性實體腫瘤"
   or "1規則1-2-2=手術切除極可能造成嚴重病症"
 
 define "1規則1-3=沒有合適的替代治療選項":
-  Reusable."HasClaimDiagnosisText"('(?i).*(沒有|無).*(合適|適合).*(替代治療|alternative treatment).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(沒有|無).*(合適|適合).*(替代治療|alternative treatment).*')
 
 define "1規則1=適用於有NTRK基因融合的實體腫瘤成人和兒童病人":
   "1規則1-1=NTRK 基因融合且無已知的後天阻抗性突變"
@@ -105,8 +105,8 @@ define "1規則1=適用於有NTRK基因融合的實體腫瘤成人和兒童病�
 
 /*規則2*/
 define "1規則2=需檢附NTRK 基因融合檢測報告":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.NTRK, '(?i).*(fusion|融合|陽性|positive|\\+).*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.NTRK, '(?i).*(fusion|融合|陽性|positive|\\+).*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.NTRK, '(?is).*(fusion|融合|陽性|positive|\\+).*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.NTRK, '(?is).*(fusion|融合|陽性|positive|\\+).*')
 
 /*規則3*/
 define "未滿18歲":
@@ -130,23 +130,23 @@ define "EGFR突變":
   Reusable."HasMarkerPositive"(CodeConcept.EGFR)
 
 define "非鱗狀":
-  Reusable."HasClaimDiagnosisText"('(?i).*Adenocarcinoma, Non-squamous,非鱗狀.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*Adenocarcinoma, Non-squamous,非鱗狀.*')
 
 define "鱗狀":
-  Reusable."HasClaimDiagnosisText"('(?i).*鱗狀.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*鱗狀.*')
   and not "非鱗狀"
 
 define "不適合接受化學治療":
-  Reusable."HasClaimDiagnosisText"('(?i).*不適合接受化學治療.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*不適合接受化學治療.*')
 
 define "先前已使用過platinum 類化學治療失敗":
   Reusable."HasPriorMedicationUse"(CodeConcept.L01EX12, CodeConcept.L01XA)
 
 define "先前已使用過docetaxel或paclitaxel類治療失敗":
-  Reusable."HasClaimDiagnosisText"('(?i).*(docetaxel|paclitaxel|taxane|紫杉醇).*(失敗|惡化).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(docetaxel|paclitaxel|taxane|紫杉醇).*(失敗|惡化).*')
 
 define "先前曾接受過至少一線anti-EGFR TKI 治療失敗且產生抗性":
-  Reusable."HasClaimDiagnosisText"('(?i).*anti-EGFR TKI.*(失敗|抗性|resistance).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*anti-EGFR TKI.*(失敗|抗性|resistance).*')
 
 define "1規則3-2=成人病人符合無合適替代治療選項之肺癌條件":
   not "未滿18歲"
@@ -202,7 +202,7 @@ define "2規則1-1=前次申請後至本次申請前有療效評估影像學報�
   )
 
 define "2規則1-2=病摘未記載疾病進展或惡化":
-  not Reusable."HasClaimDiagnosisText"('(?i).*(疾病進展|病情惡化|progression).*')
+  not Reusable."HasClaimDiagnosisText"('(?is).*(疾病進展|病情惡化|progression).*')
 
 define "2規則1=需檢附療效評估資料證實無疾病進展":
   "2規則1-1=前次申請後至本次申請前有療效評估影像學報告"

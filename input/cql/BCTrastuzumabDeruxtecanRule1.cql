@@ -44,7 +44,7 @@ define "基因檢測-HER2過度表現(IHC3+或FISH+)":
   Reusable."HasHER2OverexpressionGene"
 
 define "檢查報告-HER2過度表現(IHC3+或FISH+)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC3\\+|FISH\\+).*')
 
 define "HER2過度表現(IHC3+或FISH+)":
   "檢驗檢查-HER2過度表現(IHC3+或FISH+)"
@@ -177,7 +177,7 @@ define "1規則2-2-1=之前已經接受過轉移性癌症治療":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(已經接受過轉移性癌症治療).*')
+                where Matches(T.value, '(?is).*(已經接受過轉移性癌症治療).*')
             )
         )
     )
@@ -190,7 +190,7 @@ define "1規則2-2-2=在輔助療法治療期間癌症復發":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(在輔助療法治療期間癌症復發).*')
+                where Matches(T.value, '(?is).*(在輔助療法治療期間癌症復發).*')
             )
         )
     )
@@ -203,7 +203,7 @@ define "1規則2-2-3=在完成治療後6個月內癌症復發":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(在完成治療後6個月內癌症復發).*')
+                where Matches(T.value, '(?is).*(在完成治療後6個月內癌症復發).*')
             )
         )
     )
@@ -222,7 +222,7 @@ define "1規則2-3=合併有主要臟器(不包含骨及軟組織)轉移":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(轉移臟器).*')
+                where Matches(T.value, '(?is).*(轉移臟器).*')
             )
         )
     )

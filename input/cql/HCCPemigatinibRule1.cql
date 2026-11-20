@@ -96,7 +96,7 @@ define "1規則1-3=FGFR2檢測結果為fusion融合或rearrangement":
         )
         and ComponentRecord.value is not null
         and ComponentRecord.value is FHIR.string
-        and Matches((ComponentRecord.value as FHIR.string).value, '(?i).*(fusion|融合|rearrangements|重组).*')
+        and Matches((ComponentRecord.value as FHIR.string).value, '(?is).*(fusion|融合|rearrangements|重组).*')
       )
   )
 
@@ -114,7 +114,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*手術不可切除.*')
+              where Matches(T.value, '(?is).*手術不可切除.*')
           )
       )
   )
@@ -208,7 +208,7 @@ define "FGFR2基因報告資料存在":
   "1規則2-2=具FGFR2基因檢測報告"
 
 define "手術不可切除資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*手術不可切除.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*手術不可切除.*')
 
 define "劑量資料存在":
   exists (

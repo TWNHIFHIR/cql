@@ -78,7 +78,7 @@ define "NTRK基因融合且無後天阻抗性突變檢測資料":
         )
         and ComponentRecord.value is not null
         and ComponentRecord.value is FHIR.string
-        and Matches((ComponentRecord.value as FHIR.string).value, '(?i).*fusion且無後天阻抗性突變.*')
+        and Matches((ComponentRecord.value as FHIR.string).value, '(?is).*fusion且無後天阻抗性突變.*')
       )
   )
 
@@ -104,7 +104,7 @@ and exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*手術切除會造成嚴重病症.*')
+              where Matches(T.value, '(?is).*手術切除會造成嚴重病症.*')
           )
       )
   )
@@ -122,7 +122,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*沒有合適的替代治療選項.*')
+              where Matches(T.value, '(?is).*沒有合適的替代治療選項.*')
           )
       )
   )
@@ -182,7 +182,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法手術切除.*')
+              where Matches(T.value, '(?is).*無法手術切除.*')
           )
       )
   )
@@ -271,10 +271,10 @@ define "NTRK基因報告資料存在":
   "1規則2-2=具NTRK基因檢測報告"
 
 define "替代治療說明資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*沒有合適的替代治療選項.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*沒有合適的替代治療選項.*')
 
 define "手術風險或不可切除資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*(手術切除會造成嚴重病症|無法手術切除).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(手術切除會造成嚴重病症|無法手術切除).*')
 
 define "主要疾病ICD診斷資料存在":
   exists (

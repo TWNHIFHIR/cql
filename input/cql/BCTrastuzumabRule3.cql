@@ -33,7 +33,7 @@ define "1規則1-1=基因檢測-HER2過度表現(IHC3+或FISH+)":
   Reusable."HasHER2OverexpressionGene"
 
 define "檢查報告-1規則1-1=HER2過度表現(IHC3+或FISH+)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC3\\+|FISH\\+).*')
 
 define "1規則1-1=HER2過度表現(IHC3+或FISH+)":
   "1規則1-1=檢驗檢查-HER2過度表現(IHC3+或FISH+)"
@@ -59,7 +59,7 @@ define "1規則1-2-1=病摘應說明曾接受哪種化學治療":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(化學治療).*')
+                where Matches(T.value, '(?is).*(化學治療).*')
             )
         )
     )
@@ -264,7 +264,7 @@ define "4規則1-2=病摘應說明先前使用過docetaxel及pertuzumab與trastu
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化).*')
+                where Matches(T.value, '(?is).*(使用過docetaxel及pertuzumab與trastuzumab併用達18個月上限仍未惡化).*')
             )
         )
     )
@@ -334,7 +334,7 @@ define "4規則2-2=病摘應說明先前使用過docetaxel及pertuzumab與trastu
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(使用過docetaxel及pertuzumab與trastuzumab皮下注射複方製劑併用達18個月上限未惡化).*')
+                where Matches(T.value, '(?is).*(使用過docetaxel及pertuzumab與trastuzumab皮下注射複方製劑併用達18個月上限未惡化).*')
             )
         )
     )

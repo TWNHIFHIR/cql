@@ -73,7 +73,7 @@ define "1規則1-1-1=EGFR Exon 19 Del基因突變":
       )
       and RasO.value is not null
       and RasO.value is FHIR.string
-      and Matches((RasO.value as FHIR.string).value, '(?i).*(mutation|變異|突變).*(positive|陽性).*')
+      and Matches((RasO.value as FHIR.string).value, '(?is).*(mutation|變異|突變).*(positive|陽性).*')
   )
 
   define "1規則1-1-2=Exon 21 L858R基因突變":
@@ -94,7 +94,7 @@ define "1規則1-1-1=EGFR Exon 19 Del基因突變":
         )
         and RasO.value is not null
         and RasO.value is FHIR.string
-        and Matches((RasO.value as FHIR.string).value, '(?i).*(mutation|變異|突變).*(positive|陽性).*')
+        and Matches((RasO.value as FHIR.string).value, '(?is).*(mutation|變異|突變).*(positive|陽性).*')
     )
 
   define "1規則1-1=具有EGFR Exon 19 Del或Exon 21 L858R基因突變":
@@ -102,7 +102,7 @@ define "1規則1-1-1=EGFR Exon 19 Del基因突變":
     or "1規則1-1-2=Exon 21 L858R基因突變"
 
   define "1規則1-2-1=局部侵犯性":
-    Reusable."HasClaimDiagnosisText"('(?i).*病摘提及具有局部侵犯性.*')
+    Reusable."HasClaimDiagnosisText"('(?is).*病摘提及具有局部侵犯性.*')
 
   define "1規則1-2-2=轉移性(即為IIIB、IIIC期或第Ⅳ期)":
     "3個月內有影像檢查報告"
@@ -117,12 +117,12 @@ define "1規則1-1-1=EGFR Exon 19 Del基因突變":
 
   define "1規則1-3=肺腺癌病患之第一線治療":
     Reusable."ICD-10使用C34"
-    and Reusable."HasClaimDiagnosisText"('(?i).*(Adenocarcinom|肺腺癌).*')
+    and Reusable."HasClaimDiagnosisText"('(?is).*(Adenocarcinom|肺腺癌).*')
     and (
         (not "3個月內有影像檢查報告" and not "3個月內有檢查報告")
         or ("3個月內有影像檢查報告" and "3個月內有檢查報告")
     )
-    and Reusable."HasReportResultString"('(?i).*(Adenocarcinom|肺腺癌).*')
+    and Reusable."HasReportResultString"('(?is).*(Adenocarcinom|肺腺癌).*')
     and Reusable."用藥線別=1"
     and Reusable."續用註記為1"
     and Reusable."醫令類別為1"
@@ -135,7 +135,7 @@ define "1規則1-1-1=EGFR Exon 19 Del基因突變":
   /*規則2*/
   define "1規則2-1-1=初次申請時需檢具確實患有肺腺癌之病理報告":
     "3個月內有檢查報告(部分1)"
-    and Reusable."HasReportResultString"('(?i).*(Adenocarcinom|肺腺癌).*')
+    and Reusable."HasReportResultString"('(?is).*(Adenocarcinom|肺腺癌).*')
     and exists (
       [DiagnosticReport] DR
         where exists (
@@ -146,7 +146,7 @@ define "1規則1-1-1=EGFR Exon 19 Del基因突變":
 
   define "1規則2-1-2=初次申請時需檢具確實患有肺腺癌之細胞檢查報告":
     "3個月內有檢查報告(部分2)"
-    and Reusable."HasReportResultString"('(?i).*(Adenocarcinom|肺腺癌).*')
+    and Reusable."HasReportResultString"('(?is).*(Adenocarcinom|肺腺癌).*')
     and exists (
       [DiagnosticReport] DR
         where exists (
@@ -177,7 +177,7 @@ define "1規則1-1-1=EGFR Exon 19 Del基因突變":
       )
       and RasO.value is not null
       and RasO.value is FHIR.string
-      and Matches((RasO.value as FHIR.string).value, '(?i).*(mutation|變異|突變).*(positive|陽性).*')
+      and Matches((RasO.value as FHIR.string).value, '(?is).*(mutation|變異|突變).*(positive|陽性).*')
   )
 
   define "1規則2=初次申請時需檢具確實患有肺腺癌或非小細胞肺癌之病理或細胞檢查報告":
@@ -253,7 +253,7 @@ define "3規則3-1-2=除因耐受性不良不得互換":
         and Reusable."HasValidTiming"(MR)
         and Reusable."GetEndTime"(MR) < "本次事前審查申請品項預定起始日期"
   )
-  and Reusable."HasReportResultString"('(?i).*使用L01EB01, L01EB02, L01EB03, L01EB07有耐受性不良.*')
+  and Reusable."HasReportResultString"('(?is).*使用L01EB01, L01EB02, L01EB03, L01EB07有耐受性不良.*')
 
 define "3規則3-1=與gefitinib、erlotinib、afatinib及dacomitinib僅得擇一使用，除因耐受性不良不得互換":
 "3規則3-1-1=僅得擇一使用"
@@ -277,7 +277,7 @@ define "3規則3-2-1-1=EGFR Exon 19 Del基因突變":
       )
       and RasO.value is not null
       and RasO.value is FHIR.string
-      and Matches((RasO.value as FHIR.string).value, '(?i).*(mutation|變異|突變).*(positive|陽性).*')
+      and Matches((RasO.value as FHIR.string).value, '(?is).*(mutation|變異|突變).*(positive|陽性).*')
   )
 
 define "3規則3-2-1-2=Exon 21 L858R基因突變":
@@ -298,7 +298,7 @@ define "3規則3-2-1-2=Exon 21 L858R基因突變":
         )
         and RasO.value is not null
         and RasO.value is FHIR.string
-        and Matches((RasO.value as FHIR.string).value, '(?i).*(mutation|變異|突變).*(positive|陽性).*')
+        and Matches((RasO.value as FHIR.string).value, '(?is).*(mutation|變異|突變).*(positive|陽性).*')
     )
 
 define "3規則3-2-1=限單獨使用於具有EGFR Exon 19 Del或Exon 21 L858R基因突變":
@@ -306,7 +306,7 @@ define "3規則3-2-1=限單獨使用於具有EGFR Exon 19 Del或Exon 21 L858R基
     or "3規則3-2-1-2=Exon 21 L858R基因突變"
 
 define "3規則3-2-2-1=局部侵犯性":
-Reusable."HasReportResultString"('(?i).*(具有局部侵犯性).*')
+Reusable."HasReportResultString"('(?is).*(具有局部侵犯性).*')
 
 define "3規則3-2-2-2=轉移性":
   "3個月內有影像檢查報告"
@@ -321,9 +321,9 @@ define "3規則3-2-2=局部侵犯性或轉移性":
 
 define "3規則3-2-3=肺腺癌病患":
   Reusable."ICD-10使用C34"
-    and Reusable."HasClaimDiagnosisText"('(?i).*(Adenocarcinom|肺腺癌).*')
+    and Reusable."HasClaimDiagnosisText"('(?is).*(Adenocarcinom|肺腺癌).*')
     and "3個月內有檢查報告"
-    and Reusable."HasReportResultString"('(?i).*(Adenocarcinom|肺腺癌).*')
+    and Reusable."HasReportResultString"('(?is).*(Adenocarcinom|肺腺癌).*')
 
 define "3規則3-2=如需更換藥品，須符合具有局部侵犯性或轉移性肺腺癌病患":
 "3規則3-2-1=限單獨使用於具有EGFR Exon 19 Del或Exon 21 L858R基因突變"

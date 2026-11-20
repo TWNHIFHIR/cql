@@ -69,7 +69,7 @@ define "1規則1-1A=NTRK基因融合且無已知的後天阻抗性突變-檢驗�
       )
       and ComponentRecord.value is not null
       and ComponentRecord.value is FHIR.string
-      and Matches((ComponentRecord.value as FHIR.string).value, '(?i).*fusion且無後天阻抗性突變.*')
+      and Matches((ComponentRecord.value as FHIR.string).value, '(?is).*fusion且無後天阻抗性突變.*')
     )
   )
 
@@ -136,7 +136,7 @@ define "1規則1-3=沒有合適的替代治療選項(包括免疫檢查點抑制
       where Diag.type.text is not null
         and exists (
           Diag.type.text T
-          where Matches(T, '(?i).*沒有合適的替代治療選項.*')
+          where Matches(T, '(?is).*沒有合適的替代治療選項.*')
         )
     )
   )

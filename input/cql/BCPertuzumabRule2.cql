@@ -63,7 +63,7 @@ define "1規則2=基因檢測-具HER2過度表現":
   Reusable."HasHER2OverexpressionGene"
 
 define "檢查報告-1規則2=具HER2過度表現":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC3\\+|FISH\\+).*')
 
 define "1規則2=具HER2過度表現":
   "1規則2=檢驗檢查-具HER2過度表現"
@@ -93,7 +93,7 @@ define "轉移確認日期":
               and Cdg in CodeConcept.SNOMED
         )
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[1-9].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*M[1-9].*')
         and O.effective is FHIR.dateTime
       sort by FHIRHelpers.ToDateTime(effective as FHIR.dateTime)
     ).effective as FHIR.dateTime

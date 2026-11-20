@@ -95,7 +95,7 @@ define "ICD代碼檢核_布林值": Reusable."ICD-10使用C34"
 define "醫令類別為1_布林值": Reusable."醫令類別為1"
 
 define "非鱗狀病摘":
-  Reusable."HasClaimDiagnosisText"('(?i).*(Adenocarcinoma|Non-squamous|非鱗狀).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(Adenocarcinoma|Non-squamous|非鱗狀).*')
 
 define "有檢查報告":
   exists (
@@ -167,16 +167,16 @@ define "1規則1-2=先前已使用過platinum類及docetaxel/paclitaxel類二線
 
 //條件3:EGFR/ALK/ROS-1腫瘤基因為原生型
 define "ALK原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ALK, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ALK, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ALK, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ALK, '(?is).*wild type.*')
 
 define "EGFR原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.EGFR, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.EGFR, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.EGFR, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.EGFR, '(?is).*wild type.*')
 
 define "ROS1原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ROS1, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ROS1, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ROS1, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ROS1, '(?is).*wild type.*')
 
 define "1規則1-3=EGFR/ALK/ROS-1腫瘤基因為原生型":
   "ALK原生型"
@@ -436,7 +436,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iCPD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iCPD).*')
   )
   and not exists (
     [Claim] C
@@ -446,7 +446,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
         and exists (
           Diag.type.text T
           where T.value is not null
-            and Matches(T.value, '(?i).*中、重度或危及生命之藥物不良反應.*')
+            and Matches(T.value, '(?is).*中、重度或危及生命之藥物不良反應.*')
         )
     )
   )
@@ -470,7 +470,7 @@ define "2規則1-4-0=SD評估記錄":
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iSD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iSD).*')
 
 define "本次iSD評估記錄":
   "2規則1-4-0=SD評估記錄" RasObservation

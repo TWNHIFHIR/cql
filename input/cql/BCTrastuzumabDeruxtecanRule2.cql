@@ -26,7 +26,7 @@ define "基因檢測-ER陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularER)
 
 define "檢查報告-ER陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(陰性|negative).*')
 
 define "ER陰性":
   "檢驗檢查-ER陰性" or "基因檢測-ER陰性"
@@ -40,7 +40,7 @@ define "基因檢測-PR陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularPR)
 
 define "檢查報告-PR陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?is).*(陰性|negative).*')
 
 define "PR陰性":
   "檢驗檢查-PR陰性" or "基因檢測-PR陰性"
@@ -75,7 +75,7 @@ define "基因檢測-HER2弱陽性(IHC 1+或IHC 2+/ISH-)表現":
   Reusable."HasHER2LowExpressionGene"
 
 define "檢查報告-HER2弱陽性(IHC 1+或IHC 2+/ISH-)表現":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC\\s*1\\+|IHC\\s*2\\+|ISH-).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC\\s*1\\+|IHC\\s*2\\+|ISH-).*')
 
 define "HER2弱陽性(IHC 1+或IHC 2+/ISH-)表現":
   "檢驗檢查-HER2弱陽性(IHC 1+或IHC 2+/ISH-)表現"
@@ -130,7 +130,7 @@ define "病摘判斷無法切除":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(無法切除).*')
+                where Matches(T.value, '(?is).*(無法切除).*')
             )
         )
     )

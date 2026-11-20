@@ -86,8 +86,8 @@ define "1規則1-1=晚期非小細胞肺癌":
 
 //條件2:ROS-1陽性
 define "1規則1-2=ROS-1陽性":
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ROS1, { 'POS' }, '(?i).*(\+|陽性|positive|突變|fusion).*')
-  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ROS1, { 'POS' }, '(?i).*(\+|陽性|positive|突變|fusion).*')
+  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ROS1, { 'POS' }, '(?is).*(\+|陽性|positive|突變|fusion).*')
+  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ROS1, { 'POS' }, '(?is).*(\+|陽性|positive|突變|fusion).*')
 
 define "1規則1=單獨使用於ROS-1陽性之晚期非小細胞肺癌患者":
 "1規則1-1=晚期非小細胞肺癌"
@@ -242,7 +242,7 @@ define "3規則3-2-2=發生嚴重不良反應或耐受不良，與entrectinib可
             where exists (
               C.diagnosis D
                 where First(D."type").text is not null
-                  and Matches(First(D."type").text, '(?i).*無法忍受entrectinib副作用.*')
+                  and Matches(First(D."type").text, '(?is).*無法忍受entrectinib副作用.*')
             )
         )
   )
@@ -260,8 +260,8 @@ and "3規則3-2=與entrectinib 僅得擇一使用或發生嚴重不良反應/耐
 define "3規則3-3=用於ALK 陽性之晚期非小細胞肺癌第一線治療時":
 "1規則1-1=晚期非小細胞肺癌"
 and (
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ALK, { 'POS' }, '(?i).*(\+|陽性|positive|Positive).*')
-  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ALK, { 'POS' }, '(?i).*(\+|陽性|positive|Positive).*')
+  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ALK, { 'POS' }, '(?is).*(\+|陽性|positive|Positive).*')
+  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ALK, { 'POS' }, '(?is).*(\+|陽性|positive|Positive).*')
 )
 and Reusable."用藥線別=1"
 
@@ -289,7 +289,7 @@ define "3規則3-4-2=發生嚴重不良反應或耐受不良，與ceritinib、al
       where exists (
         C.diagnosis D
           where First(D."type").text is not null
-            and Matches(First(D."type").text, '(?i).*無法忍受ceritinib、alectinib、brigatinib、lorlatinib副作用.*')
+            and Matches(First(D."type").text, '(?is).*無法忍受ceritinib、alectinib、brigatinib、lorlatinib副作用.*')
       )
   )
 

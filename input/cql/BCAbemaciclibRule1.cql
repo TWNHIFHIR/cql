@@ -46,7 +46,7 @@ define "1規則1-2-1=檢驗檢查-作為荷爾蒙受體(HR)陽性(ER>30%)":
         and (OBs.value as Quantity).value > 30
         and (OBs.value as Quantity).comparator = '>')
       or (OBs.value is FHIR.string
-        and Matches((OBs.value as FHIR.string).value, '.*ER>30%.*'))
+        and Matches((OBs.value as FHIR.string).value, '(?s).*ER>30%.*'))
     )
   )
 
@@ -68,13 +68,13 @@ define "1規則1-2-1=基因檢測-作為荷爾蒙受體(HR)陽性(ER>30%)":
             and (Comp.value as Quantity).comparator = '>'
             and (Comp.value as Quantity).unit = '%')
           or (Comp.value is FHIR.string
-            and Matches((Comp.value as FHIR.string).value, '.*ER>30%.*'))
+            and Matches((Comp.value as FHIR.string).value, '(?s).*ER>30%.*'))
         )
     )
   )
 
 define "檢查報告-1規則1-2-1=作為荷爾蒙受體(HR)陽性(ER>30%)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.ER, '.*ER>30%.*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.ER, '(?s).*ER>30%.*')
 
 define "1規則1-2-1=作為荷爾蒙受體(HR)陽性(ER>30%)":
   "1規則1-2-1=檢驗檢查-作為荷爾蒙受體(HR)陽性(ER>30%)"
@@ -96,7 +96,7 @@ define "1規則1-2-2=檢驗檢查-作為荷爾蒙受體(HR)陽性(PR>30%)":
         and (OBs.value as Quantity).value > 30
         and (OBs.value as Quantity).comparator = '>')
       or (OBs.value is FHIR.string
-        and Matches((OBs.value as FHIR.string).value, '.*PR>30%.*'))
+        and Matches((OBs.value as FHIR.string).value, '(?s).*PR>30%.*'))
     )
   )
 
@@ -118,13 +118,13 @@ define "1規則1-2-2=基因檢測-作為荷爾蒙受體(HR)陽性(PR>30%)":
             and (Comp.value as Quantity).comparator = '>'
             and (Comp.value as Quantity).unit = '%')
           or (Comp.value is FHIR.string
-            and Matches((Comp.value as FHIR.string).value, '.*PR>30%.*'))
+            and Matches((Comp.value as FHIR.string).value, '(?s).*PR>30%.*'))
         )
     )
   )
 
 define "檢查報告-1規則1-2-2=作為荷爾蒙受體(HR)陽性(PR>30%)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.PR, '.*PR>30%.*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.PR, '(?s).*PR>30%.*')
 
 define "1規則1-2-2=作為荷爾蒙受體(HR)陽性(PR>30%)":
   "1規則1-2-2=檢驗檢查-作為荷爾蒙受體(HR)陽性(PR>30%)"
@@ -142,7 +142,7 @@ define "1規則1-3=基因檢測-第二型人類表皮生長因子受體(HER2)陰
   Reusable."HasHER2NegativeOrNDGene"
 
 define "檢查報告-1規則1-3=第二型人類表皮生長因子受體(HER2)陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative|\\bNEG\\b|\\bND\\b).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(陰性|negative|\\bNEG\\b|\\bND\\b).*')
 
 define "1規則1-3=第二型人類表皮生長因子受體(HER2)陰性":
   "1規則1-3=檢驗檢查-第二型人類表皮生長因子受體(HER2)陰性"
@@ -166,7 +166,7 @@ define "1規則1-4-2=癌症分期分數或結果為N>=1":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*N[1-9].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*N[1-9].*')
   )
 
 //條件4-3
@@ -180,7 +180,7 @@ define "1規則1-4-3=6個月內淋巴結陽性檢查報告":
     )
     and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 180)
     and O2.conclusion is not null
-    and Matches(O2.conclusion, '(?i).*(positive|detected|present|Positive|Detected|Present|\\+).*')
+    and Matches(O2.conclusion, '(?is).*(positive|detected|present|Positive|Detected|Present|\\+).*')
   )
 
 define "1規則1-4=淋巴結陽性":
@@ -204,7 +204,7 @@ and Count(
     )
     and O.value is not null
     and O.value is FHIR.string
-    and Matches((O.value as FHIR.string).value, '.*N[2-9].*') //癌症分期分數或結果為N>=2
+    and Matches((O.value as FHIR.string).value, '(?s).*N[2-9].*') //癌症分期分數或結果為N>=2
   ) > 0
 
 
@@ -221,8 +221,8 @@ and Count(
     )
     and O.value is not null
     and O.value is FHIR.string
-    and Matches((O.value as FHIR.string).value, '.*N[1-9].*')//癌症分期分數或結果為N>=1
-    and Matches((O.value as FHIR.string).value, '.*T[2-9].*') //癌症分期分數或結果為T>=2
+    and Matches((O.value as FHIR.string).value, '(?s).*N[1-9].*')//癌症分期分數或結果為N>=1
+    and Matches((O.value as FHIR.string).value, '(?s).*T[2-9].*') //癌症分期分數或結果為T>=2
   ) > 0
 
 
@@ -239,7 +239,7 @@ and (Count(
     )
     and O.value is not null
     and O.value is FHIR.string
-    and Matches((O.value as FHIR.string).value, '.*N[1-9].*')//癌症分期分數或結果為N>=1
+    and Matches((O.value as FHIR.string).value, '(?s).*N[1-9].*')//癌症分期分數或結果為N>=1
   ) > 0)
 and exists (
     [DiagnosticReport] O2
@@ -250,7 +250,7 @@ and exists (
     )
     and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 90)
     and O2.conclusion is not null
-    and Matches(O2.conclusion, '(?i).*(Grade 3|Grade3|\\+).*')
+    and Matches(O2.conclusion, '(?is).*(Grade 3|Grade3|\\+).*')
   )
 
 define "1規則1-5=高復發風險之早期乳癌":

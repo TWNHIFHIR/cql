@@ -118,7 +118,7 @@ define "NSCLC註記":
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*NSCLC.*')
+              where Matches(T.value, '(?is).*NSCLC.*')
           )
       )
   )
@@ -159,21 +159,21 @@ define "1規則1-1=轉移性非小細胞肺癌第一線用藥":
 //條件2-1:非鱗狀癌
 
 define "1規則1-2-1=非鱗狀":
-  Reusable."HasClaimDiagnosisText"('(?i).*(Adenocarcinoma|Non-squamous|非鱗狀).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(Adenocarcinoma|Non-squamous|非鱗狀).*')
 
 //條件2-2:EGFR/ALK腫瘤基因原生型
 
 define "ALK原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ALK, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ALK, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ALK, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ALK, '(?is).*wild type.*')
 
 define "EGFR原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.EGFR, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.EGFR, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.EGFR, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.EGFR, '(?is).*wild type.*')
 
 define "ROS1原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ROS1, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ROS1, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ROS1, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ROS1, '(?is).*wild type.*')
 
 define "EGFR/ALK腫瘤基因原生型":
 "ALK原生型" and "EGFR原生型"
@@ -184,7 +184,7 @@ define "1規則1-2-2=EGFR/ALK腫瘤基因原生型":
 
 //條件2-3
 define "1規則1-2-3=鱗狀癌":
-  Reusable."HasClaimDiagnosisText"('(?i).*(Squamous cell carcinoma|(?<!非)鱗狀癌).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(Squamous cell carcinoma|(?<!非)鱗狀癌).*')
 
 define "1規則1-2=非鱗狀癌者需為EGFR/ALK/ROS-1腫瘤基因原生型、鱗狀癌者需為EGFR/ALK腫瘤基因原生型":
 ("1規則1-2-1=非鱗狀"
@@ -421,7 +421,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iCPD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iCPD).*')
   )
   and not exists (
     [Claim] C
@@ -431,7 +431,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
         and exists (
           Diag.type.text T
           where T.value is not null
-            and Matches(T.value, '(?i).*中、重度或危及生命之藥物不良反應.*')
+            and Matches(T.value, '(?is).*中、重度或危及生命之藥物不良反應.*')
         )
     )
   )
@@ -454,7 +454,7 @@ define "2規則1-4-0=SD評估記錄":
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iSD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iSD).*')
 
 define "本次iSD評估記錄":
   "2規則1-4-0=SD評估記錄" RasObservation

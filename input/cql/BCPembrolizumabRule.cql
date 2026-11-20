@@ -39,7 +39,7 @@ define "病摘早期三陰性乳癌":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(早期三陰性乳癌).*')
+                where Matches(T.value, '(?is).*(早期三陰性乳癌).*')
             )
         )
     )
@@ -83,15 +83,15 @@ define "1規則2=非轉移性、第II期至第IIIb期（cT1c N1-2 或 T2-4 N0-2�
         and O.value is not null
         and O.value is FHIR.string
         and (
-          Matches((O.value as FHIR.string).value, '.*M0.*')
-          or Matches((O.value as FHIR.string).value, '.*pT4aN2bM1a.*')
+          Matches((O.value as FHIR.string).value, '(?s).*M0.*')
+          or Matches((O.value as FHIR.string).value, '(?s).*pT4aN2bM1a.*')
         )
         and (
-          if Matches((O.value as FHIR.string).value, '.*cT1c.*')
-            then Matches((O.value as FHIR.string).value, '.*N[1-2](?![0-9]).*')
+          if Matches((O.value as FHIR.string).value, '(?s).*cT1c.*')
+            then Matches((O.value as FHIR.string).value, '(?s).*N[1-2](?![0-9]).*')
           else
-            Matches((O.value as FHIR.string).value, '.*[cpy]?T[2-4][a-z]?.*')
-            and Matches((O.value as FHIR.string).value, '.*N[0-2](?![0-9]).*')
+            Matches((O.value as FHIR.string).value, '(?s).*[cpy]?T[2-4][a-z]?.*')
+            and Matches((O.value as FHIR.string).value, '(?s).*N[0-2](?![0-9]).*')
         )
   )
 
@@ -308,7 +308,7 @@ define "4規則3=使用免疫檢查點抑制劑之治療計畫":
               and exists (
                 D.content Content
                   where Content.attachment.title is not null
-                    and Matches(Content.attachment.title, '(?i).*免疫檢查點抑制劑治療計畫.*')
+                    and Matches(Content.attachment.title, '(?is).*免疫檢查點抑制劑治療計畫.*')
               )
           )
       )
@@ -323,7 +323,7 @@ define "基因檢測-ER陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularER)
 
 define "檢查報告-ER陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(陰性|negative).*')
 
 define "ER陰性":
   "檢驗檢查-ER陰性" or "基因檢測-ER陰性"
@@ -337,14 +337,14 @@ define "基因檢測-PR陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularPR)
 
 define "檢查報告-PR陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?is).*(陰性|negative).*')
 
 define "PR陰性":
   "檢驗檢查-PR陰性" or "基因檢測-PR陰性"
   or "檢查報告-PR陰性"
 
 define "檢查報告-HER-2檢測為陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative|\\bNEG\\b|\\bND\\b).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(陰性|negative|\\bNEG\\b|\\bND\\b).*')
 
 define "HER-2檢測為陰性":
   Reusable."HasHER2NegativeOrND"
@@ -417,7 +417,7 @@ define "2規則1=手術後未達pCR者":
             and Cdg.code in CodeConcept.pALNReport
       )
       and O2.conclusion is not null
-      and Matches(O2.conclusion, '(?i).*(手術後未達pCR者).*')
+      and Matches(O2.conclusion, '(?is).*(手術後未達pCR者).*')
   )
   or exists (
     [Claim] C
@@ -425,7 +425,7 @@ define "2規則1=手術後未達pCR者":
         C.diagnosis D
         where exists (
             D.type.text T
-            where Matches(T.value, '(?i).*(手術後未達pCR者).*')
+            where Matches(T.value, '(?is).*(手術後未達pCR者).*')
           )
       )
   )
@@ -465,7 +465,7 @@ define "3規則1=疾病評估狀態":
       and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次事前審查申請品項預定起始日期", 84)
       and RasObservation.value is not null
       and RasObservation.value is FHIR.string
-      and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iPD).*')
+      and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iPD).*')
   )
 
 //3規則2

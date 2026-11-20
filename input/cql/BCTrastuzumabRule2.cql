@@ -56,7 +56,7 @@ define "1規則1-1-1=病摘描述本藥品使用在外科手術前":
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*本藥品使用在外科手術前.*')
+              where Matches(T.value, '(?is).*本藥品使用在外科手術前.*')
             )
         )
     )
@@ -95,7 +95,7 @@ define "1規則2-1=基因檢測-HER2過度表現(IHC3+或FISH+)":
   Reusable."HasHER2OverexpressionGene"
 
 define "檢查報告-1規則2-1=HER2過度表現(IHC3+或FISH+)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC3\\+|FISH\\+).*')
 
 define "1規則2-1=HER2過度表現(IHC3+或FISH+)":
   "1規則2-1=檢驗檢查-HER2過度表現(IHC3+或FISH+)"
@@ -105,13 +105,13 @@ define "1規則2-1=HER2過度表現(IHC3+或FISH+)":
 
 //條件2-2
 define "1規則2-2=檢驗檢查-雌激素受體(ER)為陰性":
-  Reusable."HasTestObservationResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*(陰性|negative).*')
+  Reusable."HasTestObservationResult"(CodeConcept.MolecularER, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define "1規則2-2=基因檢測-雌激素受體(ER)為陰性":
-  Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*(陰性|negative).*')
+  Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularER, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define "檢查報告-1規則2-2=雌激素受體(ER)為陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(陰性|negative).*')
 
 define "1規則2-2=雌激素受體(ER)為陰性":
   "1規則2-2=檢驗檢查-雌激素受體(ER)為陰性" or "1規則2-2=基因檢測-雌激素受體(ER)為陰性"
@@ -170,7 +170,7 @@ define "1規則2-5-1=經外科手術後達病理上完全緩解者(pCR)":
       and O2.effective is not null
       and FHIRHelpers.ToDateTime(O2.effective) > "手術日期(opdate)"
       and O2.conclusion is not null
-      and Matches(O2.conclusion, '(?i).*(外科手術後達病理上完全緩解\（pCR\）\)\+).*')
+      and Matches(O2.conclusion, '(?is).*(外科手術後達病理上完全緩解\（pCR\）\)\+).*')
   )   and "手術(或其他處置)項目" 
 
 
@@ -187,7 +187,7 @@ define "1規則2-5-2=若外科手術後無法達病理上緩解(non-pCR)":
       and FHIRHelpers.ToDateTime(O2.effective) > "手術日期(opdate)"
       and FHIRHelpers.ToDateTime(O2.effective) <= "本次事前審查申請品項預定起始日期"
       and O2.conclusion is not null
-      and Matches(O2.conclusion, '(?i).*(non-pCR\+).*')
+      and Matches(O2.conclusion, '(?is).*(non-pCR\+).*')
   )
 
 

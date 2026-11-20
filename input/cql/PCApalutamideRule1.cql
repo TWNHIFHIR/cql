@@ -59,7 +59,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*去勢抗性.*')
+              where Matches(T.value, '(?is).*去勢抗性.*')
           )
       )
   )
@@ -184,7 +184,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*去勢敏感.*')
+              where Matches(T.value, '(?is).*去勢敏感.*')
           )
       )
   )
@@ -392,7 +392,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法忍受新型荷爾蒙藥品(abiraterone、darolutamide 和 enzalutamide) ，及 olaparib 與 abiraterone 併用副作用.*')
+              where Matches(T.value, '(?is).*無法忍受新型荷爾蒙藥品(abiraterone、darolutamide 和 enzalutamide) ，及 olaparib 與 abiraterone 併用副作用.*')
           )
       )
   )

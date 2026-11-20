@@ -91,7 +91,7 @@ or "1規則1-3-3=曾接受轉移性化療"
 
 //條件4:具germline BRCA 1/2致病性或疑似致病性突變(含germline BRCA 1/2突變之檢測報告)
 define "1規則1-4=germline BRCA 1/2致病性或疑似致病性突變":
-  Reusable."HasTestObservationResult"(CodeConcept.BRCA1or2, { 'POS' }, '(?i).*(Positive|Pathogenic|Likely Pathogenic).*')
+  Reusable."HasTestObservationResult"(CodeConcept.BRCA1or2, { 'POS' }, '(?is).*(Positive|Pathogenic|Likely Pathogenic).*')
   and Reusable."醫令類別為1"
   and Reusable."用藥線別≠1"
 
@@ -104,7 +104,7 @@ define "1規則1-5-1=基因檢測-ER陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularER)
 
 define "檢查報告-1規則1-5-1=ER陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(陰性|negative).*')
 
 define "1規則1-5-1=ER陰性":
   "1規則1-5-1=檢驗檢查-ER陰性" or "1規則1-5-1=基因檢測-ER陰性"
@@ -118,7 +118,7 @@ define "1規則1-5-2=基因檢測-PR陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularPR)
 
 define "檢查報告-1規則1-5-2=PR陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?is).*(陰性|negative).*')
 
 define "1規則1-5-2=PR陰性":
   "1規則1-5-2=檢驗檢查-PR陰性" or "1規則1-5-2=基因檢測-PR陰性"
@@ -133,7 +133,7 @@ define "1規則1-5-3=基因檢測-HER2陰性":
   Reusable."HasHER2NegativeGene"
 
 define "檢查報告-1規則1-5-3=HER2陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(陰性|negative).*')
 
 define "1規則1-5-3=HER2陰性":
   "1規則1-5-3=檢驗檢查-HER2陰性" or "1規則1-5-3=基因檢測-HER2陰性"
@@ -217,7 +217,7 @@ define "3規則2-1-1=無法忍受化療(其副作用)時(有註記)":
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法忍受talazoparib副作用.*')
+              where Matches(T.value, '(?is).*無法忍受talazoparib副作用.*')
             )
         )
     )

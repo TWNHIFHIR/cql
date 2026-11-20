@@ -67,7 +67,7 @@ define "基因檢測":
         )
         and ComponentRecord.value is not null
         and ComponentRecord.value is FHIR.string
-        and Matches((ComponentRecord.value as FHIR.string).value, '(?i).*(fusion且無後天阻抗性突變).*')
+        and Matches((ComponentRecord.value as FHIR.string).value, '(?is).*(fusion且無後天阻抗性突變).*')
       )
   )
 
@@ -92,7 +92,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*說明手術切除會造成嚴重病症.*')
+              where Matches(T.value, '(?is).*說明手術切除會造成嚴重病症.*')
           )
       )
   )
@@ -113,7 +113,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*沒有合適的替代治療選項.*')
+              where Matches(T.value, '(?is).*沒有合適的替代治療選項.*')
           )
       )
   )

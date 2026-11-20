@@ -33,7 +33,7 @@ define "1規則1-1=簡要病摘含有停經字樣":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(停經|停經前|正在停經\\+).*')
+                where Matches(T.value, '(?is).*(停經|停經前|正在停經\\+).*')
             )
         )
     )
@@ -93,7 +93,7 @@ define "1規則3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)":
         and (OBs.value as Quantity).value > 30
         and (OBs.value as Quantity).comparator = '>')
       or (OBs.value is FHIR.string
-        and Matches((OBs.value as FHIR.string).value, '.*ER>30%.*'))
+        and Matches((OBs.value as FHIR.string).value, '(?s).*ER>30%.*'))
     )
   )
 
@@ -115,13 +115,13 @@ define "1規則3-1=基因檢測-荷爾蒙受體陽性(ER>30%)":
             and (Comp.value as Quantity).comparator = '>'
             and (Comp.value as Quantity).unit = '%')
           or (Comp.value is FHIR.string
-            and Matches((Comp.value as FHIR.string).value, '.*ER>30%.*'))
+            and Matches((Comp.value as FHIR.string).value, '(?s).*ER>30%.*'))
         )
     )
   )
 
 define "檢查報告-1規則3-1=荷爾蒙受體陽性(ER>30%)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.ER, '.*ER>30%.*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.ER, '(?s).*ER>30%.*')
 
 define "1規則3-1=荷爾蒙受體陽性(ER>30%)":
   "1規則3-1=檢驗檢查-荷爾蒙受體陽性(ER>30%)"
@@ -143,7 +143,7 @@ define "1規則3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)":
         and (OBs.value as Quantity).value > 30
         and (OBs.value as Quantity).comparator = '>')
       or (OBs.value is FHIR.string
-        and Matches((OBs.value as FHIR.string).value, '.*PR>30%.*'))
+        and Matches((OBs.value as FHIR.string).value, '(?s).*PR>30%.*'))
     )
   )
 
@@ -165,13 +165,13 @@ define "1規則3-2=基因檢測-荷爾蒙受體陽性(PR>30%)":
             and (Comp.value as Quantity).comparator = '>'
             and (Comp.value as Quantity).unit = '%')
           or (Comp.value is FHIR.string
-            and Matches((Comp.value as FHIR.string).value, '.*PR>30%.*'))
+            and Matches((Comp.value as FHIR.string).value, '(?s).*PR>30%.*'))
         )
     )
   )
 
 define "檢查報告-1規則3-2=荷爾蒙受體陽性(PR>30%)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.PR, '.*PR>30%.*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.PR, '(?s).*PR>30%.*')
 
 define "1規則3-2=荷爾蒙受體陽性(PR>30%)":
   "1規則3-2=檢驗檢查-荷爾蒙受體陽性(PR>30%)"
@@ -185,11 +185,11 @@ define "1規則3=荷爾蒙接受體為：ER或PR >30%":
 
 //條件4:(2)HER-2 檢測為陰性
 define "檢查報告-1規則4=HER-2 檢測為陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative|\\bNEG\\b|\\bND\\b).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(陰性|negative|\\bNEG\\b|\\bND\\b).*')
 
 define "1規則4=HER-2 檢測為陰性":
   Reusable."HasTestObservationWithInterpretationCodes"(CodeConcept.HER2, { 'NEG', 'ND' })
-  or Reusable."HasGeneInfoComponentResult"(CodeConcept.HER2, { 'NEG' }, '(?i).*(陰性|negative).*')
+  or Reusable."HasGeneInfoComponentResult"(CodeConcept.HER2, { 'NEG' }, '(?is).*(陰性|negative).*')
   or "檢查報告-1規則4=HER-2 檢測為陰性"
 //條件5:經完整疾病評估後未出現器官轉移危急症狀 (visceral crisis)且無中樞神經系統(CNS)轉移
 //條件5-1
@@ -199,7 +199,7 @@ define "1規則5-1=未出現器官轉移危急症狀 (visceral crisis)":
     where Reusable."IsImageReport"(O)
     and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 180)
     and O.conclusion is not null
-    and Matches(O.conclusion, '(?i).*(no visceral crisis|\\+).*')
+    and Matches(O.conclusion, '(?is).*(no visceral crisis|\\+).*')
   ) 
 
 //條件5-2
@@ -506,7 +506,7 @@ define "3規則3-3=無法忍受化療(其副作用)時(有註記)":
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法忍受副作用.*')
+              where Matches(T.value, '(?is).*無法忍受副作用.*')
             )
         )
     )
@@ -535,7 +535,7 @@ define "3規則5=未註記everolimus無效":
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*everolimus無效.*')
+              where Matches(T.value, '(?is).*everolimus無效.*')
             )
         )
     )
@@ -548,7 +548,7 @@ define "3規則6=未註記abemaciclib無效":
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*abemaciclib無效.*')
+              where Matches(T.value, '(?is).*abemaciclib無效.*')
             )
         )
     )

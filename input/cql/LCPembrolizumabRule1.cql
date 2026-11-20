@@ -87,7 +87,7 @@ define "癌症分期分數或結果為M>=1":
 
 
 define "NSCLC或鱗狀註記":
-  Reusable."HasClaimDiagnosisText"('(?i).*(NSCLC|Squamous cell carcinoma|鱗狀).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(NSCLC|Squamous cell carcinoma|鱗狀).*')
 
 
 define "有檢查報告":
@@ -311,7 +311,7 @@ define "2規則2-2=未出現疾病惡化(PD)或未出現中、重度或危及生
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iCPD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iCPD).*')
   )
   and not exists (
     [Claim] C
@@ -321,7 +321,7 @@ define "2規則2-2=未出現疾病惡化(PD)或未出現中、重度或危及生
         and exists (
           Diag.type.text T
           where T.value is not null
-            and Matches(T.value, '(?i).*中、重度或危及生命之藥物不良反應.*')
+            and Matches(T.value, '(?is).*中、重度或危及生命之藥物不良反應.*')
         )
     )
   )
@@ -341,7 +341,7 @@ define "2規則2-4-0=SD評估記錄":
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iSD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iSD).*')
 
 define "本次iSD評估記錄":
   "2規則2-4-0=SD評估記錄" RasObservation

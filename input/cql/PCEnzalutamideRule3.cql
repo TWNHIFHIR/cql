@@ -47,7 +47,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*去勢抗性的轉移性前列腺癌(mCRPC).*')
+              where Matches(T.value, '(?is).*去勢抗性的轉移性前列腺癌(mCRPC).*')
           )
       )
   )
@@ -108,7 +108,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*CRPC.*')
+              where Matches(T.value, '(?is).*CRPC.*')
           )
       )
   )
@@ -261,7 +261,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*嚴重不耐受反應導致必須永久停止治療.*')
+              where Matches(T.value, '(?is).*嚴重不耐受反應導致必須永久停止治療.*')
           )
       )
   )

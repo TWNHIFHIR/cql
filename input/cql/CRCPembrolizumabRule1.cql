@@ -110,7 +110,7 @@ define "1規則1-3=做為無法切除":
       where Diag.type.text is not null
         and exists (
           Diag.type.text T
-          where Matches(T, '(?i).*無法切除.*')
+          where Matches(T, '(?is).*無法切除.*')
         )
     )
   )
@@ -354,7 +354,7 @@ define "1規則4-2=使用免疫檢查點抑制劑之治療計畫":
               and exists (
                 D.content Content
                   where Content.attachment.title is not null
-                    and Matches(Content.attachment.title, '(?i).*免疫檢查點抑制劑治療計畫.*')
+                    and Matches(Content.attachment.title, '(?is).*免疫檢查點抑制劑治療計畫.*')
               )
           )
       )
@@ -387,7 +387,7 @@ define "2規則1-1=以i-RECIST標準(HCC患者以mRECIST標準)評定藥物療�
       )
       and RasObservation.value is not null
       and RasObservation.value is FHIR.string
-      and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iPR|iCR|PR|CR).*')
+      and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iPR|iCR|PR|CR).*')
   )
 
 //條件2
@@ -409,7 +409,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iCPD|PD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iCPD|PD).*')
   )
   and not exists (
     [Claim] C
@@ -418,7 +418,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
       where Diag.type.text is not null
         and exists (
           Diag.type.text T
-          where Matches(T, '(?i).*中、重度或危及生命之藥物不良反應.*')
+          where Matches(T, '(?is).*中、重度或危及生命之藥物不良反應.*')
         )
     )
   )
@@ -438,7 +438,7 @@ define "2規則1-4-0=SD評估記錄":
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iSD|SD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iSD|SD).*')
 
 define "2規則1-4-1=檢查是第一次被評估為SD":
   exists "2規則1-4-0=SD評估記錄"

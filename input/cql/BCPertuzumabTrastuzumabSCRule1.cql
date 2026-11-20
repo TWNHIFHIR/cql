@@ -39,7 +39,7 @@ define "1規則2=基因檢測-具HER2過度表現":
   Reusable."HasHER2OverexpressionGene"
 
 define "檢查報告-1規則2=具HER2過度表現":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC3\\+|FISH\\+).*')
 
 define "1規則2=具HER2過度表現":
   "1規則2=檢驗檢查-具HER2過度表現"
@@ -138,7 +138,7 @@ define "2規則1-2=經外科手術後達病理上完全緩解者（pCR）":
         and FHIRHelpers.ToDateTime(O2.effective) > "手術日期(opdate)"
         and (
           O2.conclusion is not null
-          and Matches(O2.conclusion, '(?i).*(pCR).*') 
+          and Matches(O2.conclusion, '(?is).*(pCR).*') 
         )
         and "手術(或其他處置)項目"
   )

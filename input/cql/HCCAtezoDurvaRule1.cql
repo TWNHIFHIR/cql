@@ -137,7 +137,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法手術切除.*')
+              where Matches(T.value, '(?is).*無法手術切除.*')
           )
       )
   )
@@ -150,7 +150,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*不適合局部治療.*')
+              where Matches(T.value, '(?is).*不適合局部治療.*')
           )
       )
   )
@@ -244,7 +244,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*曾接受器官移植.*')
+              where Matches(T.value, '(?is).*曾接受器官移植.*')
           )
       )
   )
@@ -285,7 +285,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*上消化道出血.*')
+              where Matches(T.value, '(?is).*上消化道出血.*')
           )
       )
   )
@@ -372,7 +372,7 @@ exists (
             where Cdg in CodeConcept.LOINC
               and Cdg.code in CodeConcept.NYHA
         )
-        and Matches(OBs.value, '(?i).*(Class I|Class II).*')
+        and Matches(OBs.value, '(?is).*(Class I|Class II).*')
   )
 
 define "1規則2-4-1":
@@ -488,7 +488,7 @@ define "2規則1-1":
         and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次Atezolizumab事前審查申請品項預定起始日期", 84)
         and RasObservation.value is not null
         and RasObservation.value is FHIR.string
-        and Matches((RasObservation.value as FHIR.string).value, '(?i).*(PR|CR).*')
+        and Matches((RasObservation.value as FHIR.string).value, '(?is).*(PR|CR).*')
     )
   )
   or
@@ -504,7 +504,7 @@ define "2規則1-1":
         and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次Durvalumab事前審查申請品項預定起始日期", 84)
         and RasObservation.value is not null
         and RasObservation.value is FHIR.string
-        and Matches((RasObservation.value as FHIR.string).value, '(?i).*(PR|CR).*')
+        and Matches((RasObservation.value as FHIR.string).value, '(?is).*(PR|CR).*')
     )
   )
 
@@ -516,7 +516,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*中、重度或危及生命之藥物不良反應.*')
+              where Matches(T.value, '(?is).*中、重度或危及生命之藥物不良反應.*')
           )
       )
   )
@@ -534,7 +534,7 @@ define "MREC疾病狀態評估結果為PD":
         and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次Atezolizumab事前審查申請品項預定起始日期", 84)
         and RasObservation.value is not null
         and RasObservation.value is FHIR.string
-        and Matches((RasObservation.value as FHIR.string).value, '(?i).*(PD).*')
+        and Matches((RasObservation.value as FHIR.string).value, '(?is).*(PD).*')
     )
   )
   or
@@ -550,7 +550,7 @@ define "MREC疾病狀態評估結果為PD":
         and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次Durvalumab事前審查申請品項預定起始日期", 84)
         and RasObservation.value is not null
         and RasObservation.value is FHIR.string
-        and Matches((RasObservation.value as FHIR.string).value, '(?i).*(PD).*')
+        and Matches((RasObservation.value as FHIR.string).value, '(?is).*(PD).*')
     )
   )
 
@@ -587,7 +587,7 @@ define "第一次SD":
         and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次Atezolizumab事前審查申請品項預定起始日期", 84)
         and RasObservation.value is not null
         and RasObservation.value is FHIR.string
-        and Matches((RasObservation.value as FHIR.string).value, '(?i).*(SD).*')
+        and Matches((RasObservation.value as FHIR.string).value, '(?is).*(SD).*')
     )
   )
   or
@@ -603,7 +603,7 @@ define "第一次SD":
         and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次Durvalumab事前審查申請品項預定起始日期", 84)
         and RasObservation.value is not null
         and RasObservation.value is FHIR.string
-        and Matches((RasObservation.value as FHIR.string).value, '(?i).*(SD).*')
+        and Matches((RasObservation.value as FHIR.string).value, '(?is).*(SD).*')
     )
   )
 
@@ -623,7 +623,7 @@ define "第二次SD":
         and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次Atezolizumab事前審查申請品項預定起始日期", 84)
         and RasObservation.value is not null
         and RasObservation.value is FHIR.string
-        and Matches((RasObservation.value as FHIR.string).value, '(?i).*(此次與前次皆為iSD).*')
+        and Matches((RasObservation.value as FHIR.string).value, '(?is).*(此次與前次皆為iSD).*')
     )
   )
   or
@@ -639,7 +639,7 @@ define "第二次SD":
         and Reusable."IsObservationWithinDaysBefore"(RasObservation, "本次Durvalumab事前審查申請品項預定起始日期", 84)
         and RasObservation.value is not null
         and RasObservation.value is FHIR.string
-        and Matches((RasObservation.value as FHIR.string).value, '(?i).*(此次與前次皆為iSD).*')
+        and Matches((RasObservation.value as FHIR.string).value, '(?is).*(此次與前次皆為iSD).*')
     )
   )
 
@@ -838,7 +838,7 @@ define "手術相關資料存在":
   or exists ([Claim] C where exists (C.procedure P where P.procedure is FHIR.CodeableConcept))
 
 define "器官移植病史資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*曾接受器官移植.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*曾接受器官移植.*')
 
 define "免疫抑制劑用藥資料存在":
   exists (
@@ -850,13 +850,13 @@ define "免疫抑制劑用藥資料存在":
   )
 
 define "上消化道出血病史資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*上消化道出血.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*上消化道出血.*')
 
 define "無法手術切除或不適合局部治療說明資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*(無法手術切除|不適合局部治療).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(無法手術切除|不適合局部治療).*')
 
 define "疾病惡化說明資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*中、重度或危及生命之藥物不良反應.*')
+  Reusable."HasClaimDiagnosisText"('(?is).*中、重度或危及生命之藥物不良反應.*')
 
 define "照護計畫文件資料存在":
   exists (

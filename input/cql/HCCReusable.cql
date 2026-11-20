@@ -423,7 +423,7 @@ define "癌症分期分數或結果為M≠0":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[1-9].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*M[1-9].*')
   )
 
 //癌症分期分數或結果為 M1-M9
@@ -441,7 +441,7 @@ define "癌症分期分數或結果為N≠0":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*N[1-9].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*N[1-9].*')
   )
 
 //癌症分期分數或結果為 M0
@@ -455,7 +455,7 @@ define "癌症分期分數或結果為M=0":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M0.*')
+        and Matches((O.value as FHIR.string).value, '(?s).*M0.*')
   )
 
 //癌症分期分數或結果為 T>=3
@@ -469,7 +469,7 @@ define "癌症分期分數或結果為T>=3":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*T[3-9].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*T[3-9].*')
   )
 
 //癌症分期分數或結果為 N>=2
@@ -483,7 +483,7 @@ define "癌症分期分數或結果為N>=2":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*N[2-9].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*N[2-9].*')
   )
 
 define function "IsTestObservation"(OBs Observation):
@@ -774,24 +774,24 @@ define function "HasGeneInfoObservationWithTextPattern"(MarkerCodes List<String>
   )
 
 define function "HasMarkerNegative"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?is).*(陰性|negative).*')
+  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define function "HasMarkerNegativeTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define function "HasMarkerNegativeGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define function "HasMarkerPositive"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
+  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 define function "HasMarkerPositiveTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 define function "HasMarkerPositiveGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 // 檢查 MedicationRequest 是否有有效的時間資訊
 define function "HasValidTiming"(MR MedicationRequest):
@@ -1307,7 +1307,7 @@ define "HasChildPughA":
             where Cdg in CodeConcept.LOINC
               and Cdg.code in CodeConcept.ChildPugh
         )
-        and Matches(OBs.value, '(?i).*(A|a).*')
+        and Matches(OBs.value, '(?is).*(A|a).*')
   )
 
 // Child-Pugh 評估結果為 A 級，且評估日期在參考日期前指定天數內
@@ -1327,6 +1327,6 @@ define function "HasRecentChildPughA"(ReferenceDate DateTime, LookbackDays Integ
             where Cdg in CodeConcept.LOINC
               and Cdg.code in CodeConcept.ChildPugh
         )
-        and Matches(OBs.value, '(?i).*(A|a).*')
+        and Matches(OBs.value, '(?is).*(A|a).*')
         and "IsObservationWithinDaysBefore"(OBs, ReferenceDate, LookbackDays)
   )

@@ -79,7 +79,7 @@ define "1規則3-4=基因檢測-具HER2過度表現":
   Reusable."HasHER2OverexpressionGene"
 
 define "檢查報告-1規則3-4=具HER2過度表現":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC3\\+|FISH\\+).*')
 
 define "1規則3-4=具HER2過度表現":
   "1規則3-4=檢驗檢查-具HER2過度表現"
@@ -136,7 +136,7 @@ define "2規則2=病摘敘明早期乳癌治療結束至首次疾病復發轉移
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*(早期乳癌治療結束.*首次.*復發.*超過12個月|治療結束.*復發轉移.*12個月以上|早期.*結束.*轉移.*超過12個月|首次復發轉移距.*結束.*12個月).*')
+              where Matches(T.value, '(?is).*(早期乳癌治療結束.*首次.*復發.*超過12個月|治療結束.*復發轉移.*12個月以上|早期.*結束.*轉移.*超過12個月|首次復發轉移距.*結束.*12個月).*')
           )
       )
   )

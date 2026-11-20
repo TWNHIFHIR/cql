@@ -85,8 +85,8 @@ define "1規則1-1=晚期非小細胞肺癌":
 
 //條件2:ALK陽性
 define "1規則1-2=ALK陽性":
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ALK, { 'POS' }, '(?i).*(\+|陽性|positive|突變|mutation).*')
-  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ALK, { 'POS' }, '(?i).*(\+|陽性|positive|突變|mutation).*')
+  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ALK, { 'POS' }, '(?is).*(\+|陽性|positive|突變|mutation).*')
+  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ALK, { 'POS' }, '(?is).*(\+|陽性|positive|突變|mutation).*')
 
 
 //條件3:第一線治療
@@ -256,7 +256,7 @@ define "3規則2-2-2=發生嚴重不良反應或耐受不良，與alectinib、ce
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法忍受alectinib、ceritinib、crizotinib、brigatinib副作用.*')
+              where Matches(T.value, '(?is).*無法忍受alectinib、ceritinib、crizotinib、brigatinib副作用.*')
           )
       )
   )

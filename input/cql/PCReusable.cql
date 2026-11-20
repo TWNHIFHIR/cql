@@ -206,7 +206,7 @@ define "癌症分期分數或結果為M≠0":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[1-9].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*M[1-9].*')
   )
 
 //癌症分期分數或結果為 M1-M9
@@ -224,7 +224,7 @@ define "癌症分期分數或結果為M=0":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M0.*')
+        and Matches((O.value as FHIR.string).value, '(?s).*M0.*')
   )
 
 define function "HasValidTiming"(MR MedicationRequest):
@@ -417,7 +417,7 @@ define function "HasECOGAtMost"(MaxScore Integer):
             and (
               (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
                 and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) <= MaxScore)
-              or Matches((OBs.value as FHIR.string).value, '(?i).*(<=|≦)\s*' + ToString(MaxScore) + '(?!\d).*')
+              or Matches((OBs.value as FHIR.string).value, '(?is).*(<=|≦)\s*' + ToString(MaxScore) + '(?!\d).*')
             )
           )
         )
@@ -448,7 +448,7 @@ define function "HasRecentECOGAtMost"(MaxScore Integer, ReferenceDate DateTime, 
             and (
               (ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) is not null
                 and ToDecimal(ReplaceMatches((OBs.value as FHIR.string).value, ',', '')) <= MaxScore)
-              or Matches((OBs.value as FHIR.string).value, '(?i).*(<=|≦)\s*' + ToString(MaxScore) + '(?!\d).*')
+              or Matches((OBs.value as FHIR.string).value, '(?is).*(<=|≦)\s*' + ToString(MaxScore) + '(?!\d).*')
             )
           )
         )
@@ -472,7 +472,7 @@ define "HasGleasonScoreAtLeast8":
             and (
               (ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) is not null
                 and ToDecimal(ReplaceMatches((O.value as FHIR.string).value, ',', '')) >= 8)
-              or Matches((O.value as FHIR.string).value, '(?i).*(>=|≧)\s*[89]\d*(?!\d).*')
+              or Matches((O.value as FHIR.string).value, '(?is).*(>=|≧)\s*[89]\d*(?!\d).*')
             )
           )
         )

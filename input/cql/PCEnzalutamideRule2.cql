@@ -45,7 +45,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*轉移性的去勢敏感性前列腺癌(mCSPC).*')
+              where Matches(T.value, '(?is).*轉移性的去勢敏感性前列腺癌(mCSPC).*')
           )
       )
   )
@@ -210,7 +210,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*嚴重不耐受反應導致必須永久停止治療.*')
+              where Matches(T.value, '(?is).*嚴重不耐受反應導致必須永久停止治療.*')
           )
       )
   )

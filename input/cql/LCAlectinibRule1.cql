@@ -84,8 +84,8 @@ define "1規則1-1=晚期非小細胞肺癌":
 
 //條件2:ALK陽性
 define "1規則1-2=ALK陽性":
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ALK, { 'POS' }, '(?i).*(\+|陽性|positive|突變|mutation).*')
-  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ALK, { 'POS' }, '(?i).*(\+|陽性|positive|突變|mutation).*')
+  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ALK, { 'POS' }, '(?is).*(\+|陽性|positive|突變|mutation).*')
+  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ALK, { 'POS' }, '(?is).*(\+|陽性|positive|突變|mutation).*')
 
 
 //條件3:第一線治療
@@ -226,8 +226,8 @@ define "3規則3-1=用於ALK 陽性之晚期非小細胞肺癌第一線治療時
     or ("3個月內有影像檢查報告" and "3個月內有檢查報告")
   )
 and (  
-  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ALK, { 'POS' }, '(?i).*(\+|陽性|positive|Positive).*')
-  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ALK, { 'POS' }, '(?i).*(\+|陽性|positive|Positive).*')
+  Reusable."HasTestObservationWithInterpretationAndValuePattern"(CodeConcept.ALK, { 'POS' }, '(?is).*(\+|陽性|positive|Positive).*')
+  or Reusable."HasGeneInfoObservationWithInterpretationAndTextPattern"(CodeConcept.ALK, { 'POS' }, '(?is).*(\+|陽性|positive|Positive).*')
   )
 and Reusable."用藥線別=1"
 
@@ -247,7 +247,7 @@ define "3規則3-2-2=無法忍受ceritinib、crizotinib、brigatinib、lorlatini
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法忍受ceritinib、crizotinib、brigatinib、lorlatinib 副作用.*')
+              where Matches(T.value, '(?is).*無法忍受ceritinib、crizotinib、brigatinib、lorlatinib 副作用.*')
           )
       )
   )

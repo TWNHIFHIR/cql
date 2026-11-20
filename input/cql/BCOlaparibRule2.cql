@@ -62,7 +62,7 @@ define "1規則1-2=成年":
 
 //條件3:遺傳性 BRCA1/2(germline BRCA1/2)突變
 define "1規則1-3=遺傳性 BRCA1/2(germline BRCA1/2)突變":
-  Reusable."HasTestObservationResult"(CodeConcept.BRCA1or2, { 'POS' }, '(?i).*(Positive|Pathogenic|Likely Pathogenic).*')
+  Reusable."HasTestObservationResult"(CodeConcept.BRCA1or2, { 'POS' }, '(?is).*(Positive|Pathogenic|Likely Pathogenic).*')
 
 
 //條件4:HER2陰性
@@ -73,7 +73,7 @@ define "1規則1-4=基因檢測-HER2陰性":
   Reusable."HasHER2NegativeGene"
 
 define "檢查報告-1規則1-4=HER2陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(陰性|negative).*')
 
 define "1規則1-4=HER2陰性":
   Reusable."HasHER2Negative"
@@ -137,7 +137,7 @@ define "1規則1-5-2-1=基因檢測-ER陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularER)
 
 define "檢查報告-1規則1-5-2-1=ER陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(陰性|negative).*')
 
 define "1規則1-5-2-1=ER陰性":
   "1規則1-5-2-1=檢驗檢查-ER陰性" or "1規則1-5-2-1=基因檢測-ER陰性"
@@ -151,7 +151,7 @@ define "1規則1-5-2-2=基因檢測-PR陰性":
   Reusable."HasMarkerNegativeGene"(CodeConcept.MolecularPR)
 
 define "檢查報告-1規則1-5-2-2=PR陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?is).*(陰性|negative).*')
 
 define "1規則1-5-2-2=PR陰性":
   "1規則1-5-2-2=檢驗檢查-PR陰性" or "1規則1-5-2-2=基因檢測-PR陰性"
@@ -169,7 +169,7 @@ define "1規則1-5-2-3=病摘或病理報告結果其一符合non-pCR":
       )
       and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 90)
       and O2.conclusion is not null
-      and Matches(O2.conclusion, '(?i).*(乳房和/或手術切除的淋巴結中發現有殘餘的侵襲性癌症\(non-pCR\)\+).*')
+      and Matches(O2.conclusion, '(?is).*(乳房和/或手術切除的淋巴結中發現有殘餘的侵襲性癌症\(non-pCR\)\+).*')
   )
   or exists (
     [Claim] C
@@ -177,7 +177,7 @@ define "1規則1-5-2-3=病摘或病理報告結果其一符合non-pCR":
         C.diagnosis D
         where exists (
             D.type.text T
-            where Matches(T.value, '(?i).*(乳房和/或手術切除的淋巴結中發現有殘餘的侵襲性癌症\(non-pCR\)\+).*')
+            where Matches(T.value, '(?is).*(乳房和/或手術切除的淋巴結中發現有殘餘的侵襲性癌症\(non-pCR\)\+).*')
           )
       )
   )
@@ -194,7 +194,7 @@ define "1規則1-5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2":
       )
       and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 90)
       and O2.conclusion is not null
-      and Matches(O2.conclusion, '(?i).*具有腋窩淋巴結陽性\(≧pN1\)，或腋窩淋巴結陰性\(pN0\)且原發性病理腫瘤大小≧2公分\(≧pT2\).*')
+      and Matches(O2.conclusion, '(?is).*具有腋窩淋巴結陽性\(≧pN1\)，或腋窩淋巴結陰性\(pN0\)且原發性病理腫瘤大小≧2公分\(≧pT2\).*')
   )
   or exists (
     [Claim] C
@@ -202,7 +202,7 @@ define "1規則1-5-2-4=病摘或病理報告結果其一符合≧pN1且≧pT2":
         C.diagnosis D
         where exists (
             D.type.text T
-            where Matches(T.value, '(?i).*具有腋窩淋巴結陽性\(≧pN1\)，或腋窩淋巴結陰性\(pN0\)且原發性病理腫瘤大小≧2公分\(≧pT2\).*')
+            where Matches(T.value, '(?is).*具有腋窩淋巴結陽性\(≧pN1\)，或腋窩淋巴結陰性\(pN0\)且原發性病理腫瘤大小≧2公分\(≧pT2\).*')
           )
       )
   )
@@ -226,13 +226,13 @@ define "1規則1-5-2":
 //條件5-3:HR陽性且HER2陰性乳癌
 //條件5-3-1:ER陽性
 define "1規則1-5-3-1=檢驗檢查-ER陽性":
-  Reusable."HasTestObservationResult"(CodeConcept.MolecularER, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  Reusable."HasTestObservationResult"(CodeConcept.MolecularER, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 define "1規則1-5-3-1=基因檢測-ER陽性":
-  Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularER, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularER, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 define "檢查報告-1規則1-5-3-1=ER陽性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(\\+|陽性|positive).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(\\+|陽性|positive).*')
 
 define "1規則1-5-3-1=ER陽性":
   "1規則1-5-3-1=檢驗檢查-ER陽性" or "1規則1-5-3-1=基因檢測-ER陽性"
@@ -240,14 +240,14 @@ define "1規則1-5-3-1=ER陽性":
 
 //條件5-3-2:PR陽性
 define "1規則1-5-3-2=檢驗檢查-PR陽性":
-  Reusable."HasTestObservationResult"(CodeConcept.MolecularPR, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  Reusable."HasTestObservationResult"(CodeConcept.MolecularPR, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 define "1規則1-5-3-2=基因檢測-PR陽性":
-  Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularPR, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularPR, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 
 define "檢查報告-1規則1-5-3-2=PR陽性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(\\+|陽性|positive).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?is).*(\\+|陽性|positive).*')
 
 define "1規則1-5-3-2=PR陽性":
   "1規則1-5-3-2=檢驗檢查-PR陽性" or "1規則1-5-3-2=基因檢測-PR陽性"
@@ -265,7 +265,7 @@ define "1規則1-5-3-3=曾接受前導性化療的病人，須為non-pCR":
       )
       and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 90)
       and O2.conclusion is not null
-      and Matches(O2.conclusion, '(?i).*non-pCR.*')
+      and Matches(O2.conclusion, '(?is).*non-pCR.*')
   )
   or exists (
     [Claim] C
@@ -273,7 +273,7 @@ define "1規則1-5-3-3=曾接受前導性化療的病人，須為non-pCR":
         C.diagnosis D
         where exists (
             D.type.text T
-            where Matches(T.value, '(?i).*non-pCR.*')
+            where Matches(T.value, '(?is).*non-pCR.*')
           )
       )
   )
@@ -290,7 +290,7 @@ define "1規則1-5-3-4=曾接受手術且接續術後輔助性化療的病人，
       )
       and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 90)
       and O2.conclusion is not null
-      and Matches(O2.conclusion, '(?i).*須具有4個以上經病理學證實的陽性淋巴結.*')
+      and Matches(O2.conclusion, '(?is).*須具有4個以上經病理學證實的陽性淋巴結.*')
   )
   or exists (
     [Claim] C
@@ -298,7 +298,7 @@ define "1規則1-5-3-4=曾接受手術且接續術後輔助性化療的病人，
         C.diagnosis D
         where exists (
             D.type.text T
-            where Matches(T.value, '(?i).*須具有4個以上經病理學證實的陽性淋巴結.*')
+            where Matches(T.value, '(?is).*須具有4個以上經病理學證實的陽性淋巴結.*')
           )
       )
   )

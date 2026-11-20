@@ -47,8 +47,8 @@ define "1規則1-1-1-2=癌症分期分數或結果為N≠0且M=0":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[0].*')
-        and Matches((O.value as FHIR.string).value, '.*N[1-9][a-zA-Z]?.*')
+        and Matches((O.value as FHIR.string).value, '(?s).*M[0].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*N[1-9][a-zA-Z]?.*')
   )
 
 //條件1-1-3/條件1-2-3(檢查報告)
@@ -72,7 +72,7 @@ define "1規則1-1-2-1=3個月內影像報告(為骨轉移)":
     where Reusable."IsImageReport"(O)
     and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 90)
     and O.conclusion is not null
-    and Matches(O.conclusion, '(?i).*(顯示僅具有骨轉移無其他轉移).*')
+    and Matches(O.conclusion, '(?is).*(顯示僅具有骨轉移無其他轉移).*')
   ) 
 
 
@@ -87,8 +87,8 @@ define "1規則1-1-2-2=癌症分期分數或結果為N≠0且M=1":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*M[1].*')
-        and Matches((O.value as FHIR.string).value, '.*N[1-9][a-zA-Z]?.*')
+        and Matches((O.value as FHIR.string).value, '(?s).*M[1].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*N[1-9][a-zA-Z]?.*')
   )
 
 
@@ -112,7 +112,7 @@ define "1規則1-2=基因檢測-具HER2過度表現":
   Reusable."HasHER2OverexpressionGene"
 
 define "檢查報告-1規則1-2=具HER2過度表現":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC3\\+|FISH\\+).*')
 
 define "1規則1-2=具HER2過度表現":
   "1規則1-2=檢驗檢查-具HER2過度表現"
@@ -219,7 +219,7 @@ define "3規則1-1-1=經外科手術後達病理上完全緩解者（pCR）":
       )
       and Reusable."IsReportWithinDaysBefore"(O2, "本次事前審查申請日期", 90)
       and (O2.conclusion is not null
-        or Matches(O2.conclusion, '(?i).*(外科手術後達病理上完全緩解（pCR）).*'))
+        or Matches(O2.conclusion, '(?is).*(外科手術後達病理上完全緩解（pCR）).*'))
   )
   or exists (
     [Claim] C
@@ -227,7 +227,7 @@ define "3規則1-1-1=經外科手術後達病理上完全緩解者（pCR）":
         C.diagnosis D
         where exists (
             D.type.text T
-            where Matches(T.value, '(?i).*(外科手術後達病理上完全緩解（pCR）).*')
+            where Matches(T.value, '(?is).*(外科手術後達病理上完全緩解（pCR）).*')
           )
       )
   )

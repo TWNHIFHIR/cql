@@ -55,13 +55,13 @@ define "1-1規則1-1=適用於治療轉移性非小細胞肺癌的成人病人":
 "本次事前審查申請品項預定起始日期" is not null
   and Reusable."IsPatientAdultAt"(date from "本次事前審查申請日期")
   and Reusable."ICD-10使用C34"
-  and Reusable."HasClaimDiagnosisText"('(?i).*(non-small cell  carcinoma|非小細胞肺癌).*')
+  and Reusable."HasClaimDiagnosisText"('(?is).*(non-small cell  carcinoma|非小細胞肺癌).*')
   and (
     (not "3個月內有影像檢查報告" and not "3個月內有檢查報告")
     or ("3個月內有影像檢查報告" and "3個月內有檢查報告")
   )
   and "癌症分期分數或結果為M≠0"
-  and Reusable."HasReportResultString"('(?i).*(non-small cell  carcinoma|非小細胞肺癌).*')
+  and Reusable."HasReportResultString"('(?is).*(non-small cell  carcinoma|非小細胞肺癌).*')
   and Reusable."續用註記為1"
   and Reusable."醫令類別為1"
 
@@ -83,7 +83,7 @@ exists (
       )
       and RasO.value is not null
       and RasO.value is FHIR.string
-      and Matches((RasO.value as FHIR.string).value, '(?i).*MET exon 14 skipping mutation.*')
+      and Matches((RasO.value as FHIR.string).value, '(?is).*MET exon 14 skipping mutation.*')
   )
 
 define "主要規定1-1":

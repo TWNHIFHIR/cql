@@ -36,7 +36,7 @@ define "1規則1=NTRK基因融合且無已知的後天阻抗性突變":
       )
       and ComponentRecord.value is not null
       and ComponentRecord.value is FHIR.string
-      and Matches((ComponentRecord.value as FHIR.string).value, '(?i).*fusion且無後天阻抗性突變.*')
+      and Matches((ComponentRecord.value as FHIR.string).value, '(?is).*fusion且無後天阻抗性突變.*')
     )
   )
 
@@ -88,7 +88,7 @@ define "1規則3=病摘說明手術切除會造成嚴重病症":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(手術切除會造成嚴重病症).*')
+                where Matches(T.value, '(?is).*(手術切除會造成嚴重病症).*')
             )
         )
     )
@@ -102,7 +102,7 @@ define "1規則4=病摘說明沒有合適的替代治療選項":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(沒有合適的替代治療選項).*')
+                where Matches(T.value, '(?is).*(沒有合適的替代治療選項).*')
             )
         )
     )

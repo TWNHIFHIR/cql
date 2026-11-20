@@ -114,7 +114,7 @@ define "1規則1-2-3=影像報告證明遠端轉移只有骨轉移且無臟器�
     )
       and Reusable."IsReportWithinDaysBefore"(Report, "本次事前審查申請日期", 90)
       and Report.conclusion is not null
-      and Matches(Report.conclusion.value, '(?i).*(遠端轉移只有骨轉移).*')
+      and Matches(Report.conclusion.value, '(?is).*(遠端轉移只有骨轉移).*')
   )
 
 define "1規則1-2=合併有症狀的骨轉移且尚未有臟器轉移":
@@ -143,7 +143,7 @@ define "1規則2-1=三個月內影像報告證明骨轉移≧2處":
     )
       and Reusable."IsReportWithinDaysBefore"(Report, "本次事前審查申請日期", 90)
       and Report.conclusion is not null
-      and Matches(Report.conclusion.value, '(?i).*(骨轉移.{0,20}(≧|>=|大於等於|至少)?[2-9]處|[2-9]處.{0,20}骨轉移|兩處.{0,20}骨轉移|多處.{0,20}骨轉移|multiple.{0,20}bone).*')
+      and Matches(Report.conclusion.value, '(?is).*(骨轉移.{0,20}(≧|>=|大於等於|至少)?[2-9]處|[2-9]處.{0,20}骨轉移|兩處.{0,20}骨轉移|多處.{0,20}骨轉移|multiple.{0,20}bone).*')
   )
 
 define "1規則2=患者須合併有症狀之骨轉移且骨轉移≧2處":

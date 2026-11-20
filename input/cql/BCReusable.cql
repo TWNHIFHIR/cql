@@ -563,24 +563,24 @@ define function "HasGeneInfoObservationWithTextPattern"(MarkerCodes List<String>
   )
 
 define function "HasMarkerNegative"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?is).*(陰性|negative).*')
+  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define function "HasMarkerNegativeTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define function "HasMarkerNegativeGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?i).*(陰性|negative).*')
+  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define function "HasMarkerPositive"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
-  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
+  or "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 define function "HasMarkerPositiveTest"(MarkerCodes List<String>):
-  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  "HasTestObservationWithInterpretationAndValuePattern"(MarkerCodes, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 define function "HasMarkerPositiveGene"(MarkerCodes List<String>):
-  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?i).*(\\+|陽性|positive).*')
+  "HasGeneInfoObservationWithInterpretationAndTextPattern"(MarkerCodes, { 'POS' }, '(?is).*(\\+|陽性|positive).*')
 
 define "HasHER2NegativeTest":
   "HasMarkerNegativeTest"(CodeConcept.HER2)
@@ -592,10 +592,10 @@ define "HasHER2Negative":
   "HasMarkerNegative"(CodeConcept.HER2)
 
 define "HasHER2OverexpressionTest":
-  "HasTestObservationWithValuePattern"(CodeConcept.HER2, '(?i).*(IHC3\+|FISH\+).*')
+  "HasTestObservationWithValuePattern"(CodeConcept.HER2, '(?is).*(IHC3\+|FISH\+).*')
 
 define "HasHER2OverexpressionGene":
-  "HasGeneInfoObservationWithTextPattern"(CodeConcept.HER2, '(?i).*(IHC3\+|FISH\+).*')
+  "HasGeneInfoObservationWithTextPattern"(CodeConcept.HER2, '(?is).*(IHC3\+|FISH\+).*')
 
 define "HasHER2NegativeOrND":
   "HasTestObservationWithInterpretationCodes"(CodeConcept.HER2, { 'NEG', 'ND' })
@@ -612,10 +612,10 @@ define "HasHER2Overexpression":
   or "HasHER2OverexpressionGene"
 
 define "HasHER2LowExpressionTest":
-  "HasTestObservationWithValuePattern"(CodeConcept.HER2, '(?i).*(IHC\s*1\+|IHC\s*2\+|ISH-).*')
+  "HasTestObservationWithValuePattern"(CodeConcept.HER2, '(?is).*(IHC\s*1\+|IHC\s*2\+|ISH-).*')
 
 define "HasHER2LowExpressionGene":
-  "HasGeneInfoObservationWithTextPattern"(CodeConcept.HER2, '(?i).*(IHC\s*1\+|IHC\s*2\+|ISH-).*')
+  "HasGeneInfoObservationWithTextPattern"(CodeConcept.HER2, '(?is).*(IHC\s*1\+|IHC\s*2\+|ISH-).*')
 
 define "HasHER2LowExpression":
   "HasHER2LowExpressionTest"
@@ -636,19 +636,19 @@ define function "HasCancerStageValue"(ValuePattern String):
 
 //癌症分期分數或結果為 M0
 define "癌症分期分數或結果為M=0":
-  "HasCancerStageValue"('.*M0.*')
+  "HasCancerStageValue"('(?s).*M0.*')
 
 //癌症分期分數或結果為 M1-M9
 define "癌症分期分數或結果為M>=1":
-  "HasCancerStageValue"('.*M[1-9].*')
+  "HasCancerStageValue"('(?s).*M[1-9].*')
 
 //癌症分期分數或結果為 N0
 define "癌症分期分數或結果為N=0":
-  "HasCancerStageValue"('.*N0.*')
+  "HasCancerStageValue"('(?s).*N0.*')
 
 //癌症分期分數或結果為 N1-N9
 define "癌症分期分數或結果為N>=1":
-  "HasCancerStageValue"('.*N[1-9].*')
+  "HasCancerStageValue"('(?s).*N[1-9].*')
 
 //癌症分期分數或結果為 N1-N9
 define "癌症分期分數或結果為N≠0":

@@ -51,7 +51,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*去勢療法無效, 曾接受過去勢治療.*')
+              where Matches(T.value, '(?is).*去勢療法無效, 曾接受過去勢治療.*')
           )
       )
   )
@@ -129,7 +129,7 @@ exists (
         )
         and ComponentRecord.value is not null
         and ComponentRecord.value is FHIR.string
-        and Matches((ComponentRecord.value as FHIR.string).value, '(?i).*(Positive|陽性|Pathogenic|致病|Likely Pathogenic|疑似致病|mutation|突變|deletion|缺失).*')
+        and Matches((ComponentRecord.value as FHIR.string).value, '(?is).*(Positive|陽性|Pathogenic|致病|Likely Pathogenic|疑似致病|mutation|突變|deletion|缺失).*')
       )
   )
 
@@ -227,7 +227,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*未接受過化療.*')
+              where Matches(T.value, '(?is).*未接受過化療.*')
           )
       )
   )
@@ -262,7 +262,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*於mCRPC階段使用abiraterone期間未惡化.*')
+              where Matches(T.value, '(?is).*於mCRPC階段使用abiraterone期間未惡化.*')
           )
       )
   )
@@ -411,7 +411,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*未合併使用化療.*')
+              where Matches(T.value, '(?is).*未合併使用化療.*')
           )
       )
   )
@@ -480,7 +480,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*無法忍受新型荷爾蒙藥品(abiraterone、apalutamide、darolutamide 和 enzalutamide)副作用.*')
+              where Matches(T.value, '(?is).*無法忍受新型荷爾蒙藥品(abiraterone、apalutamide、darolutamide 和 enzalutamide)副作用.*')
           )
       )
   )

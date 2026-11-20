@@ -66,7 +66,7 @@ define "1規則1-1=先前已使用過EGFR標靶藥物治療失敗":
         and Reusable."HasValidTiming"(MR)
         and Reusable."GetEndTime"(MR) < "本次事前審查申請品項預定起始日期"
   )
-  and Reusable."HasClaimDiagnosisText"('(?i).*使用L01EB01, L01EB02, L01EB03, L01EB07治療失敗.*')
+  and Reusable."HasClaimDiagnosisText"('(?is).*使用L01EB01, L01EB02, L01EB03, L01EB07治療失敗.*')
 
   define "1規則1-2=具有EGFR T790M基因突變":
   exists (
@@ -86,11 +86,11 @@ define "1規則1-1=先前已使用過EGFR標靶藥物治療失敗":
         )
         and RasO.value is not null
         and RasO.value is FHIR.string
-        and Matches((RasO.value as FHIR.string).value, '(?i).*(mutation|變異|突變).*(positive|陽性).*')
+        and Matches((RasO.value as FHIR.string).value, '(?is).*(mutation|變異|突變).*(positive|陽性).*')
     )
 
 define "1規則1-3-1=局部侵犯性":
-Reusable."HasClaimDiagnosisText"('(?i).*具有局部侵犯性.*')
+Reusable."HasClaimDiagnosisText"('(?is).*具有局部侵犯性.*')
 
 define "1規則1-3-2=轉移性":
 "3個月內有影像檢查報告"
@@ -105,12 +105,12 @@ or "1規則1-3-2=轉移性"
 
 define "1規則1-4=非小細胞肺癌之第二線治療":
 Reusable."ICD-10使用C34"
-  and Reusable."HasClaimDiagnosisText"('(?i).*(non-small cell  carcinoma |非小細胞肺癌).*')
+  and Reusable."HasClaimDiagnosisText"('(?is).*(non-small cell  carcinoma |非小細胞肺癌).*')
   and (
         (not "3個月內有影像檢查報告" and not "3個月內有檢查報告")
         or ("3個月內有影像檢查報告" and "3個月內有檢查報告")
     )
-  and Reusable."HasReportResultString"('(?i).*(non-small cell  carcinoma |非小細胞肺癌).*')
+  and Reusable."HasReportResultString"('(?is).*(non-small cell  carcinoma |非小細胞肺癌).*')
   and Reusable."用藥線別=2"
   and Reusable."續用註記為1"
   and Reusable."醫令類別為1"
@@ -239,7 +239,7 @@ exists (
         )
         and RasO.value is not null
         and RasO.value is FHIR.string
-        and Matches((RasO.value as FHIR.string).value, '(?i).*(mutation|變異|突變).*(positive|陽性).*')
+        and Matches((RasO.value as FHIR.string).value, '(?is).*(mutation|變異|突變).*(positive|陽性).*')
     )
 
 define "3規則3-2=檢附曾經接受gefitinib、erlotinib、afatinib或dacomitinib治療之證明":

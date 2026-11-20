@@ -73,7 +73,7 @@ define "1規則1-3=用於治療具表皮生長因子受體表現型(EGFR express
       )
       and C.value is not null
       and C.value is FHIR.string
-      and Matches((C.value as FHIR.string).value, '(?i).*(positive|detected|present|\\+).*')
+      and Matches((C.value as FHIR.string).value, '(?is).*(positive|detected|present|\\+).*')
     )
   )
 

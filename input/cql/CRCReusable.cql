@@ -236,7 +236,7 @@ define function "HasCancerStageMValue"(MValuePattern String):
   ) > 0
 
 define "癌症分期分數或結果為M>=1":
-  "HasCancerStageMValue"('.*M[1-9].*')
+  "HasCancerStageMValue"('(?s).*M[1-9].*')
 
 //============================================
 // 共用邏輯：用藥線別檢核

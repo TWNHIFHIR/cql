@@ -108,7 +108,7 @@ define "ICD代碼檢核_布林值": Reusable."ICD-10使用C34"
 define "醫令類別為1_布林值": Reusable."醫令類別為1"
 
 define "小細胞肺癌病摘":
-  Reusable."HasClaimDiagnosisText"('(?i).*(小細胞肺癌|SCLC).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(小細胞肺癌|SCLC).*')
 
 define "有檢查報告":
   exists (
@@ -244,10 +244,10 @@ define "1規則1-5-1=3個月內有影像檢查報告":
   Reusable."HasRecentImageReport"("本次事前審查申請日期", 90)
 
 define "1規則1-5-2=擴散期病摘":
-  Reusable."HasClaimDiagnosisText"('(?i).*(擴散期|extensive stage).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(擴散期|extensive stage).*')
 
 define "1規則1-5-3=無腦部或無脊髓轉移病摘":
-  Reusable."HasClaimDiagnosisText"('(?i).*(無|未|no).*(腦部|brain|脊髓|spinal|spine).*(轉移|metastasis).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(無|未|no).*(腦部|brain|脊髓|spinal|spine).*(轉移|metastasis).*')
 
 define "1規則1-5=無腦部或無脊髓轉移且病摘為擴散期":
  "1規則1-5-1=3個月內有影像檢查報告"
@@ -407,7 +407,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
       )
       and RasObservation.value is not null
       and RasObservation.value is FHIR.string
-      and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iCPD).*')
+      and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iCPD).*')
   )
   and not exists (
     [Claim] C
@@ -417,7 +417,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
             and exists (
               Diag.type.text T
                 where T.value is not null
-                  and Matches(T.value, '(?i).*中、重度或危及生命之藥物不良反應.*')
+                  and Matches(T.value, '(?is).*中、重度或危及生命之藥物不良反應.*')
             )
       )
   )
@@ -440,7 +440,7 @@ define "2規則1-4-0=SD評估記錄":
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iSD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iSD).*')
 
 define "本次iSD評估記錄":
   "2規則1-4-0=SD評估記錄" RasObservation
@@ -637,7 +637,7 @@ define "iRECIST評估資料存在":
   Reusable."HasIRECISTResponseAssessment"
 
 define "無腦部或無脊髓轉移病摘資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*(腦部|brain|脊髓|spinal|spine).*(轉移|metastasis).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(腦部|brain|脊髓|spinal|spine).*(轉移|metastasis).*')
 
 define "療程期間資料存在":
   exists (

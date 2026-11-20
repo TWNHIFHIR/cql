@@ -54,7 +54,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*非轉移性去勢抗性前列腺癌(high risk nmCRPC).*')
+              where Matches(T.value, '(?is).*非轉移性去勢抗性前列腺癌(high risk nmCRPC).*')
           )
       )
   )
@@ -70,7 +70,7 @@ define "睪固酮達去勢標準":
       and exists (
         OBs.referenceRange RR
           where RR.text is not null
-            and Matches(RR.text.value, '(?i).*(<|＜)\s*50\s*ng\s*/\s*d ?l.*(<|＜)\s*1\.?7\s*nmol\s*/\s*l.*')
+            and Matches(RR.text.value, '(?is).*(<|＜)\s*50\s*ng\s*/\s*d ?l.*(<|＜)\s*1\.?7\s*nmol\s*/\s*l.*')
       )
   )
 
@@ -227,7 +227,7 @@ exists (
         C.diagnosis D
           where exists (
             D.type.text T
-              where Matches(T.value, '(?i).*嚴重不耐受反應導致必須永久停止治療.*')
+              where Matches(T.value, '(?is).*嚴重不耐受反應導致必須永久停止治療.*')
           )
       )
   )

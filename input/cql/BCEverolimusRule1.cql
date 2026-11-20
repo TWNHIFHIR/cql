@@ -79,7 +79,7 @@ define "1規則1-4-1=基因檢測-荷爾蒙接受體陽性(ER)":
   Reusable."HasMarkerPositiveGene"(CodeConcept.MolecularER)
 
 define "檢查報告-1規則1-4-1=荷爾蒙接受體陽性(ER)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(\\+|陽性|positive).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(\\+|陽性|positive).*')
 
 define "1規則1-4-1=荷爾蒙接受體陽性(ER)":
   "1規則1-4-1=檢驗檢查-荷爾蒙接受體陽性(ER)"
@@ -94,7 +94,7 @@ define "1規則1-4-2=基因檢測-荷爾蒙接受體陽性(PR)":
   Reusable."HasMarkerPositiveGene"(CodeConcept.MolecularPR)
 
 define "檢查報告-1規則1-4-2=荷爾蒙接受體陽性(PR)":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?i).*(\\+|陽性|positive).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularPR, '(?is).*(\\+|陽性|positive).*')
 
 define "1規則1-4-2=荷爾蒙接受體陽性(PR)":
   "1規則1-4-2=檢驗檢查-荷爾蒙接受體陽性(PR)"
@@ -109,7 +109,7 @@ define "1規則1-4-3=基因檢測-HER2受體陰性":
   Reusable."HasHER2NegativeGene"
 
 define "檢查報告-1規則1-4-3=HER2受體陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(陰性|negative).*')
 
 define "1規則1-4-3=HER2受體陰性":
   "1規則1-4-3=檢驗檢查-HER2受體陰性"
@@ -128,7 +128,7 @@ define "1規則1-5=尚未出現器官轉移危急症狀 (visceral crisis)":
     where Reusable."IsImageReport"(O)
     and Reusable."IsReportWithinDaysBefore"(O, "本次事前審查申請日期", 180)
     and O.conclusion is not null
-    and Matches(O.conclusion, '(?i).*(no visceral crisis|\\+).*')
+    and Matches(O.conclusion, '(?is).*(no visceral crisis|\\+).*')
   ) 
 
 /*規則2*/

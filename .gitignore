@@ -20,3 +20,4 @@ _updatePublisher.sh
 _gencontinuous.bat
 _build.bat
 _build.sh
+/input/tests/

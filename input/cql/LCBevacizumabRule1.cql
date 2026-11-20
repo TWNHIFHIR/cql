@@ -58,7 +58,7 @@ define "1規則1-1=Bevacizumab與 erlotinib併用":
   and Reusable."醫令類別為1"
 
 define "1規則1-2=作為無法手術切除的轉移性(第Ⅳ期)":
-Reusable."HasClaimDiagnosisText"('(?i).*手術無法切除.*')
+Reusable."HasClaimDiagnosisText"('(?is).*手術無法切除.*')
 and "3個月內有影像檢查報告"
 and "癌症分期分數或結果為M≠0"
 
@@ -80,17 +80,17 @@ exists (
       )
       and RasO.value is not null
       and RasO.value is FHIR.string
-      and Matches((RasO.value as FHIR.string).value, '(?i).*(mutation|變異|突變).*(positive|陽性).*')
+      and Matches((RasO.value as FHIR.string).value, '(?is).*(mutation|變異|突變).*(positive|陽性).*')
   )
 
 define "1規則1-4=腦轉移非鱗狀非小細胞肺癌病患的第一線治療":
 Reusable."ICD-10使用C34"
-    and Reusable."HasClaimDiagnosisText"('腦轉移非鱗狀非小細胞肺癌.*')
+    and Reusable."HasClaimDiagnosisText"('(?s)腦轉移非鱗狀非小細胞肺癌.*')
     and (
         (not "3個月內有影像檢查報告" and not "3個月內有檢查報告")
         or ("3個月內有影像檢查報告" and "3個月內有檢查報告")
     )
-    and Reusable."HasReportResultString"('(?i).*(非鱗狀|Non-squamous).*(非小細胞肺癌|non-small cell  carcinoma).*')
+    and Reusable."HasReportResultString"('(?is).*(非鱗狀|Non-squamous).*(非小細胞肺癌|non-small cell  carcinoma).*')
 
 define "1規則1":
 "1規則1-1=Bevacizumab與 erlotinib併用"

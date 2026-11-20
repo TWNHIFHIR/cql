@@ -87,7 +87,7 @@ define "癌症分期分數或結果為M=0":
   Reusable."癌症分期分數或結果為M=0"
 
 define "NSCLC或IIIb/c註記":
-  Reusable."HasClaimDiagnosisText"('(?i).*(NSCLC|IIIb/c).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(NSCLC|IIIb/c).*')
 
 define "3個月內有影像檢查報告":
   Reusable."HasRecentImageReport"("本次事前審查申請日期", 90)
@@ -124,7 +124,7 @@ define "1規則1-1=限durvalumab用於第三期局部晚期":
 
 //條件2
 define "1規則1-2=無法手術切除注註記":
-  Reusable."HasClaimDiagnosisText"('(?i).*(無法手術切除).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(無法手術切除).*')
 
 //條件3
 define "1規則1-3=腫瘤表現PD-L1≥1%":
@@ -151,19 +151,19 @@ define "1規則1-4=非小細胞肺癌":
 
 //條件5
 define "1規則1-5-1=非鱗狀":
-  Reusable."HasClaimDiagnosisText"('(?i).*(Adenocarcinoma|Non-squamous|非鱗狀).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(Adenocarcinoma|Non-squamous|非鱗狀).*')
 
 define "ALK原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ALK, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ALK, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ALK, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ALK, '(?is).*wild type.*')
 
 define "EGFR原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.EGFR, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.EGFR, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.EGFR, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.EGFR, '(?is).*wild type.*')
 
 define "ROS1原生型":
-  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ROS1, '(?i).*wild type.*')
-  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ROS1, '(?i).*wild type.*')
+  Reusable."HasTestObservationWithValuePattern"(CodeConcept.ROS1, '(?is).*wild type.*')
+  or Reusable."HasGeneInfoObservationWithTextPattern"(CodeConcept.ROS1, '(?is).*wild type.*')
 
 //條件5-2:EGFR/ALK腫瘤基因原生型
 define "1規則1-5-2=EGFR/ALK/ROS-1腫瘤基因原生型":
@@ -173,7 +173,7 @@ define "1規則1-5-2=EGFR/ALK/ROS-1腫瘤基因原生型":
 
 //條件5-3
 define "1規則1-5-3=鱗狀癌":
-  Reusable."HasClaimDiagnosisText"('(?i).*(Squamous cell carcinoma|鱗狀).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(Squamous cell carcinoma|鱗狀).*')
 
 //條件5-4
 define "EGFR/ALK腫瘤基因原生型":
@@ -364,7 +364,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iCPD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iCPD).*')
   )
   and not exists (
     [Claim] C
@@ -374,7 +374,7 @@ define "2規則1-2=未出現疾病惡化(PD)或未出現中、重度或危及生
         and exists (
           Diag.type.text T
           where T.value is not null
-            and Matches(T.value, '(?i).*中、重度或危及生命之藥物不良反應.*')
+            and Matches(T.value, '(?is).*中、重度或危及生命之藥物不良反應.*')
         )
     )
   )
@@ -394,7 +394,7 @@ define "2規則1-4-0=SD評估記錄":
     )
     and RasObservation.value is not null
     and RasObservation.value is FHIR.string
-    and Matches((RasObservation.value as FHIR.string).value, '(?i).*(iSD|SD).*')
+    and Matches((RasObservation.value as FHIR.string).value, '(?is).*(iSD|SD).*')
 
 define "本次iSD評估記錄":
   "2規則1-4-0=SD評估記錄" RasObservation
@@ -500,7 +500,7 @@ define "NSCLC或IIIb/c註記資料存在":
   )
 
 define "無法手術切除註記資料存在":
-  Reusable."HasClaimDiagnosisText"('(?i).*(無法手術切除).*')
+  Reusable."HasClaimDiagnosisText"('(?is).*(無法手術切除).*')
 
 define "給付適應症資料存在":
   exists (

@@ -26,7 +26,7 @@ define "1規則1=基因檢測-HER2過度表現(IHC3+或FISH+)":
   Reusable."HasHER2OverexpressionGene"
 
 define "檢查報告-1規則1=使用於具HER2過度表現(IHC 3+或FISH+)之早期乳癌病人":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?i).*(IHC3\\+|FISH\\+).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.HER2, '(?is).*(IHC3\\+|FISH\\+).*')
 
 define "1規則1=使用於具HER2過度表現(IHC 3+或FISH+)之早期乳癌病人":
   "1規則1=檢驗檢查-HER2過度表現(IHC3+或FISH+)"
@@ -165,7 +165,7 @@ define "病摘敘明trastuzumab術前輔助治療後仍有殘留病灶":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(trastuzumab術前輔助治療後仍有殘留病灶).*')
+                where Matches(T.value, '(?is).*(trastuzumab術前輔助治療後仍有殘留病灶).*')
             )
         )
     )
@@ -243,7 +243,7 @@ define "1規則4-1-1=具腋下淋巴結轉移":
       )
         and O.value is not null
         and O.value is FHIR.string
-        and Matches((O.value as FHIR.string).value, '.*N[1-9].*')
+        and Matches((O.value as FHIR.string).value, '(?s).*N[1-9].*')
   )
 
 //1規則4-1-2:但無遠處臟器轉移之早期乳癌病人
@@ -282,18 +282,18 @@ define "1規則4-2-1=未發生腋下淋巴結轉移":
     )
     and O.value is not null
     and O.value is FHIR.string
-    and Matches((O.value as FHIR.string).value, '.*N[0].*')
+    and Matches((O.value as FHIR.string).value, '(?s).*N[0].*')
   ) > 0
 
 ////1規則4-2-2:雌激素受體(ER)為陰性
 define "1規則4-2-2=檢驗檢查-ER陰性":
-  Reusable."HasTestObservationResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*(陰性|negative).*')
+  Reusable."HasTestObservationResult"(CodeConcept.MolecularER, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define "1規則4-2-2=基因檢測-ER陰性":
-  Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularER, { 'NEG' }, '(?i).*(陰性|negative).*')
+  Reusable."HasGeneInfoComponentResult"(CodeConcept.MolecularER, { 'NEG' }, '(?is).*(陰性|negative).*')
 
 define "檢查報告-1規則4-2-2=E雌激素受體(ER)為陰性":
-  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?i).*(陰性|negative).*')
+  Reusable."HasDiagnosticReportResult"(CodeConcept.MolecularER, '(?is).*(陰性|negative).*')
 
 define "1規則4-2-2=E雌激素受體(ER)為陰性":
   "1規則4-2-2=檢驗檢查-ER陰性" or "1規則4-2-2=基因檢測-ER陰性"
@@ -308,7 +308,7 @@ define "1規則4-2-3=病摘敘明腫瘤大於2公分":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(腫瘤大於2公分).*')
+                where Matches(T.value, '(?is).*(腫瘤大於2公分).*')
             )
         )
     )
@@ -441,7 +441,7 @@ define "左心室射出分率少於45%":
             C.diagnosis D
             where exists (
                 D.type.text T
-                where Matches(T.value, '(?i).*(左心室射出分率少於45%).*')
+                where Matches(T.value, '(?is).*(左心室射出分率少於45%).*')
             )
         )
     )
