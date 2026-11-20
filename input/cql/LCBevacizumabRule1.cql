@@ -178,6 +178,7 @@ define "PatientWeight":
               where coding in CodeConcept.NHIPASSupportingInfoType
                 and coding.code = 'weight'
           )
+          and (Cs.value as FHIR.Quantity).code = 'kg'
           return (Cs.value as FHIR.Quantity)
       )
   )

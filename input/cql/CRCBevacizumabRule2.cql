@@ -218,6 +218,7 @@ define "PatientWeight":
               where coding in CodeConcept.NHIPASSupportingInfoType
                 and coding.code = 'weight'
           )
+          and (Cs.value as FHIR.Quantity).code = 'kg'
           return (Cs.value as FHIR.Quantity)
       )
   )
@@ -249,8 +250,9 @@ define "3規則3-3=限5mg/kg每兩週一次(weight*5mg)":
       )
       and exists (
         DI.doseAndRate DR
-        where DR.dose.unit = 'mg'
-        and DR.dose.value <= MaxAllowedDose
+        where (DR.dose as FHIR.SimpleQuantity) is not null
+        and (DR.dose as FHIR.SimpleQuantity).code = 'mg'
+        and (DR.dose as FHIR.SimpleQuantity).value <= MaxAllowedDose
       )
     )
   )
