@@ -234,12 +234,27 @@ define "1規則2-3-1=GOT<60U/L及GPT<60U/L":
     and exists (
       OBs.code.coding Cdg
       where Cdg in CodeConcept.LOINC
-        and (
-        Cdg.code in CodeConcept.GOT
-        or Cdg.code in CodeConcept.GPT
-        )
+        and Cdg.code in CodeConcept.GOT
     )
-     and Reusable."GetNumericValue"(OBs.value) is not null
+    and Reusable."GetNumericValue"(OBs.value) is not null
+    and Reusable."GetNumericValue"(OBs.value) < 60
+  )
+  and exists (
+    [Observation] OBs
+      where exists (
+        OBs.category C
+          where exists (
+            C.coding Cdg
+              where Cdg in CodeConcept.NHIPASSupportingInfoType
+                and Cdg.code = 'tests'
+          )
+      )
+    and exists (
+      OBs.code.coding Cdg
+      where Cdg in CodeConcept.LOINC
+        and Cdg.code in CodeConcept.GPT
+    )
+    and Reusable."GetNumericValue"(OBs.value) is not null
     and Reusable."GetNumericValue"(OBs.value) < 60
   )
 
